@@ -1,0 +1,1353 @@
+import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  Box,
+  Text,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Spinner,
+  Alert,
+  AlertIcon,
+  Input,
+  Button,
+  HStack,
+  VStack,
+  Select,
+  IconButton,
+  Flex,
+  Tag,
+  Badge,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  Tooltip,
+  FormControl,
+  FormLabel,
+  InputGroup,
+  InputLeftElement,
+  useColorModeValue,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Heading,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
+  useBreakpointValue,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  useDisclosure,
+  Skeleton,
+  Avatar,
+  Divider,
+  InputRightElement,
+} from "@chakra-ui/react";
+import {
+  FiSearch,
+  FiChevronLeft,
+  FiChevronRight,
+  FiChevronsLeft,
+  FiChevronsRight,
+  FiFilter,
+  FiXCircle,
+  FiUser,
+  FiMail,
+  FiSliders,
+  FiPlus,
+  FiMoreVertical,
+  FiCheck,
+  FiX,
+  FiEdit2,
+  FiEye,
+  FiLock,
+  FiUnlock,
+  FiUserX,
+  FiUserCheck,
+  FiDownload,
+  FiUpload,
+  FiRefreshCw,
+  FiCalendar,
+} from "react-icons/fi";
+import { useToast } from "@chakra-ui/react";
+import { formatRelativeTime } from "../../../commons/formatOptions";
+import { administrationService } from "../services/administrationService";
+import { handleApiError } from "../../../commons/handleApiError";
+
+import SidebarContent from "../layouts/SidebarContent";
+import MobileNav from "../layouts/MobileNav";
+import SettingsModal from "../components/settings/SettingsModal";
+import { useAuth } from "../authContext/authContext";
+import { motion } from "framer-motion"; // Assuming you have framer-motion installed
+
+// Animation variants
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.4 } },
+};
+
+const MotionBox = motion(Box);
+
+const AdministrationsList = () => {
+  const [users, setUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const toast = useToast();
+  const { account } = useAuth();
+  const tableRef = useRef(null);
+  const isMobile = useBreakpointValue({ base: true, md: false });
+  const {
+    isOpen: isDetailsOpen,
+    onOpen: onDetailsOpen,
+    onClose: onDetailsClose,
+  } = useDisclosure();
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [limit, setLimit] = useState(10);
+
+  // Sorting state
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState("DESC");
+
+  // Search state
+  // const [searchTerm, setSearchTerm] = useState("");
+  // const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  // const [isSearching, setIsSearching] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchHelp, setShowSearchHelp] = useState(false);
+
+  // Filter state
+  const [filters, setFilters] = useState({
+    role: "",
+    is_inactive: "",
+    is_verified: "",
+    is_locked: "",
+  });
+  const [showFilters, setShowFilters] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
+
+  // Colors
+  const tableBg = useColorModeValue("rgb(25,25,25)", "rgb(25,25,25)");
+  const theadBg = useColorModeValue("rgb(32,32,32)", "rgb(32,32,32)");
+  const rowHoverBg = useColorModeValue("rgb(38,38,38)", "rgb(38,38,38)");
+  const borderColor = useColorModeValue("gray.700", "gray.700");
+  const accentColor = useColorModeValue("blue.500", "blue.400");
+
+  // const fetchUsers = useCallback(async () => {
+  //   setIsLoading(true);
+  //   setError(null);
+  //   try {
+  //     const params = {
+  //       page: currentPage,
+  //       limit,
+  //       sortBy,
+  //       sortOrder,
+  //       search: debouncedSearchTerm,
+  //       ...Object.fromEntries(
+  //         Object.entries(filters).filter(([_, v]) => v !== "")
+  //       ),
+  //     };
+  //     const response = await administrationService.getAllUsers(params);
+  //     const { accounts, total_items, total_pages, current_page } =
+  //       response.data.data;
+  //     setUsers(accounts || []);
+  //     setTotalItems(total_items || 0);
+  //     setTotalPages(total_pages || 1);
+  //     setCurrentPage(current_page || 1);
+  //   } catch (err) {
+  //     setError(handleApiError(err, toast, "Failed to fetch users"));
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }, [
+  //   currentPage,
+  //   limit,
+  //   sortBy,
+  //   sortOrder,
+  //   debouncedSearchTerm,
+  //   filters,
+  //   toast,
+  // ]);
+
+  const fetchUsers = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Base params without search
+      const params = {
+        page: currentPage,
+        limit,
+        sortBy,
+        sortOrder,
+        ...Object.fromEntries(
+          Object.entries(filters).filter(([_, v]) => v !== "")
+        ),
+      };
+
+      // Only add search if meaningful
+      if (debouncedSearchTerm && debouncedSearchTerm.length >= 2) {
+        params.search = debouncedSearchTerm;
+      }
+
+      const response = await administrationService.getAllUsers(params);
+      const { accounts, total_items, total_pages, current_page } =
+        response.data.data;
+      setUsers(accounts || []);
+      setTotalItems(total_items || 0);
+      setTotalPages(total_pages || 1);
+      setCurrentPage(current_page || 1);
+    } catch (err) {
+      setError(handleApiError(err, toast, "Failed to fetch users"));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    currentPage,
+    limit,
+    sortBy,
+    sortOrder,
+    debouncedSearchTerm,
+    filters,
+    toast,
+  ]);
+
+  // useEffect(() => {
+  //   const handler = setTimeout(() => {
+  //     setDebouncedSearchTerm(searchTerm);
+  //   }, 1000);
+  //   return () => clearTimeout(handler);
+  // }, [searchTerm]);
+
+  useEffect(() => {
+    // Reset indicators
+    setIsSearching(false);
+    setShowSearchHelp(false);
+
+    // Only start a debounce timer if we have a non-empty search
+    if (searchTerm.trim()) {
+      // Show search help if term is too short
+      if (searchTerm.trim().length < 2) {
+        setShowSearchHelp(true);
+        return; // Don't trigger search for short terms
+      }
+
+      // Show searching indicator
+      setIsSearching(true);
+
+      // Set timer to apply the search term after delay
+      const handler = setTimeout(() => {
+        setDebouncedSearchTerm(searchTerm.trim());
+        setIsSearching(false);
+      }, 1000); // Keep the 1000ms debounce
+
+      return () => clearTimeout(handler);
+    } else {
+      // If search is cleared, clear the debounced term too
+      setDebouncedSearchTerm("");
+    }
+  }, [searchTerm]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
+    } else {
+      setSortBy(column);
+      setSortOrder("DESC");
+    }
+    setCurrentPage(1);
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+    setCurrentPage(1);
+  };
+
+  const clearFilters = () => {
+    setFilters({ role: "", is_inactive: "", is_verified: "", is_locked: "" });
+    setSearchTerm("");
+    setCurrentPage(1);
+  };
+
+  const handleRefresh = () => {
+    fetchUsers();
+    toast({
+      title: "Refreshed",
+      description: "User list has been refreshed",
+      status: "info",
+      duration: 2000,
+      isClosable: true,
+      position: "top-right",
+    });
+  };
+
+  const handleUserView = (user) => {
+    setSelectedUser(user);
+    onDetailsOpen();
+  };
+
+  const renderPagination = () => (
+    <Flex
+      justify="space-between"
+      align="center"
+      mt={6}
+      wrap="wrap"
+      borderTopWidth="1px"
+      borderColor={borderColor}
+      pt={4}
+    >
+      <Text fontSize="sm" color="gray.500" fontFamily="Inter">
+        Showing {users.length > 0 ? (currentPage - 1) * limit + 1 : 0}-
+        {Math.min(currentPage * limit, totalItems)} of {totalItems} users
+      </Text>
+      <HStack spacing={2}>
+        <IconButton
+          icon={<FiChevronsLeft />}
+          aria-label="First page"
+          onClick={() => setCurrentPage(1)}
+          isDisabled={currentPage === 1}
+          size="sm"
+          variant="outline"
+          color="gray.400"
+          _hover={{ bg: "gray.700", color: "white" }}
+        />
+        <IconButton
+          icon={<FiChevronLeft />}
+          aria-label="Previous page"
+          onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+          isDisabled={currentPage === 1}
+          size="sm"
+          variant="outline"
+          color="gray.400"
+          _hover={{ bg: "gray.700", color: "white" }}
+        />
+        <Text fontSize="sm" color="gray.400" fontFamily="Inter">
+          Page {currentPage} of {totalPages}
+        </Text>
+        <IconButton
+          icon={<FiChevronRight />}
+          aria-label="Next page"
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+          }
+          isDisabled={currentPage === totalPages || totalPages === 0}
+          size="sm"
+          variant="outline"
+          color="gray.400"
+          _hover={{ bg: "gray.700", color: "white" }}
+        />
+        <IconButton
+          icon={<FiChevronsRight />}
+          aria-label="Last page"
+          onClick={() => setCurrentPage(totalPages)}
+          isDisabled={currentPage === totalPages || totalPages === 0}
+          size="sm"
+          variant="outline"
+          color="gray.400"
+          _hover={{ bg: "gray.700", color: "white" }}
+        />
+        <NumberInput
+          size="sm"
+          w="80px"
+          value={limit}
+          onChange={(valueString) => setLimit(parseInt(valueString) || 10)}
+          min={5}
+          max={100}
+          step={5}
+          focusBorderColor={accentColor}
+          color='gray.400'
+        >
+          <NumberInputField
+            borderColor="gray.600"
+            _hover={{ borderColor: "gray.500" }}
+            bg="rgb(32,32,32)"
+          />
+          <NumberInputStepper>
+            <NumberIncrementStepper />
+            <NumberDecrementStepper />
+          </NumberInputStepper>
+        </NumberInput>
+        <Text fontSize="xs" color="gray.500" fontFamily="Inter">
+          per page
+        </Text>
+      </HStack>
+    </Flex>
+  );
+
+  const SortableTh = ({ children, columnKey }) => (
+    <Th
+      onClick={() => handleSort(columnKey)}
+      cursor="pointer"
+      userSelect="none"
+      color="gray.500"
+      _hover={{ color: "gray.300" }}
+      fontFamily="Inter"
+      fontSize="xs"
+      textTransform="uppercase"
+      position="relative"
+      px={3}
+      py={3}
+    >
+      <HStack spacing={1}>
+        <Text>{children}</Text>
+        {sortBy === columnKey && (
+          <Box color={accentColor} ml={1} fontWeight="bold">
+            {sortOrder === "ASC" ? "▲" : "▼"}
+          </Box>
+        )}
+      </HStack>
+    </Th>
+  );
+
+  // User details drawer
+  const UserDetailsDrawer = () => (
+    <Drawer
+      isOpen={isDetailsOpen}
+      placement="right"
+      onClose={onDetailsClose}
+      size="md"
+    >
+      <DrawerOverlay />
+      <DrawerContent bg="rgb(25,25,25)" color="gray.300">
+        <DrawerCloseButton color="gray.400" />
+        <DrawerHeader
+          borderBottomWidth="1px"
+          borderColor={borderColor}
+          fontFamily="Inter"
+          fontWeight="medium"
+        >
+          User Details
+        </DrawerHeader>
+        <DrawerBody p={0}>
+          {selectedUser ? (
+            <Box>
+              <Box
+                p={6}
+                bg="rgb(30,30,30)"
+                borderBottomWidth="1px"
+                borderColor={borderColor}
+              >
+                <Flex
+                  direction={{ base: "column", md: "row" }}
+                  align="center"
+                  gap={6}
+                >
+                  <Avatar
+                    size="xl"
+                    name={`${selectedUser.first_name} ${selectedUser.last_name}`}
+                    bg={selectedUser.is_inactive ? "red.500" : "blue.500"}
+                  />
+                  <Box>
+                    <Heading
+                      size="md"
+                      fontFamily="Inter"
+                      fontWeight="medium"
+                      mb={1}
+                    >
+                      {selectedUser.first_name} {selectedUser.last_name}
+                    </Heading>
+                    <HStack spacing={2} mb={2}>
+                      <Tag
+                        size="sm"
+                        variant="subtle"
+                        colorScheme={
+                          selectedUser.role === "administrator"
+                            ? "purple"
+                            : "gray"
+                        }
+                      >
+                        {selectedUser.role}
+                      </Tag>
+                      {selectedUser.is_inactive && (
+                        <Tag colorScheme="red" size="sm">
+                          Inactive
+                        </Tag>
+                      )}
+                      {selectedUser.is_verified && (
+                        <Tag colorScheme="green" size="sm">
+                          Verified
+                        </Tag>
+                      )}
+                      {selectedUser.is_locked && (
+                        <Tag colorScheme="orange" size="sm">
+                          Locked
+                        </Tag>
+                      )}
+                    </HStack>
+                    <HStack fontSize="sm" color="gray.400" spacing={4}>
+                      <Flex align="center" gap={1}>
+                        <FiMail />
+                        <Text>{selectedUser.email}</Text>
+                      </Flex>
+                    </HStack>
+                  </Box>
+                </Flex>
+              </Box>
+
+              <Tabs variant="enclosed" colorScheme="blue" mt={4} px={6}>
+                <TabList borderColor={borderColor}>
+                  <Tab
+                    _selected={{
+                      bg: "rgb(35,35,35)",
+                      borderColor: borderColor,
+                      borderBottomColor: "rgb(35,35,35)",
+                    }}
+                    fontFamily="Inter"
+                    fontSize="sm"
+                  >
+                    Profile
+                  </Tab>
+                  <Tab
+                    _selected={{
+                      bg: "rgb(35,35,35)",
+                      borderColor: borderColor,
+                      borderBottomColor: "rgb(35,35,35)",
+                    }}
+                    fontFamily="Inter"
+                    fontSize="sm"
+                  >
+                    Activity
+                  </Tab>
+                  <Tab
+                    _selected={{
+                      bg: "rgb(35,35,35)",
+                      borderColor: borderColor,
+                      borderBottomColor: "rgb(35,35,35)",
+                    }}
+                    fontFamily="Inter"
+                    fontSize="sm"
+                  >
+                    Sessions
+                  </Tab>
+                </TabList>
+                <TabPanels
+                  bg="rgb(35,35,35)"
+                  borderWidth="1px"
+                  borderTop="0"
+                  borderColor={borderColor}
+                >
+                  <TabPanel>
+                    <VStack spacing={4} align="stretch">
+                      <Box>
+                        <Text fontSize="xs" color="gray.500" fontFamily="Inter">
+                          Full Name
+                        </Text>
+                        <Text fontSize="sm" fontFamily="Inter">
+                          {selectedUser.first_name} {selectedUser.last_name}
+                        </Text>
+                      </Box>
+                      <Box>
+                        <Text fontSize="xs" color="gray.500" fontFamily="Inter">
+                          Email
+                        </Text>
+                        <Text fontSize="sm" fontFamily="Inter">
+                          {selectedUser.email}
+                        </Text>
+                      </Box>
+                      <Box>
+                        <Text fontSize="xs" color="gray.500" fontFamily="Inter">
+                          Member Since
+                        </Text>
+                        <Text fontSize="sm" fontFamily="Inter">
+                          {formatRelativeTime(selectedUser.created_at)}
+                        </Text>
+                      </Box>
+                      <Box>
+                        <Text fontSize="xs" color="gray.500" fontFamily="Inter">
+                          Last Active
+                        </Text>
+                        <Text fontSize="sm" fontFamily="Inter">
+                          {selectedUser.last_login_time
+                            ? formatRelativeTime(selectedUser.last_login_time)
+                            : "Never"}
+                        </Text>
+                      </Box>
+                      {/* Add more details here as needed */}
+                    </VStack>
+                  </TabPanel>
+                  <TabPanel>
+                    <Text fontSize="sm" color="gray.400">
+                      Activity history will be displayed here.
+                    </Text>
+                  </TabPanel>
+                  <TabPanel>
+                    <Text fontSize="sm" color="gray.400">
+                      Active sessions will be displayed here.
+                    </Text>
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
+
+              <Box p={6}>
+                <Heading
+                  size="xs"
+                  fontFamily="Inter"
+                  fontWeight="medium"
+                  mb={4}
+                  color="gray.400"
+                >
+                  Actions
+                </Heading>
+                <HStack spacing={3} wrap="wrap">
+                  <Button
+                    size="sm"
+                    color="gray.100"
+                    bg="transparent"
+                    leftIcon={<FiEdit2 />}
+                    colorScheme="blue"
+                    variant="outline"
+                  >
+                    Edit User
+                  </Button>
+                  {selectedUser.is_inactive ? (
+                    <Button
+                      size="sm"
+                      leftIcon={<FiUserCheck />}
+                      colorScheme="green"
+                      variant="outline"
+                    >
+                      Activate
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      leftIcon={<FiUserX />}
+                      colorScheme="red"
+                      variant="outline"
+                    >
+                      Deactivate
+                    </Button>
+                  )}
+                  {selectedUser.is_locked ? (
+                    <Button
+                      size="sm"
+                      leftIcon={<FiUnlock />}
+                      colorScheme="orange"
+                      variant="outline"
+                    >
+                      Unlock
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      leftIcon={<FiLock />}
+                      colorScheme="orange"
+                      variant="outline"
+                    >
+                      Lock
+                    </Button>
+                  )}
+                </HStack>
+              </Box>
+            </Box>
+          ) : (
+            <Spinner
+              color="blue.500"
+              thickness="3px"
+              speed="0.65s"
+              emptyColor="gray.700"
+              size="xl"
+              display="block"
+              mx="auto"
+              my={8}
+            />
+          )}
+        </DrawerBody>
+      </DrawerContent>
+    </Drawer>
+  );
+
+  const filterPanel = (
+    <MotionBox
+      initial="hidden"
+      animate={showFilters ? "visible" : "hidden"}
+      variants={fadeIn}
+      spacing={3}
+      align="stretch"
+      mb={6}
+      p={5}
+      bg="rgb(28,28,28)"
+      borderRadius="md"
+      borderColor={borderColor}
+      borderWidth={1}
+      boxShadow="md"
+    >
+      <HStack justify="space-between" mb={3}>
+        <Text
+          fontSize="sm"
+          fontWeight="medium"
+          color="gray.400"
+          fontFamily="Inter"
+        >
+          Advanced Filters
+        </Text>
+        <IconButton
+          color="white"
+          bg="transparent"
+          _hover={{ bg: "transparent " }}
+          icon={<FiXCircle />}
+          aria-label="Close filters"
+          size="xs"
+          onClick={() => setShowFilters(false)}
+        />
+      </HStack>
+      <Flex wrap="wrap" gap={4}>
+        <FormControl w={{ base: "100%", md: "200px" }}>
+          <FormLabel fontSize="xs" color="gray.500" fontFamily="Inter" mb={1}>
+            Role
+          </FormLabel>
+          <Select
+            name="role"
+            value={filters.role}
+            onChange={handleFilterChange}
+            size="sm"
+            bg="rgb(32,32,32)"
+            borderColor="gray.600"
+            _hover={{ borderColor: "gray.500" }}
+            fontFamily="Inter"
+            focusBorderColor={accentColor}
+            placeholder="Select Role"
+            color="gray.400"
+          >
+            <option value="">All Roles</option>
+            <option value="global-administrator">Global administrator</option>
+            <option value="administrator">Administrator</option>
+            <option value="supplier">Supplier</option>
+            <option value="employee">Employee</option>
+          </Select>
+        </FormControl>
+        <FormControl w={{ base: "100%", md: "150px" }}>
+          <FormLabel fontSize="xs" color="gray.500" fontFamily="Inter" mb={1}>
+            Status
+          </FormLabel>
+          <Select
+            name="is_inactive"
+            value={filters.is_inactive}
+            onChange={handleFilterChange}
+            size="sm"
+            bg="rgb(32,32,32)"
+            borderColor="gray.600"
+            _hover={{ borderColor: "gray.500" }}
+            fontFamily="Inter"
+            focusBorderColor={accentColor}
+            placeholder="Select Status"
+            color="gray.400"
+          >
+            <option value="">Any</option>
+            <option value="false">Active</option>
+            <option value="true">Inactive</option>
+          </Select>
+        </FormControl>
+        <FormControl w={{ base: "100%", md: "150px" }}>
+          <FormLabel fontSize="xs" color="gray.500" fontFamily="Inter" mb={1}>
+            Verified
+          </FormLabel>
+          <Select
+            name="is_verified"
+            value={filters.is_verified}
+            onChange={handleFilterChange}
+            size="sm"
+            bg="rgb(32,32,32)"
+            borderColor="gray.600"
+            _hover={{ borderColor: "gray.500" }}
+            fontFamily="Inter"
+            focusBorderColor={accentColor}
+            placeholder="Select Verify"
+            color="gray.400"
+          >
+            <option value="">Any</option>
+            <option value="true">Verified</option>
+            <option value="false">Not Verified</option>
+          </Select>
+        </FormControl>
+        <FormControl w={{ base: "100%", md: "150px" }}>
+          <FormLabel fontSize="xs" color="gray.500" fontFamily="Inter" mb={1}>
+            Locked
+          </FormLabel>
+          <Select
+            name="is_locked"
+            value={filters.is_locked}
+            onChange={handleFilterChange}
+            size="sm"
+            bg="rgb(32,32,32)"
+            borderColor="gray.600"
+            _hover={{ borderColor: "gray.500" }}
+            fontFamily="Inter"
+            focusBorderColor={accentColor}
+            placeholder="Select Locked"
+            color="gray.400"
+          >
+            <option value="">Any</option>
+            <option value="true">Locked</option>
+            <option value="false">Not Locked</option>
+          </Select>
+        </FormControl>
+      </Flex>
+      <HStack justify="flex-end" mt={4}>
+        <Button
+          size="sm"
+          colorScheme="blue"
+          fontSize="xs"
+          leftIcon={<FiCheck />}
+          onClick={() => fetchUsers()}
+        >
+          Apply Filters
+        </Button>
+        <Button
+          size="sm"
+          colorScheme="red"
+          fontSize="xs"
+          leftIcon={<FiX />}
+          onClick={clearFilters}
+        >
+          Clear
+        </Button>
+      </HStack>
+    </MotionBox>
+  );
+
+  // This is the main content for the user list page
+  const UserListContent = () => (
+    <Box flex={1} pb={6}>
+      <Box mb={6}>
+        <Flex
+          justify="space-between"
+          align={{ base: "flex-start", md: "center" }}
+          direction={{ base: "column", md: "row" }}
+          gap={4}
+          mb={6}
+        >
+          <Heading
+            size="md"
+            fontFamily="Inter"
+            fontWeight="normal"
+            color="gray.300"
+          >
+            User Management
+          </Heading>
+
+          <HStack spacing={3}>
+            <Button
+              colorScheme="blue"
+              size="sm"
+              leftIcon={<FiPlus />}
+              fontFamily="Inter"
+              fontSize="sm"
+              display={{ base: "none", md: "flex" }}
+            >
+              New User
+            </Button>
+            <IconButton
+              icon={<FiPlus />}
+              aria-label="New User"
+              colorScheme="blue"
+              size="sm"
+              display={{ base: "flex", md: "none" }}
+            />
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                icon={<FiMoreVertical />}
+                variant="outline"
+                borderColor="gray.700"
+                size="sm"
+                aria-label="Options"
+              />
+              <MenuList bg="rgb(32,32,32)" borderColor="gray.700">
+                <MenuItem
+                  icon={<FiRefreshCw />}
+                  onClick={handleRefresh}
+                  _hover={{ bg: "gray.700" }}
+                  fontSize="sm"
+                  fontFamily="Inter"
+                >
+                  Refresh
+                </MenuItem>
+                <MenuItem
+                  icon={<FiDownload />}
+                  _hover={{ bg: "gray.700" }}
+                  fontSize="sm"
+                  fontFamily="Inter"
+                >
+                  Export Users
+                </MenuItem>
+                <MenuItem
+                  icon={<FiUpload />}
+                  _hover={{ bg: "gray.700" }}
+                  fontSize="sm"
+                  fontFamily="Inter"
+                >
+                  Import Users
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </HStack>
+        </Flex>
+
+        <Tabs
+          colorScheme="blue"
+          size="sm"
+          variant="line"
+          index={activeTab}
+          onChange={setActiveTab}
+          mb={6}
+        >
+          <TabList
+            borderColor="gray.700"
+            overflowX="auto"
+            css={{ scrollbarWidth: "none" }}
+          >
+            <Tab
+              fontFamily="Inter"
+              color="gray.400"
+              _selected={{ color: "blue.400", borderColor: "blue.400" }}
+            >
+              All Users ({totalItems})
+            </Tab>
+            <Tab
+              fontFamily="Inter"
+              color="gray.400"
+              _selected={{ color: "blue.400", borderColor: "blue.400" }}
+            >
+              Administrators
+            </Tab>
+            <Tab
+              fontFamily="Inter"
+              color="gray.400"
+              _selected={{ color: "blue.400", borderColor: "blue.400" }}
+            >
+              Editors
+            </Tab>
+            <Tab
+              fontFamily="Inter"
+              color="gray.400"
+              _selected={{ color: "blue.400", borderColor: "blue.400" }}
+            >
+              Viewers
+            </Tab>
+          </TabList>
+        </Tabs>
+
+        <Flex
+          wrap="wrap"
+          gap={3}
+          justify="space-between"
+          align={{ base: "flex-start", md: "center" }}
+          direction={{ base: "column", md: "row" }}
+          mb={showFilters ? 4 : 6}
+        >
+          {/* <InputGroup size="sm" width={{ base: "full", md: "320px" }}>
+            <InputLeftElement pointerEvents="none">
+              <FiSearch color="gray.400" />
+            </InputLeftElement>
+            <Input
+              placeholder="Search by name, email, phone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              bg="rgb(32,32,32)"
+              borderColor="gray.700"
+              _hover={{ borderColor: "gray.600" }}
+              size="sm"
+              fontFamily="Inter"
+              color="gray.400"
+              focusBorderColor={accentColor}
+            />
+          </InputGroup> */}
+
+          <InputGroup size="sm" width={{ base: "full", md: "320px" }}>
+            <InputLeftElement pointerEvents="none">
+              {isSearching ? (
+                <Spinner size="xs" color="gray.400" />
+              ) : (
+                <FiSearch color="gray.400" />
+              )}
+            </InputLeftElement>
+            <Input
+              placeholder="Search by name, email, phone... (min 2 chars)"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                // Force search on Enter key if term is valid
+                if (e.key === "Enter" && searchTerm.trim().length >= 2) {
+                  fetchUsers();
+                }
+              }}
+              bg="rgb(32,32,32)"
+              borderColor={showSearchHelp ? "orange.500" : "gray.700"}
+              _hover={{ borderColor: "gray.600" }}
+              size="sm"
+              fontFamily="Inter"
+              color="gray.400"
+              focusBorderColor={accentColor}
+            />
+            {searchTerm && (
+              <InputRightElement>
+                <IconButton
+                  icon={<FiX />}
+                  aria-label="Clear search"
+                  size="xs"
+                  variant="ghost"
+                  colorScheme="gray"
+                  onClick={() => setSearchTerm("")}
+                />
+              </InputRightElement>
+            )}
+          </InputGroup>
+
+          {/* Show search help message if term is too short */}
+          {showSearchHelp && (
+            <Text
+              fontSize="xs"
+              color="orange.500"
+              mt={1}
+              position="absolute"
+              ml={2}
+              pb={1}
+            >
+              Type at least 2 characters to search
+            </Text>
+          )}
+
+          <HStack spacing={3}>
+            <Tooltip
+              label={showFilters ? "Hide Filters" : "Show Filters"}
+              placement="top"
+            >
+              <Button
+                leftIcon={<FiFilter />}
+                onClick={() => setShowFilters(!showFilters)}
+                size="sm"
+                variant={showFilters ? "solid" : "outline"}
+                colorScheme="blue"
+                fontFamily="Inter"
+                fontSize="sm"
+              >
+                Filters
+              </Button>
+            </Tooltip>
+            {Object.values(filters).some((val) => val !== "") && (
+              <Badge
+                colorScheme="blue"
+                variant="solid"
+                borderRadius="full"
+                px={2}
+              >
+                {Object.values(filters).filter((val) => val !== "").length}
+              </Badge>
+            )}
+            <Button
+              leftIcon={<FiRefreshCw />}
+              onClick={handleRefresh}
+              size="sm"
+              variant="outline"
+              colorScheme="blue"
+              fontFamily="Inter"
+              fontSize="sm"
+              display={{ base: "none", md: "flex" }}
+            >
+              Refresh
+            </Button>
+          </HStack>
+        </Flex>
+
+        {showFilters && filterPanel}
+      </Box>
+
+      {isLoading ? (
+        <VStack spacing={4} align="stretch">
+          {[...Array(5)].map((_, i) => (
+            <Box key={i} p={4} bg="rgb(28,28,28)" borderRadius="md">
+              <HStack>
+                <Skeleton height="40px" width="40px" borderRadius="md" />
+                <VStack align="start" spacing={2} flex={1}>
+                  <Skeleton height="12px" width="150px" />
+                  <Skeleton height="10px" width="100px" />
+                </VStack>
+                <Skeleton height="24px" width="60px" borderRadius="md" />
+              </HStack>
+            </Box>
+          ))}
+        </VStack>
+      ) : error ? (
+        <Alert
+          status="error"
+          variant="subtle"
+          bg="red.900"
+          borderColor="red.700"
+          borderWidth={1}
+          borderRadius="md"
+        >
+          <AlertIcon color="red.300" />
+          <Text color="red.300" fontSize="sm">
+            {error.message || "An error occurred"}
+          </Text>
+        </Alert>
+      ) : users.length === 0 ? (
+        <Box
+          textAlign="center"
+          py={12}
+          bg="rgb(28,28,28)"
+          borderRadius="md"
+          borderWidth="1px"
+          borderColor="gray.700"
+        >
+          <Text color="gray.500" fontFamily="Inter" fontSize="md">
+            No users found matching your criteria.
+          </Text>
+          <Button
+            mt={4}
+            size="sm"
+            colorScheme="blue"
+            variant="outline"
+            onClick={clearFilters}
+          >
+            Clear Filters
+          </Button>
+        </Box>
+      ) : (
+        <Box
+          borderRadius="md"
+          borderWidth="1px"
+          borderColor="gray.700"
+          overflow="hidden"
+        >
+          <Box overflowX="auto" ref={tableRef}>
+            <Table variant="simple" size="sm" color="gray.300">
+              <Thead bg={theadBg} position="sticky" top={0} zIndex={1}>
+                <Tr>
+                  <SortableTh columnKey="first_name">Name</SortableTh>
+                  <SortableTh columnKey="email">Email</SortableTh>
+                  <SortableTh columnKey="role">Role</SortableTh>
+                  <SortableTh columnKey="is_verified">Verified</SortableTh>
+                  <SortableTh columnKey="is_inactive">Status</SortableTh>
+                  <SortableTh columnKey="last_login_time">
+                    Last Login
+                  </SortableTh>
+                  <Th
+                    color="gray.500"
+                    fontFamily="Inter"
+                    fontSize="xs"
+                    textTransform="uppercase"
+                  >
+                    Actions
+                  </Th>
+                </Tr>
+              </Thead>
+              <Tbody fontFamily="Inter" fontSize="sm">
+                {users.map((user) => (
+                  <Tr
+                    key={user.id}
+                    _hover={{ bg: rowHoverBg }}
+                    cursor="pointer"
+                    onClick={() => handleUserView(user)}
+                  >
+                    <Td borderColor={borderColor}>
+                      <HStack spacing={3}>
+                        <Avatar
+                          size="sm"
+                          name={`${user.first_name} ${user.last_name}`}
+                          bg={user.is_inactive ? "red.500" : "blue.500"}
+                        />
+                        <Box>
+                          <Text fontWeight="500">
+                            {user.first_name} {user.last_name}
+                          </Text>
+                          {user.preferred_name && (
+                            <Text fontSize="xs" color="gray.500">
+                              "{user.preferred_name}"
+                            </Text>
+                          )}
+                        </Box>
+                      </HStack>
+                    </Td>
+                    <Td borderColor={borderColor}>{user.email}</Td>
+                    <Td borderColor={borderColor}>
+                      <Tag
+                        size="sm"
+                        variant="subtle"
+                        colorScheme={
+                          user.role === "administrator"
+                            ? "purple"
+                            : user.role === "editor"
+                            ? "blue"
+                            : "gray"
+                        }
+                      >
+                        {user.role}
+                      </Tag>
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      {user.is_verified ? (
+                        <Badge
+                          colorScheme="green"
+                          variant="subtle"
+                          borderRadius="full"
+                          px={2}
+                        >
+                          <FiCheck size={12} />
+                        </Badge>
+                      ) : (
+                        <Badge
+                          colorScheme="gray"
+                          variant="subtle"
+                          borderRadius="full"
+                          px={2}
+                        >
+                          <FiX size={12} />
+                        </Badge>
+                      )}
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      <Badge
+                        colorScheme={user.is_inactive ? "red" : "green"}
+                        variant="subtle"
+                        borderRadius="full"
+                        px={2}
+                      >
+                        {user.is_inactive ? "Inactive" : "Active"}
+                      </Badge>
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      <HStack color="gray.500" spacing={1}>
+                        <FiCalendar size={12} />
+                        <Text>
+                          {user.last_login_time
+                            ? formatRelativeTime(user.last_login_time)
+                            : "Never"}
+                        </Text>
+                      </HStack>
+                    </Td>
+                    <Td borderColor={borderColor}>
+                      <HStack spacing={2}>
+                        <IconButton
+                          icon={<FiEye />}
+                          aria-label="View user"
+                          size="xs"
+                          color="gray.400"
+                          bg="transparent"
+                          _hover={{ bg: "transparent" }}
+                          _focus={{ bg: "transparent" }}
+                          _active={{ bg: "transparent" }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUserView(user);
+                          }}
+                        />
+                        <IconButton
+                          icon={<FiEdit2 />}
+                          aria-label="Edit user"
+                          size="xs"
+                          color="gray.400"
+                          bg="transparent"
+                          _hover={{ bg: "transparent" }}
+                          _focus={{ bg: "transparent" }}
+                          _active={{ bg: "transparent" }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <Menu>
+                          <MenuButton
+                            as={IconButton}
+                            icon={<FiMoreVertical />}
+                            color="gray.400"
+                            bg="transparent"
+                            _hover={{ bg: "transparent" }}
+                            _focus={{ bg: "transparent" }}
+                            _active={{ bg: "transparent" }}
+                            size="xs"
+                            aria-label="More options"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <MenuList
+                            bg="rgb(32,32,32)"
+                            borderColor="gray.700"
+                            zIndex={10}
+                          >
+                            <MenuItem
+                              icon={
+                                user.is_inactive ? <FiUserCheck /> : <FiUserX />
+                              }
+                              _hover={{ bg: "gray.700" }}
+                              fontSize="sm"
+                              fontFamily="Inter"
+                              bg="transparent"
+                            >
+                              {user.is_inactive
+                                ? "Activate User"
+                                : "Deactivate User"}
+                            </MenuItem>
+                            <MenuItem
+                              icon={user.is_locked ? <FiUnlock /> : <FiLock />}
+                              _hover={{ bg: "gray.700" }}
+                              fontSize="sm"
+                              fontFamily="Inter"
+                              bg="transparent"
+                            >
+                              {user.is_locked
+                                ? "Unlock Account"
+                                : "Lock Account"}
+                            </MenuItem>
+                          </MenuList>
+                        </Menu>
+                      </HStack>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Box>
+        </Box>
+      )}
+
+      {renderPagination()}
+    </Box>
+  );
+
+  return (
+    <>
+      <Box minH="100vh" bg="rgb(25,25,25)">
+        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+        <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
+
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+
+        <Box
+          ml={{ base: 0, md: 60 }}
+          p={5}
+          overflowY="auto"
+          h="calc(100vh - 0px)"
+        >
+          <UserListContent />
+        </Box>
+      </Box>
+      <UserDetailsDrawer />
+    </>
+  );
+};
+
+export default AdministrationsList;

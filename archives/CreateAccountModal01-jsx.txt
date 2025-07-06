@@ -1,0 +1,385 @@
+import React, { useState } from "react";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  Select,
+  Textarea,
+  FormErrorMessage,
+  useToast,
+  Flex,
+  Divider,
+  Box,
+  Text,
+  InputGroup,
+  InputRightElement,
+  IconButton,
+  Alert,
+  AlertIcon,
+} from "@chakra-ui/react";
+import {
+  FaUser,
+  FaEnvelope,
+  FaLock,
+  FaPhone,
+  FaShieldAlt,
+  FaSave,
+  FaTimes,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
+import { administrationService } from "../../services/administrationService";
+import { customToastContainerStyle } from "../../../../commons/toastStyles";
+import { companyService } from "../../services/companyService";
+
+// const CreateAccountModal = ({ isOpen, onClose, onSuccess }) => {
+//   const toast = useToast();
+//   const [isSubmitting, setIsSubmitting] = useState(false);
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [formData, setFormData] = useState({
+//     first_name: "",
+//     last_name: "",
+//     email: "",
+//     password: "",
+//     role: "administrator",
+//     phone_number: "",
+//     note: "",
+//   });
+//   const [errors, setErrors] = useState({});
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({
+//       ...prev,
+//       [name]: value,
+//     }));
+
+//     if (errors[name]) {
+//       setErrors((prev) => ({
+//         ...prev,
+//         [name]: "",
+//       }));
+//     }
+//   };
+
+//   const validateForm = () => {
+//     const newErrors = {};
+
+//     if (!formData.first_name.trim()) {
+//       newErrors.first_name = "First name is required";
+//     }
+
+//     if (!formData.last_name.trim()) {
+//       newErrors.last_name = "Last name is required";
+//     }
+
+//     if (!formData.email.trim()) {
+//       newErrors.email = "Email is required";
+//     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+//       newErrors.email = "Email is invalid";
+//     }
+
+//     if (!formData.password) {
+//       newErrors.password = "Password is required";
+//     } else if (formData.password.length < 8) {
+//       newErrors.password = "Password must be at least 8 characters";
+//     } else if (
+//       !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(formData.password)
+//     ) {
+//       newErrors.password =
+//         "Password must include uppercase, lowercase, number and special character";
+//     }
+
+//     if (!formData.role) {
+//       newErrors.role = "Role is required";
+//     }
+
+//     setErrors(newErrors);
+//     return Object.keys(newErrors).length === 0;
+//   };
+
+//   const handleSubmit = async () => {
+//     if (!validateForm()) return;
+
+//     setIsSubmitting(true);
+//     try {
+//       const result = await administrationService.createAccount(formData);
+
+//       toast({
+//         description: result.data.message,
+//         status: "success",
+//         duration: 3000,
+//         isClosable: true,
+//         variant: "custom",
+//         containerStyle: customToastContainerStyle,
+//       });
+
+//       if (onSuccess) {
+//         onSuccess();
+//       }
+
+//       // Reset form data
+//       setFormData({
+//         first_name: "",
+//         last_name: "",
+//         email: "",
+//         password: "",
+//         role: "administrator",
+//         phone_number: "",
+//         note: "",
+//       });
+
+//       onClose();
+//     } catch (error) {
+//       console.error("Error creating account:", error);
+//       toast({
+//         description:
+//           error.response?.data?.message || "Failed to create account",
+//         status: "error",
+//         duration: 5000,
+//         isClosable: true,
+//         position: "top",
+//       });
+//     } finally {
+//       setIsSubmitting(false);
+//     }
+//   };
+
+//   const toggleShowPassword = () => setShowPassword(!showPassword);
+
+//   const roleOptions = [
+//     { value: "global-administrator", label: "Global Administrator" },
+//     { value: "administrator", label: "Administrator" },
+//     { value: "supplier", label: "Supplier" },
+//     { value: "employee", label: "Employee" },
+//   ];
+
+//   return (
+//     <Modal isOpen={isOpen} onClose={onClose} size="xl">
+//       <ModalOverlay />
+//       <ModalContent bg="rgb(30,30,30)" color="white" borderRadius="xl">
+//         <ModalHeader borderBottomWidth="1px" borderColor="gray.700">
+//           <Flex alignItems="center" gap={2}>
+//             <FaUser />
+//             <Text>Create New Account</Text>
+//           </Flex>
+//         </ModalHeader>
+//         <ModalCloseButton />
+
+//         <ModalBody py={6}>
+//           <Flex direction="column" gap={4}>
+//             <Alert status="info" borderRadius="md" bg="blue.900" mb={2}>
+//               <AlertIcon color="blue.200" />
+//               <Text fontSize="sm">
+//                 Create a new user account with access to the system.
+//               </Text>
+//             </Alert>
+
+//             <Divider borderColor="gray.600" my={2} />
+
+//             <Flex gap={4} width="100%">
+//               <FormControl isInvalid={errors.first_name}>
+//                 <FormLabel display="flex" alignItems="center">
+//                   <FaUser style={{ marginRight: "8px" }} />
+//                   First Name
+//                 </FormLabel>
+//                 <Input
+//                   name="first_name"
+//                   value={formData.first_name}
+//                   onChange={handleChange}
+//                   bg="rgb(25,25,25)"
+//                   borderColor="gray.700"
+//                   _hover={{ borderColor: "gray.700" }}
+//                   _focus={{
+//                     borderColor: "blue.400",
+//                     boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+//                   }}
+//                 />
+//                 <FormErrorMessage>{errors.first_name}</FormErrorMessage>
+//               </FormControl>
+
+//               <FormControl isInvalid={errors.last_name}>
+//                 <FormLabel display="flex" alignItems="center">
+//                   <FaUser style={{ marginRight: "8px" }} />
+//                   Last Name
+//                 </FormLabel>
+//                 <Input
+//                   name="last_name"
+//                   value={formData.last_name}
+//                   onChange={handleChange}
+//                   bg="rgb(25,25,25)"
+//                   borderColor="gray.700"
+//                   _hover={{ borderColor: "gray.700" }}
+//                   _focus={{
+//                     borderColor: "blue.400",
+//                     boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+//                   }}
+//                 />
+//                 <FormErrorMessage>{errors.last_name}</FormErrorMessage>
+//               </FormControl>
+//             </Flex>
+
+//             <FormControl isInvalid={errors.email}>
+//               <FormLabel display="flex" alignItems="center">
+//                 <FaEnvelope style={{ marginRight: "8px" }} />
+//                 Email Address
+//               </FormLabel>
+//               <Input
+//                 name="email"
+//                 type="email"
+//                 value={formData.email}
+//                 onChange={handleChange}
+//                 bg="rgb(25,25,25)"
+//                 borderColor="gray.700"
+//                 _hover={{ borderColor: "gray.700" }}
+//                 _focus={{
+//                   borderColor: "blue.400",
+//                   boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+//                 }}
+//               />
+//               <FormErrorMessage>{errors.email}</FormErrorMessage>
+//             </FormControl>
+
+//             <FormControl isInvalid={errors.password}>
+//               <FormLabel display="flex" alignItems="center">
+//                 <FaLock style={{ marginRight: "8px" }} />
+//                 Password
+//               </FormLabel>
+//               <InputGroup>
+//                 <Input
+//                   name="password"
+//                   type={showPassword ? "text" : "password"}
+//                   value={formData.password}
+//                   onChange={handleChange}
+//                   bg="rgb(25,25,25)"
+//                   borderColor="gray.700"
+//                   _hover={{ borderColor: "gray.700" }}
+//                   _focus={{
+//                     borderColor: "blue.400",
+//                     boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+//                   }}
+//                 />
+//                 <InputRightElement>
+//                   <IconButton
+//                     aria-label={
+//                       showPassword ? "Hide password" : "Show password"
+//                     }
+//                     icon={showPassword ? <FaEyeSlash /> : <FaEye />}
+//                     size="sm"
+//                     variant="ghost"
+//                     onClick={toggleShowPassword}
+//                     color="gray.400"
+//                     _hover={{ color: "gray.300" }}
+//                   />
+//                 </InputRightElement>
+//               </InputGroup>
+//               <FormErrorMessage>{errors.password}</FormErrorMessage>
+//             </FormControl>
+
+//             <Flex gap={4} width="100%">
+//               <FormControl isInvalid={errors.role}>
+//                 <FormLabel display="flex" alignItems="center">
+//                   <FaShieldAlt style={{ marginRight: "8px" }} />
+//                   Role
+//                 </FormLabel>
+//                 <Select
+//                   name="role"
+//                   value={formData.role}
+//                   onChange={handleChange}
+//                   bg="rgb(25,25,25)"
+//                   borderColor="gray.700"
+//                   _hover={{ borderColor: "gray.700" }}
+//                   _focus={{
+//                     borderColor: "blue.400",
+//                     boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+//                   }}
+//                 >
+//                   {roleOptions.map((role) => (
+//                     <option key={role.value} value={role.value}>
+//                       {role.label}
+//                     </option>
+//                   ))}
+//                 </Select>
+//                 <FormErrorMessage>{errors.role}</FormErrorMessage>
+//               </FormControl>
+
+//               <FormControl isInvalid={errors.phone_number}>
+//                 <FormLabel display="flex" alignItems="center">
+//                   <FaPhone style={{ marginRight: "8px" }} />
+//                   Phone Number
+//                 </FormLabel>
+//                 <Input
+//                   name="phone_number"
+//                   value={formData.phone_number}
+//                   onChange={handleChange}
+//                   bg="rgb(25,25,25)"
+//                   borderColor="gray.700"
+//                   _hover={{ borderColor: "gray.700" }}
+//                   _focus={{
+//                     borderColor: "blue.400",
+//                     boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+//                   }}
+//                 />
+//                 <FormErrorMessage>{errors.phone_number}</FormErrorMessage>
+//               </FormControl>
+//             </Flex>
+
+//             <FormControl isInvalid={errors.note}>
+//               <FormLabel>Additional Notes</FormLabel>
+//               <Textarea
+//                 name="note"
+//                 value={formData.note}
+//                 onChange={handleChange}
+//                 bg="rgb(25,25,25)"
+//                 borderColor="gray.700"
+//                 _hover={{ borderColor: "gray.700" }}
+//                 _focus={{
+//                   borderColor: "blue.400",
+//                   boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+//                 }}
+//                 rows={3}
+//               />
+//               <FormErrorMessage>{errors.note}</FormErrorMessage>
+//             </FormControl>
+//           </Flex>
+//         </ModalBody>
+
+//         <ModalFooter borderTopWidth="1px" borderColor="gray.700">
+//           <Button
+//             bg="blue.500"
+//             color="black"
+//             _hover={{ bg: "blue.600" }}
+//             size="sm"
+//             leftIcon={<FaSave />}
+//             onClick={handleSubmit}
+//             isLoading={isSubmitting}
+//             mr={3}
+//           >
+//             Create Account
+//           </Button>
+//           <Button
+//             bg="blue.500"
+//             color="black"
+//             _hover={{ bg: "blue.600" }}
+//             size="sm"
+//             leftIcon={<FaTimes />}
+//             onClick={onClose}
+//           >
+//             Cancel
+//           </Button>
+//         </ModalFooter>
+//       </ModalContent>
+//     </Modal>
+//   );
+// };
+
+// export default CreateAccountModal;
+

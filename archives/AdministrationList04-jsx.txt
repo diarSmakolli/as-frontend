@@ -1,0 +1,547 @@
+import * as chakra from "@chakra-ui/react";
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "../authContext/authContext";
+import SidebarContent from "../layouts/SidebarContent"; 
+import MobileNav from "../layouts/MobileNav";
+import SettingsModal from "../components/settings/SettingsModal";
+import { administrationService } from "../services/administrationService";
+import { FaSearch, FaFilter, FaSort, FaUserAlt, FaCircle } from "react-icons/fa";
+import { debounce } from "lodash";
+
+const fontName = "Inter";
+
+// Role badge component
+const RoleBadge = ({ role }) => {
+  const roleColors = {
+    "global-administrator": "red",
+    "administrator": "purple",
+    "supplier": "blue",
+    "employee": "green"
+  };
+  
+  return (
+    <chakra.Badge colorScheme={roleColors[role] || "gray"} px={2} py={1} borderRadius="md">
+      {role.replace('-', ' ')}
+    </chakra.Badge>
+  );
+};
+
+// Status indicator component
+const StatusIndicator = ({ isActive, label }) => {
+  return (
+    <chakra.Flex align="center" gap={2}>
+      <FaCircle size={10} color={isActive ? "green" : "gray"} />
+      <chakra.Text fontSize="sm">{label}</chakra.Text>
+    </chakra.Flex>
+  );
+};
+
+export default function AdministrationsList() {
+  const { account } = useAuth();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Filter and search states
+  const [filters, setFilters] = useState({
+    role: "",
+    is_inactive: undefined,
+    is_verified: undefined,
+    is_locked: undefined,
+    is_suspicious: undefined
+  });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortConfig, setSortConfig] = useState({
+    sortBy: "created_at",
+    sortOrder: "DESC"
+  });
+  
+  // Pagination limit
+  const [limit, setLimit] = useState(10);
+  
+  // Function to fetch users with current filters and pagination
+  const fetchUsers = useCallback(async (page = 1) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const queryParams = {
+        page,
+        limit,
+        sortBy: sortConfig.sortBy,
+        sortOrder: sortConfig.sortOrder,
+        search: searchQuery,
+        ...filters
+      };
+      
+      // Remove undefined values from filters
+      Object.keys(queryParams).forEach(key => 
+        queryParams[key] === undefined && delete queryParams[key]
+      );
+      
+      const response = await administrationService.getAllUsers(queryParams);
+      
+      setUsers(response.data.data.accounts);
+      setPagination({
+        currentPage: response.data.data.current_page,
+        totalPages: response.data.data.total_pages,
+        totalItems: response.data.data.total_items
+      });
+    } catch (err) {
+      setError("Failed to fetch administrators. Please try again.");
+      console.error("Error fetching administrators:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filters, searchQuery, sortConfig, limit]);
+  
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce((value) => {
+      setSearchQuery(value);
+    }, 500),
+    []
+  );
+  
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    debouncedSearch(e.target.value);
+  };
+  
+  // Handle filter changes
+  const handleFilterChange = (filterName, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterName]: value
+    }));
+  };
+  
+  // Handle sort changes
+  const handleSortChange = (sortBy) => {
+    setSortConfig(prev => ({
+      sortBy,
+      sortOrder: prev.sortBy === sortBy && prev.sortOrder === "ASC" ? "DESC" : "ASC"
+    }));
+  };
+  
+  // Handle page change
+  const handlePageChange = (page) => {
+    fetchUsers(page);
+  };
+  
+  // Handle limit change
+  const handleLimitChange = (value) => {
+    setLimit(parseInt(value));
+  };
+  
+  // Reset all filters
+  const resetFilters = () => {
+    setFilters({
+      role: "",
+      is_inactive: undefined,
+      is_verified: undefined,
+      is_locked: undefined,
+      is_suspicious: undefined
+    });
+    setSearchQuery("");
+    setSortConfig({
+      sortBy: "created_at",
+      sortOrder: "DESC"
+    });
+  };
+  
+  // Effect to fetch users when filters, search, sort, or limit changes
+  useEffect(() => {
+    fetchUsers(1);
+  }, [fetchUsers, filters, searchQuery, sortConfig, limit]);
+  
+  return (
+    <>
+      <chakra.Box minH="100vh" bg="rgb(25,25,25)">
+        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+        <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
+
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+
+        <chakra.Box ml={{ base: 0, md: 60 }} p="5">
+          {/* Header */}
+          <chakra.Flex 
+            justify="space-between" 
+            align="center" 
+            wrap="wrap"
+            mb={6}
+          >
+            <chakra.Text
+              color="gray.400"
+              fontSize={{ base: "2xl", md: "3xl" }}
+              fontFamily={fontName}
+              fontWeight="light"
+            >
+              Administrations List
+            </chakra.Text>
+            
+            <chakra.Flex gap={3} mt={{ base: 4, md: 0 }} flexDir={{ base: "column", sm: "row" }}>
+              <chakra.Button 
+                leftIcon={<FaFilter />}
+                variant="outline" 
+                colorScheme="blue"
+                onClick={resetFilters}
+                size="sm"
+              >
+                Reset Filters
+              </chakra.Button>
+            </chakra.Flex>
+          </chakra.Flex>
+          
+          {/* Search and filters */}
+          <chakra.Box 
+            mb={6} 
+            bg="gray.900" 
+            p={4} 
+            borderRadius="md"
+            boxShadow="sm"
+          >
+            <chakra.Flex 
+              direction={{ base: "column", md: "row" }}
+              gap={4}
+              mb={4}
+            >
+              {/* Search input */}
+              <chakra.InputGroup size="md" flex={{ md: 1 }}>
+                <chakra.InputLeftElement pointerEvents="none">
+                  <FaSearch color="gray.300" />
+                </chakra.InputLeftElement>
+                <chakra.Input 
+                  placeholder="Search by name, email, phone..."
+                  onChange={handleSearchChange}
+                  bg="gray.800"
+                  borderColor="gray.700"
+                  color="white"
+                />
+              </chakra.InputGroup>
+              
+              {/* Role filter */}
+              <chakra.Select 
+                placeholder="Filter by role"
+                onChange={(e) => handleFilterChange("role", e.target.value)}
+                value={filters.role}
+                size="md"
+                w={{ base: "full", md: "200px" }}
+                bg="gray.800"
+                borderColor="gray.700"
+                color="white"
+              >
+                <option value="">All roles</option>
+                <option value="global-administrator">Global Administrator</option>
+                <option value="administrator">Administrator</option>
+                <option value="supplier">Supplier</option>
+                <option value="employee">Employee</option>
+              </chakra.Select>
+              
+              {/* Items per page */}
+              <chakra.Select 
+                onChange={(e) => handleLimitChange(e.target.value)}
+                value={limit}
+                size="md"
+                w={{ base: "full", md: "150px" }}
+                bg="gray.800"
+                borderColor="gray.700"
+                color="white"
+              >
+                <option value={10}>10 per page</option>
+                <option value={20}>20 per page</option>
+                <option value={50}>50 per page</option>
+              </chakra.Select>
+            </chakra.Flex>
+            
+            {/* Additional filters */}
+            <chakra.Flex 
+              wrap="wrap" 
+              gap={3}
+            >
+              <chakra.Checkbox 
+                colorScheme="blue"
+                onChange={(e) => handleFilterChange("is_inactive", e.target.checked ? true : undefined)}
+                isChecked={filters.is_inactive === true}
+                color="gray.300"
+              >
+                Inactive
+              </chakra.Checkbox>
+              
+              <chakra.Checkbox 
+                colorScheme="green"
+                onChange={(e) => handleFilterChange("is_verified", e.target.checked ? true : undefined)}
+                isChecked={filters.is_verified === true}
+                color="gray.300"
+              >
+                Verified
+              </chakra.Checkbox>
+              
+              <chakra.Checkbox 
+                colorScheme="red"
+                onChange={(e) => handleFilterChange("is_locked", e.target.checked ? true : undefined)}
+                isChecked={filters.is_locked === true}
+                color="gray.300"
+              >
+                Locked
+              </chakra.Checkbox>
+              
+              <chakra.Checkbox 
+                colorScheme="yellow"
+                onChange={(e) => handleFilterChange("is_suspicious", e.target.checked ? true : undefined)}
+                isChecked={filters.is_suspicious === true}
+                color="gray.300"
+              >
+                Suspicious
+              </chakra.Checkbox>
+            </chakra.Flex>
+          </chakra.Box>
+          
+          {/* Error message */}
+          {error && (
+            <chakra.Alert status="error" mb={4} borderRadius="md">
+              <chakra.AlertIcon />
+              <chakra.AlertDescription>{error}</chakra.AlertDescription>
+            </chakra.Alert>
+          )}
+          
+          {/* Users table */}
+          <chakra.Box 
+            overflowX="auto" 
+            bg="gray.900" 
+            borderRadius="md"
+            boxShadow="sm"
+          >
+            <chakra.Table variant="simple" size="md" color="gray.300">
+              <chakra.Thead bg="gray.800">
+                <chakra.Tr>
+                  <chakra.Th 
+                    color="gray.400" 
+                    cursor="pointer"
+                    onClick={() => handleSortChange("first_name")}
+                  >
+                    <chakra.Flex align="center">
+                      Name
+                      {sortConfig.sortBy === "first_name" && (
+                        <FaSort size={12} style={{ marginLeft: '5px' }} />
+                      )}
+                    </chakra.Flex>
+                  </chakra.Th>
+                  <chakra.Th 
+                    color="gray.400"
+                    cursor="pointer"
+                    onClick={() => handleSortChange("email")}
+                  >
+                    <chakra.Flex align="center">
+                      Email
+                      {sortConfig.sortBy === "email" && (
+                        <FaSort size={12} style={{ marginLeft: '5px' }} />
+                      )}
+                    </chakra.Flex>
+                  </chakra.Th>
+                  <chakra.Th 
+                    color="gray.400"
+                    cursor="pointer"
+                    onClick={() => handleSortChange("role")}
+                  >
+                    <chakra.Flex align="center">
+                      Role
+                      {sortConfig.sortBy === "role" && (
+                        <FaSort size={12} style={{ marginLeft: '5px' }} />
+                      )}
+                    </chakra.Flex>
+                  </chakra.Th>
+                  <chakra.Th color="gray.400">Status</chakra.Th>
+                  <chakra.Th 
+                    color="gray.400"
+                    cursor="pointer"
+                    onClick={() => handleSortChange("created_at")}
+                  >
+                    <chakra.Flex align="center">
+                      Created
+                      {sortConfig.sortBy === "created_at" && (
+                        <FaSort size={12} style={{ marginLeft: '5px' }} />
+                      )}
+                    </chakra.Flex>
+                  </chakra.Th>
+                  <chakra.Th color="gray.400">Actions</chakra.Th>
+                </chakra.Tr>
+              </chakra.Thead>
+              <chakra.Tbody>
+                {isLoading ? (
+                  <chakra.Tr>
+                    <chakra.Td colSpan={6} textAlign="center" py={10}>
+                      <chakra.Spinner size="xl" color="blue.500" />
+                    </chakra.Td>
+                  </chakra.Tr>
+                ) : users.length === 0 ? (
+                  <chakra.Tr>
+                    <chakra.Td colSpan={6} textAlign="center" py={10}>
+                      <chakra.Flex direction="column" align="center">
+                        <FaUserAlt size={40} color="gray" />
+                        <chakra.Text mt={4} fontSize="lg" color="gray.500">
+                          No administrators found
+                        </chakra.Text>
+                      </chakra.Flex>
+                    </chakra.Td>
+                  </chakra.Tr>
+                ) : (
+                  users.map((user) => (
+                    <chakra.Tr 
+                      key={user.id}
+                      _hover={{ bg: "gray.800" }}
+                      transition="all 0.2s"
+                    >
+                      <chakra.Td>
+                        <chakra.Flex align="center">
+                          <chakra.Avatar 
+                            size="sm" 
+                            name={`${user.first_name} ${user.last_name}`} 
+                            mr={2}
+                          />
+                          <chakra.Box>
+                            <chakra.Text fontWeight="medium">
+                              {user.preferred_name || `${user.first_name} ${user.last_name}`}
+                            </chakra.Text>
+                            <chakra.Text fontSize="xs" color="gray.500">
+                              {user.phone_number || "No phone"}
+                            </chakra.Text>
+                          </chakra.Box>
+                        </chakra.Flex>
+                      </chakra.Td>
+                      <chakra.Td>{user.email}</chakra.Td>
+                      <chakra.Td>
+                        <RoleBadge role={user.role} />
+                      </chakra.Td>
+                      <chakra.Td>
+                        <chakra.VStack align="start" spacing={1}>
+                          <StatusIndicator 
+                            isActive={!user.is_inactive} 
+                            label={user.is_inactive ? "Inactive" : "Active"} 
+                          />
+                          {user.is_locked && (
+                            <StatusIndicator isActive={false} label="Locked" />
+                          )}
+                          {user.is_suspicious && (
+                            <StatusIndicator isActive={false} label="Suspicious" />
+                          )}
+                        </chakra.VStack>
+                      </chakra.Td>
+                      <chakra.Td>
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </chakra.Td>
+                      <chakra.Td>
+                        <chakra.Menu>
+                          <chakra.MenuButton 
+                            as={chakra.Button} 
+                            variant="ghost" 
+                            size="sm"
+                            colorScheme="blue"
+                          >
+                            Actions
+                          </chakra.MenuButton>
+                          <chakra.MenuList bg="gray.800" borderColor="gray.700">
+                            <chakra.MenuItem 
+                              _hover={{ bg: "gray.700" }}
+                              _focus={{ bg: "gray.700" }}
+                            >
+                              View Details
+                            </chakra.MenuItem>
+                            <chakra.MenuItem 
+                              _hover={{ bg: "gray.700" }}
+                              _focus={{ bg: "gray.700" }}
+                            >
+                              Edit Account
+                            </chakra.MenuItem>
+                            <chakra.MenuItem 
+                              _hover={{ bg: "gray.700" }}
+                              _focus={{ bg: "gray.700" }}
+                              color="red.300"
+                            >
+                              {user.is_inactive ? "Activate Account" : "Deactivate Account"}
+                            </chakra.MenuItem>
+                          </chakra.MenuList>
+                        </chakra.Menu>
+                      </chakra.Td>
+                    </chakra.Tr>
+                  ))
+                )}
+              </chakra.Tbody>
+            </chakra.Table>
+          </chakra.Box>
+          
+          {/* Pagination */}
+          {!isLoading && users.length > 0 && (
+            <chakra.Flex 
+              justify="space-between" 
+              align="center" 
+              mt={4}
+              color="gray.400"
+              flexDir={{ base: "column", sm: "row" }}
+              gap={3}
+            >
+              <chakra.Text fontSize="sm">
+                Showing {users.length} of {pagination.totalItems} administrators
+              </chakra.Text>
+              
+              <chakra.Flex>
+                <chakra.Button
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  isDisabled={pagination.currentPage === 1}
+                  mr={2}
+                  colorScheme="blue"
+                  variant="outline"
+                >
+                  Previous
+                </chakra.Button>
+                
+                <chakra.ButtonGroup size="sm" isAttached variant="outline">
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    const pageToShow = pagination.currentPage <= 3
+                      ? i + 1
+                      : pagination.currentPage + i - 2;
+                      
+                    if (pageToShow <= pagination.totalPages) {
+                      return (
+                        <chakra.Button
+                          key={pageToShow}
+                          variant={pageToShow === pagination.currentPage ? "solid" : "outline"}
+                          colorScheme="blue"
+                          onClick={() => handlePageChange(pageToShow)}
+                        >
+                          {pageToShow}
+                        </chakra.Button>
+                      );
+                    }
+                    return null;
+                  })}
+                </chakra.ButtonGroup>
+                
+                <chakra.Button
+                  size="sm"
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  isDisabled={pagination.currentPage === pagination.totalPages}
+                  ml={2}
+                  colorScheme="blue"
+                  variant="outline"
+                >
+                  Next
+                </chakra.Button>
+              </chakra.Flex>
+            </chakra.Flex>
+          )}
+        </chakra.Box>
+      </chakra.Box>
+    </>
+  );
+}

@@ -1,0 +1,920 @@
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Button,
+  VStack,
+  HStack,
+  Text,
+  Divider,
+  Box,
+  Input,
+  Select,
+  Switch,
+  FormControl,
+  FormLabel,
+  Avatar,
+  AvatarBadge,
+  IconButton,
+  useDisclosure,
+  useToast,
+  Flex,
+  SimpleGrid,
+  Badge,
+  useClipboard,
+  Tooltip,
+} from "@chakra-ui/react";
+import {
+  FiCamera,
+  FiCheck,
+  FiX,
+  FiMonitor,
+  FiSmartphone,
+  FiTablet,
+  FiGlobe,
+  FiClock,
+  FiMapPin,
+  FiUser,
+  FiMail,
+  FiPhone,
+  FiShield,
+  FiAlertCircle,
+  FiCopy,
+  FiCheckCircle,
+} from "react-icons/fi";
+import {
+  SiFirefoxbrowser,
+  SiSafari,
+  SiFirefox,
+  SiOperagx,
+  SiGitforwindows,
+  SiApple,
+  SiLinux,
+  SiAndroid,
+  SiGooglechrome,
+} from "react-icons/si";
+import { useState, useEffect, useCallback, useRef } from "react";
+import axios from "axios";
+import ChangePasswordModal from "./ChangePasswordModal";
+import AdministrationCustomSelect from "./CustomSelect";
+import {
+  formatOptions,
+  formatWithTimezone,
+  formatRelativeTime,
+} from "../../../../commons/formatOptions";
+import { usePreferences } from "../../authContext/preferencesProvider";
+import Loader from "../../../../commons/Loader";
+import { useAuth } from "../../authContext/authContext";
+import { handleApiError } from "../../../../commons/handleApiError";
+
+
+const baseUrlApi = "http://localhost:8086";
+
+const SettingsModal = ({ isOpen, onClose, account }) => {
+  const toast = useToast();
+  const [activeTab, setActiveTab] = useState("account");
+  const { account: authAccount, setAccount, logout } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [sessions, setSessions] = useState([]);
+  const [selectedSessionId, setSelectedSessionId] = useState(null);
+  const {
+    isOpen: isChangePasswordOpen,
+    onOpen: onChangePasswordOpen,
+    onClose: onChangePasswordClose,
+  } = useDisclosure();
+  const {
+    isOpen: isConfirmLogoutAllOpen,
+    onOpen: onConfirmLogoutAllOpen,
+    onClose: onConfirmLogoutAllClose,
+  } = useDisclosure();
+  const {
+    isOpen: isConfirmTerminateOpen,
+    onOpen: onConfirmTerminateOpen,
+    onClose: onConfirmTerminateClose,
+  } = useDisclosure();
+  const {
+    theme,
+    setTheme,
+    autoTimezone,
+    setAutoTimezone,
+    manualTimezone,
+    setManualTimezone,
+    currentTimezone,
+  } = usePreferences();
+
+  const [timezones, setTimezones] = useState([]);
+
+  useEffect(() => {
+    const zones = Intl.supportedValuesOf("timeZone").map((zone) => {
+      // Create a date object to get the offset
+      const date = new Date();
+      const timeZoneOffset =
+        new Intl.DateTimeFormat("en-US", {
+          timeZone: zone,
+          timeZoneName: "shortOffset",
+        })
+          .formatToParts(date)
+          .find((part) => part.type === "timeZoneName")?.value || "";
+
+      return {
+        value: zone,
+        label: `(${timeZoneOffset}) ${zone.replace(/_/g, " ")}`,
+      };
+    });
+
+    // Sort timezones by offset
+    zones.sort((a, b) => {
+      const offsetA = a.label.match(/\((GMT[+-]\d{2}:\d{2})\)/)?.[1] || "";
+      const offsetB = b.label.match(/\((GMT[+-]\d{2}:\d{2})\)/)?.[1] || "";
+      return offsetA.localeCompare(offsetB);
+    });
+
+    setTimezones(zones);
+  }, []);
+
+  const themeOptions = [
+    // { value: 'system', label: '💻 Use system setting' },
+    // { value: 'light', label: '☀️ Light' },
+    { value: "dark", label: "🌙 Dark" },
+  ];
+
+  // END PREFERENCES SETTINS
+
+  // Update preferrable name
+  const updateName = async (newName) => {
+    if (!newName || newName.trim() === "" || newName === account.preferred_name)
+      return;
+    try {
+      setIsUpdating(true);
+      const response = await axios.put(
+        `${baseUrlApi}/api/administrations/update-preferred-name`,
+        {
+          newPreferredName: newName,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setAccount((prev) => ({
+        ...prev,
+        preferred_name: newName,
+      }));
+
+      toast({
+        description: `${response.data.message}`,
+        status: "success",
+        isClosable: true,
+        duration: 5000,
+        variant: "custom",
+        containerStyle: {
+          bg: "rgb(39, 39, 42)",
+          color: "gray.300",
+          fontWeight: "normal",
+          borderRadius: "lg",
+          border: "1px solid",
+          borderColor: "rgb(63, 63, 70)",
+          boxShadow: "0px 4px 24px rgba(0, 0, 0, 0.25)",
+          mx: 4,
+          mb: 4,
+        },
+        titleStyle: {
+          fontSize: "sm",
+          color: "green.300",
+        },
+      });
+    } catch (error) {
+      handleApiError(error.response, toast);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const debounce = (func, wait) => {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), wait);
+    };
+  };
+
+  const debouncedUpdate = useCallback(
+    debounce((name) => updateName(name), 500),
+    []
+  );
+
+  // get device icon
+  const getDeviceIcon = (deviceType) => {
+    if (!deviceType) return <FiMonitor />;
+    switch (deviceType.toLowerCase()) {
+      case "mobile":
+        return <FiSmartphone />;
+      case "tablet":
+        return <FiTablet />;
+      default:
+        return <FiMonitor />;
+    }
+  };
+
+  // get icon of browser
+  const getBrowserIcon = (browser) => {
+    if (!browser) return <FiGlobe />;
+    switch (browser.toLowerCase()) {
+      case "chrome":
+        return <SiGooglechrome />;
+      case "firefox":
+        return <SiFirefoxbrowser />;
+      case "safari":
+        return <SiSafari />;
+      case "edge":
+        return <SiFirefox />;
+      case "opera":
+        return <SiOperagx />;
+      default:
+        return <FiGlobe />;
+    }
+  };
+
+  // get icon of os
+  const getOSIcon = (os) => {
+    if (!os) return <FiGlobe />;
+
+    const osLower = os.toLowerCase();
+    if (osLower.includes("windows")) {
+      return <SiGitforwindows />;
+    } else if (osLower.includes("mac")) {
+      return <SiApple />;
+    } else if (osLower.includes("linux")) {
+      return <SiLinux />;
+    } else if (osLower.includes("android")) {
+      return <SiAndroid />;
+    } else if (osLower.includes("ios")) {
+      return <SiApple />;
+    }
+    return <FiGlobe />;
+  };
+
+  // get sessions of user
+  const fetchActiveSessions = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        "http://localhost:8086/api/administrations/self-active-sessions",
+        {
+          withCredentials: true,
+        }
+      );
+      setSessions(response.data.data.sessions);
+    } catch (error) {
+      handleApiError(error.response, toast);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleTerminateClick = (sessionId) => {
+    setSelectedSessionId(sessionId);
+    onConfirmTerminateOpen();
+  };
+
+  // handle terminate session
+  const handleTerminateSession = async (sessionId) => {
+    try {
+      const response = await axios.delete(
+        `${baseUrlApi}/api/administrations/terminate-session/${sessionId}`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      // Refresh sessions list
+      fetchActiveSessions();
+
+      toast({
+        description: "Session terminated successfully",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        variant: "custom",
+        containerStyle: {
+          bg: "rgb(39, 39, 42)",
+          color: "gray.300",
+          fontWeight: "normal",
+          borderRadius: "lg",
+          border: "1px solid",
+          borderColor: "rgb(63, 63, 70)",
+          boxShadow: "0px 4px 24px rgba(0, 0, 0, 0.25)",
+          mx: 4,
+          mb: 4,
+        },
+      });
+    } catch (error) {
+      handleApiError(error.response, toast);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab == "account") {
+      fetchActiveSessions();
+    }
+  }, [activeTab]);
+
+  const AccountInfoCard = ({ icon, label, value, copyable, verified }) => {
+    const { hasCopied, onCopy } = useClipboard(value || "");
+
+    return (
+      <Box
+        p={4}
+        bg="rgb(32,32,32)"
+        borderRadius="lg"
+        // borderWidth={1}
+        // borderColor="gray.700"
+        position="relative"
+      >
+        <HStack spacing={3} alignItems="flex-start">
+          <Box p={2} bg="gray.700" borderRadius="md" color="gray.400">
+            {icon}
+          </Box>
+          <Box flex={1}>
+            <Text fontSize="xs" color="gray.500" mb={1} fontFamily="Inter">
+              {label}
+            </Text>
+            <HStack>
+              <Text
+                fontSize="sm"
+                color="gray.300"
+                fontFamily="Inter"
+                fontWeight="500"
+              >
+                {value || "Not set"}
+              </Text>
+              {verified && (
+                <Badge colorScheme="blue" variant="subtle" fontSize="xs">
+                  Verified
+                </Badge>
+              )}
+            </HStack>
+          </Box>
+          {copyable && (
+            <Tooltip label={hasCopied ? "Copied!" : "Copy"} placement="top">
+              <IconButton
+                size="xs"
+                icon={hasCopied ? <FiCheck /> : <FiCopy />}
+                aria-label="Copy"
+                onClick={onCopy}
+                variant="ghost"
+                color="gray.500"
+                _hover={{ color: "gray.300" }}
+              />
+            </Tooltip>
+          )}
+        </HStack>
+      </Box>
+    );
+  };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "account":
+        return (
+          <Box flex={1}>
+            <Text fontSize="md" mb={4} fontFamily={"Inter"} color="gray.500">
+              Account
+            </Text>
+            <FormControl mb={6}></FormControl>
+            <FormControl mb={6}>
+              <FormLabel
+                fontFamily={"Inter"}
+                fontSize={"xs"}
+                fontWeight={"400"}
+                color="gray.500"
+              >
+                Preferred name
+              </FormLabel>
+              <Input
+                defaultValue={authAccount?.preferred_name}
+                onChange={(e) => debouncedUpdate(e.target.value)}
+                bg="rgb(25,25,25)"
+                size="sm"
+                rounded="lg"
+                borderColor="gray.700"
+                placeholder="Enter your name"
+                isDisabled={isUpdating}
+                width="250px"
+                fontFamily={"Inter"}
+                _hover={{ borderColor: "gray.700" }}
+              />
+              {isUpdating && (
+                <Text fontSize="xs" color="gray.500" mt={1}>
+                  Updating...
+                </Text>
+              )}
+            </FormControl>
+            <SimpleGrid columns={[1, 2]} spacing={4} mb={6}>
+              <AccountInfoCard
+                icon={<FiUser size={16} />}
+                label="Full Name"
+                value={`${authAccount?.first_name} ${authAccount?.last_name}`}
+              />
+              <AccountInfoCard
+                icon={<FiMail size={16} />}
+                label="Email Address"
+                value={authAccount?.email}
+                verified={authAccount?.is_verified}
+                copyable
+              />
+              <AccountInfoCard
+                icon={<FiShield size={16} />}
+                label="Role & Level"
+                value={`${authAccount?.role} (Level ${authAccount?.level})`}
+              />
+              <AccountInfoCard
+                icon={<FiPhone size={16} />}
+                label="Phone Number"
+                value={authAccount?.phone_number}
+                copyable
+              />
+            </SimpleGrid>
+            <Text fontSize="md" mb={4} fontFamily="Inter" color="gray.500">
+              Account Status
+            </Text>
+            <SimpleGrid columns={[1, 2]} spacing={4} mb={6}>
+              <AccountInfoCard
+                icon={<FiMapPin size={16} />}
+                label="Last Login Location"
+                value={authAccount?.last_login_location}
+              />
+              <AccountInfoCard
+                icon={<FiClock size={16} />}
+                label="Last Active"
+                value={formatRelativeTime(authAccount?.last_login_time)}
+              />
+              <AccountInfoCard
+                icon={<FiAlertCircle size={16} />}
+                label="Account Status"
+                value={
+                  <HStack spacing={2}>
+                    <Badge
+                      colorScheme={authAccount?.is_inactive ? "red" : "green"}
+                      variant="subtle"
+                    >
+                      {authAccount?.is_inactive ? "Inactive" : "Active"}
+                    </Badge>
+                    {authAccount?.visible_status && (
+                      <Badge colorScheme="purple" variant="subtle">
+                        {authAccount.visible_status}
+                      </Badge>
+                    )}
+                  </HStack>
+                }
+              />
+              <AccountInfoCard
+                icon={<FiClock size={16} />}
+                label="Member Since"
+                value={new Date(authAccount?.created_at).toLocaleDateString()}
+              />
+            </SimpleGrid>
+            <Divider my={4} borderColor="gray.700" />
+            <Text fontSize="md" mb={4} fontFamily={"Inter"} color="gray.500">
+              Account security
+            </Text>
+            <FormControl mb={4}>
+              <FormLabel
+                fontFamily={"Inter"}
+                fontSize={"xs"}
+                fontWeight={"400"}
+                color="gray.500"
+              >
+                Password
+              </FormLabel>
+              <Text fontSize="xs" color="gray.500" mb={2}>
+                Set a permanent password to login to your account
+              </Text>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onChangePasswordOpen}
+                borderColor="gray.700"
+                _hover={{ bg: "rgba(255,255,255,0.05)" }}
+                fontFamily="Inter"
+                fontSize="xs"
+                color="gray.500"
+                bg="rgb(25,25,25)"
+              >
+                Change password
+              </Button>
+            </FormControl>
+            <Divider my={4} borderColor="gray.700" />
+            <Text fontSize="md" mb={4} fontFamily={"Inter"} color="gray.500">
+              Devices
+            </Text>
+            <Modal
+              isOpen={isConfirmLogoutAllOpen}
+              onClose={onConfirmLogoutAllClose}
+            >
+              <ModalOverlay />
+              <ModalContent bg="rgb(32, 32, 32)" color="gray.300">
+                <ModalHeader size="md" fontWeight={"normal"} fontFamily="Inter">
+                  Confirm Terminate
+                </ModalHeader>
+                <ModalCloseButton />
+                <ModalBody fontFamily="Inter" fontSize={"sm"}>
+                  <Text>
+                    Are you sure you want to sign out from all devices? This
+                    will terminate all active sessions.
+                  </Text>
+                </ModalBody>
+                <ModalFooter>
+                  <Button
+                    borderColor="gray.700"
+                    _hover={{ bg: "rgba(255,255,255,0.05)" }}
+                    fontFamily="Inter"
+                    fontSize="xs"
+                    color="red.500"
+                    bg="rgb(25,25,25)"
+                    size="sm"
+                    mb={3}
+                    mr={3}
+                    onClick={() => {
+                      onConfirmLogoutAllClose();
+                      handleLogoutAllDevices();
+                    }}
+                  >
+                    Confirm
+                  </Button>
+                  <Button
+                    borderColor="gray.700"
+                    _hover={{ bg: "rgba(255,255,255,0.05)" }}
+                    fontFamily="Inter"
+                    fontSize="xs"
+                    color="red.500"
+                    bg="rgb(25,25,25)"
+                    size="sm"
+                    mb={3}
+                    onClick={onConfirmLogoutAllClose}
+                  >
+                    Cancel
+                  </Button>
+                </ModalFooter>
+              </ModalContent>
+            </Modal>
+            {sessions.map((session) => (
+              <Box
+                key={session.id}
+                p={4}
+                bg="rgb(25,25,25)"
+                borderRadius="lg"
+                borderWidth={1}
+                borderColor="gray.700"
+              >
+                <Flex direction="column" gap={2}>
+                  <Flex align="center" justify="space-between">
+                    <HStack spacing={3}>
+                      <Box
+                        p={2}
+                        bg="gray.700"
+                        borderRadius="md"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        {getDeviceIcon(session.device_info)}
+                      </Box>
+                      <Box>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="500"
+                          fontFamily="Inter"
+                          color="gray.300"
+                        >
+                          {session.deviceType}
+                        </Text>
+                        <HStack spacing={2} color="gray.500" fontSize="xs">
+                          <HStack spacing={1}>
+                            {getBrowserIcon(session.browser)}
+                            <Text>{session.browser}</Text>
+                          </HStack>
+                          <Text>•</Text>
+                          <HStack spacing={1}>
+                            {getOSIcon(session.os)}
+                            <Text>{session.os}</Text>
+                          </HStack>
+                        </HStack>
+                      </Box>
+                    </HStack>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      colorScheme="red"
+                      onClick={() => handleTerminateClick(session.id)}
+                      fontFamily="Inter"
+                      fontSize="xs"
+                      borderColor="gray.700"
+                      _hover={{
+                        bg: "rgba(255,255,255,0.05)",
+                        borderColor: "gray.600",
+                      }}
+                    >
+                      Terminate
+                    </Button>
+                  </Flex>
+                  <Flex
+                    gap={4}
+                    mt={2}
+                    fontSize="xs"
+                    color="gray.500"
+                    fontFamily="Inter"
+                  >
+                    <HStack>
+                      <FiMapPin size={12} />
+                      <Text>{session.ip_address}</Text>
+                    </HStack>
+                    <HStack>
+                      <FiClock size={12} />
+                      <Text>
+                        Created {""}
+                        {/* {formatWithTimezone(
+                          session.expired_at,
+                          formatOptions.FULL_DATE_TIME,
+                          currentTimezone
+                        )} */}
+                        {formatRelativeTime(session.created_at)}
+                      </Text>
+                    </HStack>
+                    <HStack>
+                      <FiClock size={12} />
+                      <Text>
+                        Expires {""}
+                        {formatRelativeTime(session.expired_at)}
+                      </Text>
+                    </HStack>
+                  </Flex>
+                </Flex>
+              </Box>
+            ))}
+            <Divider my={4} borderColor="gray.700" />
+            <Text fontSize="md" mb={4} fontFamily={"Inter"} color="gray.500">
+              Account deletion
+            </Text>
+            <Button
+              colorScheme="red"
+              variant="outline"
+              size="sm"
+              ml={2}
+              onClick={logout}
+              fontFamily="Inter"
+              fontSize="xs"
+              borderColor="gray.700"
+              _hover={{
+                bg: "rgba(255,255,255,0.05)",
+                borderColor: "gray.600",
+              }}
+            >
+              Sign out from account
+            </Button>{" "}
+          </Box>
+        );
+      case "Sign-in histories":
+        return (
+          <Box flex={1}>
+            <Text fontSize="md" mb={4} fontFamily={"Inter"} color="gray.500">
+              Sign-in histories
+            </Text>
+          </Box>
+        );
+      case "preferences":
+        return (
+          <Box flex={1}>
+            <Text fontFamily={"Inter"} color="gray.400">
+              Preferences
+            </Text>
+
+            <Text fontFamily={"Inter"} color="gray.400" fontSize={"sm"} mt="5">
+              Customize your workspace experience
+            </Text>
+
+            <Box mt={8}>
+              <Text fontSize="md" fontWeight="medium" color="gray.200" mb={4}>
+                Time Settings
+              </Text>
+
+              <VStack spacing={6} align="stretch">
+                {/* Auto Timezone Toggle */}
+                <Flex justify="space-between" align="center">
+                  <Box>
+                    <Text fontSize="sm" color="gray.300" mb={1}>
+                      Set timezone automatically
+                    </Text>
+                    <Text fontSize="xs" color="gray.500">
+                      Let the application detect your timezone automatically.
+                    </Text>
+                  </Box>
+                  <Switch
+                    size="md"
+                    colorScheme="blue"
+                    isChecked={autoTimezone}
+                    onChange={() => setAutoTimezone(!autoTimezone)}
+                  />
+                </Flex>
+
+                {/* Manual Timezone Select */}
+                <Flex justify="space-between" align="center">
+                  <Box>
+                    <Text fontSize="sm" color="gray.300" mb={1}>
+                      Timezone
+                    </Text>
+                    <Text fontSize="xs" color="gray.500">
+                      Current timezone: {currentTimezone}
+                    </Text>
+                  </Box>
+                  <AdministrationCustomSelect
+                    value={manualTimezone}
+                    onChange={setManualTimezone}
+                    options={timezones}
+                    isDisabled={autoTimezone}
+                    placeholder="Select timezone"
+                  />
+                </Flex>
+              </VStack>
+            </Box>
+          </Box>
+        );
+      default:
+        return (
+          <Box flex={1}>
+            <Text fontSize="lg" fontWeight="bold" mb={4}>
+              {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+            </Text>
+            <Text>Content for {activeTab} coming soon...</Text>
+          </Box>
+        );
+    }
+  };
+  return (
+    <>
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={onChangePasswordClose}
+      />
+
+      <Modal isOpen={isOpen} onClose={onClose} size="6xl">
+        <ModalOverlay />
+        <ModalContent
+          bg="rgb(32, 32, 32)"
+          color="gray.300"
+          minH="80vh"
+          rounded="xl"
+        >
+          <ModalHeader borderBottomWidth="1px" borderColor="gray.700">
+            <Text
+              fontSize="lg"
+              fontFamily="Inter"
+              fontWeight={400}
+              color="gray.500"
+            >
+              Settings
+            </Text>
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <HStack alignItems="flex-start" spacing={6} h="100%">
+              <VStack
+                w="250px"
+                alignItems="flex-start"
+                spacing={4}
+                pr={4}
+                borderRightWidth="1px"
+                borderColor="gray.700"
+                h="100%"
+              >
+                <Box>
+                  <Text fontWeight="500" fontSize="sm" color="gray.400" mb={2}>
+                    Account
+                  </Text>
+                  <VStack alignItems="flex-start" spacing={1} w="full">
+                    <Text
+                      fontSize="sm"
+                      fontWeight={activeTab === "account" ? "500" : "normal"}
+                      w="full"
+                      px={2}
+                      py={1}
+                      borderRadius="lg"
+                      borderWidth={1}
+                      borderColor={
+                        activeTab === "account" ? "gray.700" : "transparent"
+                      }
+                      bg={
+                        activeTab === "account"
+                          ? "rgb(25,25,25)"
+                          : "transparent"
+                      }
+                      _hover={{ bg: "rgba(255,255,255,0.05)" }}
+                      onClick={() => setActiveTab("account")}
+                      cursor="pointer"
+                      color="gray.500"
+                      fontFamily="Inter"
+                    >
+                      My account
+                    </Text>
+                    {["activity histories", "preferences"].map((item) => (
+                      <Text
+                        key={item}
+                        fontSize="sm"
+                        fontWeight={activeTab === item ? "500" : "normal"}
+                        w="full"
+                        px={2}
+                        py={1}
+                        borderRadius="lg"
+                        borderWidth={1}
+                        borderColor={
+                          activeTab === item ? "gray.700" : "transparent"
+                        }
+                        bg={
+                          activeTab === item ? "rgb(25,25,25)" : "transparent"
+                        }
+                        _hover={{ bg: "rgba(255,255,255,0.05)" }}
+                        onClick={() => setActiveTab(item)}
+                        cursor="pointer"
+                        textTransform="capitalize"
+                        color="gray.500"
+                        fontFamily="Inter"
+                      >
+                        {item}
+                      </Text>
+                    ))}
+                  </VStack>
+                </Box>
+              </VStack>
+
+              {renderContent()}
+            </HStack>
+          </ModalBody>
+          <ModalFooter borderTopWidth="1px" borderColor="gray.700">
+            <Button
+              onClick={onClose}
+              leftIcon={<FiX />}
+              bg="red.600"
+              color="white"
+              _hover={{ bg: "red.700" }}
+              size="sm"
+              fontFamily="Inter"
+              fontSize="sm"
+              fontWeight={"300"}
+            >
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={isConfirmTerminateOpen} onClose={onConfirmTerminateClose}>
+        <ModalOverlay />
+        <ModalContent bg="rgb(32, 32, 32)" color="gray.300">
+          <ModalHeader size="md" fontWeight="normal" fontFamily="Inter">
+            Confirm Session Termination
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody fontFamily="Inter" fontSize="sm">
+            <Text>
+              Are you sure you want to terminate this session? This action
+              cannot be undone.
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              colorScheme="red"
+              mr={3}
+              size="sm"
+              onClick={() => {
+                handleTerminateSession(selectedSessionId);
+                onConfirmTerminateClose();
+              }}
+              fontFamily="Inter"
+              fontSize="xs"
+            >
+              Terminate
+            </Button>
+            <Button
+              size="sm"
+              onClick={onConfirmTerminateClose}
+              fontFamily="Inter"
+              fontSize="xs"
+            >
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+};
+
+export default SettingsModal;

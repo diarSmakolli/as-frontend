@@ -1,0 +1,252 @@
+import { useState } from 'react';
+import {
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalCloseButton,
+    ModalBody,
+    ModalFooter,
+    Button,
+    FormControl,
+    FormLabel,
+    Input,
+    Text,
+    useToast,
+    Spinner,
+} from "@chakra-ui/react";
+import axios from 'axios';
+
+const ChangePasswordModal = ({ isOpen, onClose }) => {
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const toast = useToast();
+
+    const handleSubmit = async () => {
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            toast({
+                description: 'Please fill in all fields',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+                variant: 'custom',
+                containerStyle: {
+                    bg: 'rgb(39, 39, 42)',
+                    color: 'gray.300',
+                    fontWeight: 'normal',
+                    borderRadius: 'lg',
+                    border: '1px solid',
+                    borderColor: 'rgb(63, 63, 70)',
+                }
+            });
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            toast({
+                description: 'New passwords do not match',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+                variant: 'custom',
+                containerStyle: {
+                    bg: 'rgb(39, 39, 42)',
+                    color: 'gray.300',
+                    fontWeight: 'normal',
+                    borderRadius: 'lg',
+                    border: '1px solid',
+                    borderColor: 'rgb(63, 63, 70)',
+                }
+            });
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const response = await axios.put(
+                'http://localhost:8086/api/administrations/change-password',
+                {
+                    currentPassword,
+                    newPassword,
+                    confirmPassword
+                },
+                {
+                    withCredentials: true
+                }
+            );
+
+            toast({
+                description: response.data.message,
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+                variant: 'custom',
+                containerStyle: {
+                    bg: 'rgb(39, 39, 42)',
+                    color: 'gray.300',
+                    fontWeight: 'normal',
+                    borderRadius: 'lg',
+                    border: '1px solid',
+                    borderColor: 'rgb(63, 63, 70)',
+                }
+            });
+            onClose();
+        } catch (error) {
+            const { response } = error;
+
+            if (!response) {
+                toast({
+                    description: `Please check your internet connection.`,
+                    status: 'error',
+                    isClosable: true,
+                    duration: 5000,
+                    variant: 'custom',
+                    containerStyle: {
+                        bg: 'rgb(39, 39, 42)',
+                        color: 'gray.300',
+                        fontWeight: 'normal',
+                        borderRadius: 'lg',
+                        border: '1px solid',
+                        borderColor: 'rgb(63, 63, 70)',
+                        boxShadow: '0px 4px 24px rgba(0, 0, 0, 0.25)',
+                        mx: 4,
+                        mb: 4,
+                    },
+                    titleStyle: {
+                        fontSize: 'sm',
+                        color: 'green.300',
+                    },
+                })
+            }
+
+
+
+            toast({
+                description: error.response?.data?.message || 'Something was broken...',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+                variant: 'custom',
+                containerStyle: {
+                    bg: 'rgb(39, 39, 42)',
+                    color: 'gray.300',
+                    fontWeight: 'normal',
+                    borderRadius: 'lg',
+                    border: '1px solid',
+                    borderColor: 'rgb(63, 63, 70)',
+                }
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} size="md">
+            <ModalOverlay />
+            <ModalContent bg="rgb(32, 32, 32)" color="gray.300">
+                <ModalHeader
+                    borderBottomWidth="1px"
+                    borderColor="gray.700"
+                    fontFamily="Inter"
+                    fontSize="md"
+                    fontWeight="400"
+                    color="gray.500"
+                >
+                    Change Password
+                </ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <FormControl mb={4}>
+                        <FormLabel
+                            fontSize="xs"
+                            fontWeight="400"
+                            color="gray.500"
+                            fontFamily="Inter"
+                        >
+                            Current Password
+                        </FormLabel>
+                        <Input
+                            type="password"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            bg="rgb(25,25,25)"
+                            borderColor="gray.700"
+                            size="sm"
+                            rounded="lg"
+                            _hover={{ borderColor: 'gray.600' }}
+                        />
+                    </FormControl>
+
+                    <FormControl mb={4}>
+                        <FormLabel
+                            fontSize="xs"
+                            fontWeight="400"
+                            color="gray.500"
+                            fontFamily="Inter"
+                        >
+                            New Password
+                        </FormLabel>
+                        <Input
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            bg="rgb(25,25,25)"
+                            borderColor="gray.700"
+                            size="sm"
+                            rounded="lg"
+                            _hover={{ borderColor: 'gray.600' }}
+                        />
+                    </FormControl>
+
+                    <FormControl mb={4}>
+                        <FormLabel
+                            fontSize="xs"
+                            fontWeight="400"
+                            color="gray.500"
+                            fontFamily="Inter"
+                        >
+                            Confirm New Password
+                        </FormLabel>
+                        <Input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            bg="rgb(25,25,25)"
+                            borderColor="gray.700"
+                            size="sm"
+                            rounded="lg"
+                            _hover={{ borderColor: 'gray.600' }}
+                        />
+                    </FormControl>
+                </ModalBody>
+
+                <ModalFooter borderTopWidth="1px" borderColor="gray.700">
+                    <Button
+                        onClick={onClose}
+                        mr={3}
+                        size="sm"
+                        fontFamily="Inter"
+                        fontSize="xs"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleSubmit}
+                        bg="blue.500"
+                        _hover={{ bg: 'blue.600' }}
+                        size="sm"
+                        isLoading={isLoading}
+                        fontFamily="Inter"
+                        fontSize="xs"
+                    >
+                        { isLoading ? <Spinner /> : 'Change password' }
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+};
+
+export default ChangePasswordModal;

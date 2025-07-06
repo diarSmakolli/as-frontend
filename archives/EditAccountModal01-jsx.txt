@@ -1,0 +1,367 @@
+import React, { useState, useEffect } from "react";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  Select,
+  Textarea,
+  FormErrorMessage,
+  useToast,
+  Divider,
+  Box,
+  Flex,
+  Text,
+  Badge,
+} from "@chakra-ui/react";
+import { FaSave, FaTimes } from "react-icons/fa";
+import { administrationService } from "../../services/administrationService";
+import { handleApiError } from "../../../../commons/handleApiError";
+import { customToastContainerStyle } from "../../../../commons/toastStyles";
+
+const EditAccountModal = ({ isOpen, onClose, user, onSuccess }) => {
+  const toast = useToast();
+  const [formData, setFormData] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    role: "",
+    level: 1,
+    preferred_name: "",
+    phone_number: "",
+    visible_status: "Active",
+    note: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        first_name: user.first_name || "",
+        last_name: user.last_name || "",
+        email: user.email || "",
+        role: user.role || "supplier",
+        level: user.level || 1,
+        preferred_name: user.preferred_name || "",
+        phone_number: user.phone_number || "",
+        visible_status: user.visible_status || "Active",
+        note: user.note || "",
+      });
+    }
+  }, [user]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Clear error for this field when user makes changes
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = "First name is required";
+    }
+
+    if (!formData.last_name.trim()) {
+      newErrors.last_name = "Last name is required";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Email is invalid";
+    }
+
+    if (!formData.role) {
+      newErrors.role = "Role is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    try {
+      const result = await administrationService.updateUserDetails(user.id, formData);
+
+      toast({
+        description: result.data.message,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        variant: "custom",
+        containerStyle: customToastContainerStyle,
+      });
+
+      if (onSuccess) {
+        onSuccess();
+      }
+
+      onClose();
+    } catch (error) {
+      handleApiError(error.response, toast);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const roleOptions = [
+    { value: "global-administrator", label: "Global Administrator" },
+    { value: "administrator", label: "Administrator" },
+    { value: "supplier", label: "Supplier" },
+    { value: "employee", label: "Employee" },
+  ];
+
+  const statusOptions = [
+    "Active",
+    "Busy",
+    "Away",
+    "Offline",
+    "On Vacation",
+    "Do Not Disturb",
+  ];
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      <ModalOverlay />
+      <ModalContent bg="rgb(30,30,30)" color="white" borderRadius="xl">
+        <ModalHeader borderBottomWidth="1px" borderColor="gray.700">
+          <Flex alignItems="center" justifyContent="space-between">
+            <Text fontFamily={"Inter"} fontWeight={"500"}>
+              Edit Account
+            </Text>
+          </Flex>
+        </ModalHeader>
+        <ModalCloseButton />
+
+        <ModalBody py={6}>
+          <Flex direction="column" gap={4}>
+            <Flex gap={4} width="100%">
+              <FormControl isInvalid={errors.first_name}>
+                <FormLabel>First Name</FormLabel>
+                <Input
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  bg="rgb(25,25,25)"
+                  borderColor="gray.600"
+                  _hover={{ borderColor: "gray.700" }}
+                  _focus={{
+                    borderColor: "gray.700",
+                    boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+                  }}
+                />
+                <FormErrorMessage>{errors.first_name}</FormErrorMessage>
+              </FormControl>
+
+              <FormControl isInvalid={errors.last_name}>
+                <FormLabel>Last Name</FormLabel>
+                <Input
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  bg="rgb(25,25,25)"
+                  borderColor="gray.600"
+                  _hover={{ borderColor: "gray.700" }}
+                  _focus={{
+                    borderColor: "gray.700",
+                    boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+                  }}
+                />
+                <FormErrorMessage>{errors.last_name}</FormErrorMessage>
+              </FormControl>
+            </Flex>
+
+            <FormControl isInvalid={errors.email}>
+              <FormLabel>Email Address</FormLabel>
+              <Input
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                bg="rgb(25,25,25)"
+                borderColor="gray.600"
+                _hover={{ borderColor: "gray.700" }}
+                _focus={{
+                  borderColor: "gray.700",
+                  boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+                }}
+              />
+              <FormErrorMessage>{errors.email}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={errors.phone_number}>
+              <FormLabel>Phone Number</FormLabel>
+              <Input
+                name="phone_number"
+                value={formData.phone_number}
+                onChange={handleChange}
+                bg="rgb(25,25,25)"
+                borderColor="gray.600"
+                _hover={{ borderColor: "gray.700" }}
+                _focus={{
+                  borderColor: "gray.700",
+                  boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+                }}
+              />
+              <FormErrorMessage>{errors.phone_number}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={errors.preferred_name}>
+              <FormLabel>Preferred Name</FormLabel>
+              <Input
+                name="preferred_name"
+                value={formData.preferred_name}
+                onChange={handleChange}
+                bg="rgb(25,25,25)"
+                borderColor="gray.600"
+                _hover={{ borderColor: "gray.700" }}
+                _focus={{
+                  borderColor: "gray.700",
+                  boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+                }}
+              />
+              <FormErrorMessage>{errors.preferred_name}</FormErrorMessage>
+            </FormControl>
+
+            <Flex gap={4} width="100%">
+              <FormControl isInvalid={errors.role}>
+                <FormLabel>Role</FormLabel>
+                <Select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  bg="rgb(25,25,25)"
+                  borderColor="gray.600"
+                  _hover={{ borderColor: "gray.700" }}
+                  _focus={{
+                    borderColor: "gray.700",
+                    boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+                  }}
+                >
+                  {roleOptions.map((role) => (
+                    <option key={role.value} value={role.value}>
+                      {role.label}
+                    </option>
+                  ))}
+                </Select>
+                <FormErrorMessage>{errors.role}</FormErrorMessage>
+              </FormControl>
+
+              <FormControl isInvalid={errors.level}>
+                <FormLabel>Level</FormLabel>
+                <Select
+                  name="level"
+                  value={formData.level}
+                  onChange={handleChange}
+                  bg="rgb(25,25,25)"
+                  borderColor="gray.600"
+                  _hover={{ borderColor: "gray.700" }}
+                  _focus={{
+                    borderColor: "gray.700",
+                    boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+                  }}
+                >
+                  {[1, 2, 3, 4, 5].map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </Select>
+                <FormErrorMessage>{errors.level}</FormErrorMessage>
+              </FormControl>
+            </Flex>
+
+            <FormControl isInvalid={errors.visible_status}>
+              <FormLabel>Visible Status</FormLabel>
+              <Select
+                name="visible_status"
+                value={formData.visible_status}
+                onChange={handleChange}
+                bg="rgb(25,25,25)"
+                borderColor="gray.600"
+                _hover={{ borderColor: "gray.700" }}
+                _focus={{
+                  borderColor: "gray.700",
+                  boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+                }}
+              >
+                {statusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </Select>
+              <FormErrorMessage>{errors.visible_status}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={errors.note}>
+              <FormLabel>Note</FormLabel>
+              <Textarea
+                name="note"
+                value={formData.note || ""}
+                onChange={handleChange}
+                bg="rgb(25,25,25)"
+                borderColor="gray.600"
+                _hover={{ borderColor: "gray.700" }}
+                _focus={{
+                  borderColor: "gray.700",
+                  boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+                }}
+                rows={3}
+              />
+              <FormErrorMessage>{errors.note}</FormErrorMessage>
+            </FormControl>
+          </Flex>
+        </ModalBody>
+
+        <ModalFooter borderTopWidth="1px" borderColor="gray.700">
+          <Button
+            bg="blue.500"
+            _hover={{ bg: "blue.500" }}
+            size="sm"
+            leftIcon={<FaSave />}
+            onClick={handleSubmit}
+            isLoading={isSubmitting}
+            mr={3}
+          >
+            Save Changes
+          </Button>
+          <Button
+            size="sm"
+            bg="blue.500"
+            _hover={{ bg: "blue.500" }}
+            leftIcon={<FaTimes />}
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
+};
+
+export default EditAccountModal;
