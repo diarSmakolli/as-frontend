@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useToast } from '@chakra-ui/react';
 import { customToastContainerStyle } from '../../../commons/toastStyles';
 
-const baseUrlApi = "https://as-frontend-snowy.vercel.app/";
+const baseUrlApi = "https://as-solutions-backend.onrender.com";
 const fontName = 'Inter';
 
 const AuthContext = createContext();
