@@ -921,7 +921,7 @@ function Navbar() {
                       <Icon as={FaSearch} color="gray.400" />
                     </InputLeftElement>
                     <Input
-                      placeholder="What do you want to find?"
+                      placeholder="Que voulez-vous trouver ?"
                       value={searchTerm}
                       onChange={handleSearchChange}
                       borderRadius="full"
@@ -1151,7 +1151,7 @@ function Navbar() {
                     <Icon as={FaSearch} color="gray.400" />
                   </InputLeftElement>
                   <Input
-                    placeholder="What do you want to find?"
+                    placeholder="Que voulez-vous trouver?"
                     value={searchTerm}
                     onChange={handleSearchChange}
                     borderRadius="full"
@@ -1207,7 +1207,7 @@ function Navbar() {
               fontWeight="semibold"
               textAlign="center"
             >
-              Home
+              Maison
             </Text>
           </VStack>
 
@@ -1260,7 +1260,7 @@ function Navbar() {
               </Badge>
             </Box>
             <Text fontSize="xs" color="gray.600" textAlign="center">
-              Cart
+              Panier
             </Text>
           </VStack>
 
@@ -1276,7 +1276,7 @@ function Navbar() {
           <VStack spacing={1} flex={1} py={2} cursor="pointer">
             <Icon as={FaUser} fontSize="lg" color="gray.600" />
             <Text fontSize="xs" color="gray.600" textAlign="center">
-              Account
+              Compte
             </Text>
           </VStack>
         </HStack>
@@ -1415,7 +1415,7 @@ function Navbar() {
               minW="auto"
               rounded="full"
             >
-              New Arrivals
+              Nouveautés
             </Button>
 
             <Button
@@ -1430,7 +1430,7 @@ function Navbar() {
               minW="auto"
               rounded="full"
             >
-              Deals hub
+              Centre des offres
             </Button>
 
             {/* <Button
@@ -1746,7 +1746,7 @@ function Navbar() {
               flexShrink={0}
               minW="auto"
             >
-              Customer Service
+              Service Client
             </Button>
           </HStack>
 
@@ -1770,7 +1770,7 @@ function Navbar() {
                 py={2}
                 px={2}
               >
-                <Button
+                {/* <Button
                   leftIcon={<Icon as={FaFire} color="red.500" />}
                   variant="ghost"
                   color="gray.700"
@@ -1788,7 +1788,7 @@ function Navbar() {
                   fontFamily="Bricolage Grotesque"
                 >
                   Trending
-                </Button>
+                </Button> */}
 
                 <Button
                   leftIcon={<Icon as={FaStar} color="yellow.500" />}
@@ -1807,7 +1807,7 @@ function Navbar() {
                   whiteSpace="nowrap"
                   fontFamily="Bricolage Grotesque"
                 >
-                  New Arrivals
+                  Nouveautés
                 </Button>
 
                 <Button
@@ -1827,10 +1827,10 @@ function Navbar() {
                   whiteSpace="nowrap"
                   fontFamily="Bricolage Grotesque"
                 >
-                  Deals hub
+                  Centre des offres
                 </Button>
 
-                <Button
+                {/* <Button
                   leftIcon={<Icon as={FaPercent} color="green.500" />}
                   variant="ghost"
                   color="gray.700"
@@ -1848,7 +1848,7 @@ function Navbar() {
                   fontFamily="Bricolage Grotesque"
                 >
                   Weekly Deals
-                </Button>
+                </Button> */}
 
                 {loading ? (
                   <HStack spacing={3}>
