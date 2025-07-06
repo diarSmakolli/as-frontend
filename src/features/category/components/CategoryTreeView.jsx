@@ -128,6 +128,15 @@ function CategoryNode({
               </chakra.Badge>
             )}
           </chakra.HStack>
+          <chakra.HStack spacing={2} mt={1}>
+            <chakra.Badge
+              colorScheme={borderColor.split('.')[0]}
+              size="sm"
+              fontFamily={fontName}
+            >
+              Sort order {category.sort_order}
+            </chakra.Badge>
+          </chakra.HStack>
         </chakra.Box>
 
         {/* Action Buttons */}
