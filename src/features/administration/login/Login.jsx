@@ -4,7 +4,7 @@ import axios from "axios";
 import { BiError, BiCheck } from "react-icons/bi";
 import Loader from "../../../commons/Loader";
 
-const baseUrlApi = "http://localhost:8086";
+const baseUrlApi = "https://as-frontend-snowy.vercel.app";
 const fontName = "Inter";
 
 export default function Login() {
