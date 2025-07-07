@@ -1329,7 +1329,7 @@ function Navbar() {
                   onMouseEnter={onCategoryOpen}
                   fontFamily="Bricolage Grotesque"
                 >
-                  All Categories
+                  Toutes les catégories
                 </Button>
               </PopoverTrigger>
               <Portal>

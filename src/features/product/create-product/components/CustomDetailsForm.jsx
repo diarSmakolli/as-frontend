@@ -50,7 +50,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
   const { isOpen: isPreviewOpen, onToggle: togglePreview } = useDisclosure();
   
   const [currentDetail, setCurrentDetail] = useState({
-    key: '',
+    // key: '',
     label: '',
     value: ''
   });
@@ -85,11 +85,11 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
   const validateDetail = () => {
     const newErrors = {};
     
-    if (!currentDetail.key?.trim()) {
-      newErrors.key = 'Key is required';
-    } else if (!/^[a-z0-9_]+$/.test(currentDetail.key.toLowerCase())) {
-      newErrors.key = 'Key must contain only letters, numbers, and underscores';
-    }
+    // if (!currentDetail.key?.trim()) {
+    //   newErrors.key = 'Key is required';
+    // } else if (!/^[a-z0-9_]+$/.test(currentDetail.key.toLowerCase())) {
+    //   newErrors.key = 'Key must contain only letters, numbers, and underscores';
+    // }
     
     if (!currentDetail.label?.trim()) {
       newErrors.label = 'Label is required';
@@ -99,22 +99,22 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
       newErrors.value = 'Value is required';
     }
     
-    // Check if key already exists (except when editing)
-    const existingIndex = customDetails.findIndex(detail => 
-      detail.key.toLowerCase() === currentDetail.key.toLowerCase()
-    );
+    // // Check if key already exists (except when editing)
+    // const existingIndex = customDetails.findIndex(detail => 
+    //   detail.key.toLowerCase() === currentDetail.key.toLowerCase()
+    // );
     
-    if (existingIndex !== -1 && existingIndex !== editingIndex) {
-      newErrors.key = 'A detail with this key already exists';
-    }
+    // if (existingIndex !== -1 && existingIndex !== editingIndex) {
+    //   newErrors.key = 'A detail with this key already exists';
+    // }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const sanitizeKey = (key) => {
-    return key.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_{2,}/g, '_');
-  };
+  // const sanitizeKey = (key) => {
+  //   return key.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_{2,}/g, '_');
+  // };
 
   const addOrUpdateDetail = () => {
     if (!validateDetail()) {
@@ -128,16 +128,26 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
       return;
     }
 
+    // const detailData = {
+    //   ...currentDetail,
+    //   key: sanitizeKey(currentDetail.key)
+    // };
+
     const detailData = {
-      ...currentDetail,
-      key: sanitizeKey(currentDetail.key)
+      label: currentDetail.label,
+      value: currentDetail.value,
     };
 
     let newDetails;
     if (editingIndex !== null) {
       // Update existing detail
       newDetails = [...customDetails];
-      newDetails[editingIndex] = detailData;
+      // newDetails[editingIndex] = detailData;
+      // setEditingIndex(null);
+      newDetails[editingIndex] = {
+        ...customDetails[editingIndex], // Preserve existing key
+        ...detailData,
+      };
       setEditingIndex(null);
     } else {
       // Add new detail
@@ -158,7 +168,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
 
   const resetForm = () => {
     setCurrentDetail({
-      key: '',
+      // key: '',
       label: '',
       value: ''
     });
@@ -168,7 +178,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
 
   const useCommonDetail = (detail) => {
     setCurrentDetail({
-      key: detail.key,
+      // key: detail.key,
       label: detail.label,
       value: ''
     });
@@ -240,7 +250,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
           </Text>
           <Wrap spacing={2}>
             {commonDetails.map(detail => (
-              <WrapItem key={detail.key}>
+              <WrapItem>
                 <Tooltip label={detail.placeholder} placement="top">
                   <Button
                     size="sm"
@@ -272,7 +282,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
           <CardBody>
             <VStack spacing={6} align="stretch">
               <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
-                <FormControl isInvalid={!!errors.key}>
+                {/* <FormControl isInvalid={!!errors.key}>
                   <FormLabel color="gray.700" fontWeight="500">
                     Key *
                   </FormLabel>
@@ -290,7 +300,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
                   <FormHelperText>
                     Internal identifier (will be sanitized automatically)
                   </FormHelperText>
-                </FormControl>
+                </FormControl> */}
 
                 <FormControl isInvalid={!!errors.label}>
                   <FormLabel color="gray.700" fontWeight="500">
@@ -334,7 +344,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
               </SimpleGrid>
 
               {/* Key Preview */}
-              {currentDetail.key && (
+              {/* {currentDetail.key && (
                 <Alert status="info" borderRadius="md">
                   <AlertIcon />
                   <Box>
@@ -343,7 +353,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
                     </Text>
                   </Box>
                 </Alert>
-              )}
+              )} */}
 
               {/* Action Buttons */}
               <HStack justify="flex-end" pt={4} borderTop="1px" borderColor="gray.200">
@@ -386,9 +396,9 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
                           <Text fontWeight="bold" color="gray.900">
                             {detail.label}
                           </Text>
-                          <Badge variant="outline" colorScheme="gray" fontSize="xs">
+                          {/* <Badge variant="outline" colorScheme="gray" fontSize="xs">
                             {detail.key}
-                          </Badge>
+                          </Badge> */}
                         </HStack>
                         <Text color="gray.600" fontSize="sm">
                           {detail.value}
