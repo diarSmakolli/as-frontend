@@ -1206,6 +1206,8 @@ function Navbar() {
               color="rgb(239,48,84)"
               fontWeight="semibold"
               textAlign="center"
+              as='a'
+              href='/'
             >
               Maison
             </Text>
