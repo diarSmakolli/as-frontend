@@ -322,6 +322,36 @@ function CustomerProductPage() {
     fetchCategories();
   }, [fetchProductDetails]);
 
+  // auto detect if product has default custom option.
+  useEffect(() => {
+    if (product?.custom_options) {
+      const defaultSelections = {};
+
+      product.custom_options.forEach((option) => {
+        // Find the default value for this option
+        const defaultValue = option.option_values?.find(
+          (value) => value.is_default === true
+        );
+
+        if (defaultValue) {
+          defaultSelections[option.id] = {
+            valueId: defaultValue.id,
+            value: defaultValue.option_value,
+            price_modifier: defaultValue.price_modifier,
+            price_modifier_type: defaultValue.price_modifier_type,
+          };
+        }
+      });
+
+      if (
+        Object.keys(defaultSelections).length > 0 &&
+        Object.keys(selectedCustomOptions).length === 0
+      ) {
+        setSelectedCustomOptions(defaultSelections);
+      }
+    }
+  }, [product?.custom_options]);
+
   // Calculate total price including services and custom options
   const calculateTotalPrice = () => {
     if (!product) return 0;
