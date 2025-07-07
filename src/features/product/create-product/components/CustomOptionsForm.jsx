@@ -110,12 +110,12 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
 
   const optionTypes = [
     { value: 'text', label: 'Text Input', icon: FiType, hasValues: false },
-    { value: 'textarea', label: 'Textarea', icon: FiType, hasValues: false },
-    { value: 'select', label: 'Dropdown Select', icon: FiList, hasValues: true },
+    // { value: 'textarea', label: 'Textarea', icon: FiType, hasValues: false },
+    // { value: 'select', label: 'Dropdown Select', icon: FiList, hasValues: true },
     { value: 'radio', label: 'Radio Buttons', icon: FiCircle, hasValues: true },
-    { value: 'checkbox', label: 'Checkboxes', icon: FiSquare, hasValues: true },
-    { value: 'file', label: 'File Upload', icon: FiFile, hasValues: false },
-    { value: 'date', label: 'Date Picker', icon: FiCalendar, hasValues: false },
+    // { value: 'checkbox', label: 'Checkboxes', icon: FiSquare, hasValues: true },
+    // { value: 'file', label: 'File Upload', icon: FiFile, hasValues: false },
+    // { value: 'date', label: 'Date Picker', icon: FiCalendar, hasValues: false },
     { value: 'number', label: 'Number Input', icon: FiHash, hasValues: false }
   ];
 
