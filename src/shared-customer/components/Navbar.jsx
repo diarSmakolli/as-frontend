@@ -1431,6 +1431,8 @@ function Navbar() {
               flexShrink={0}
               minW="auto"
               rounded="full"
+              as='a'
+              href='/flash-deals'
             >
               Centre des offres
             </Button>
@@ -1828,6 +1830,8 @@ function Navbar() {
                   rounded="full"
                   whiteSpace="nowrap"
                   fontFamily="Bricolage Grotesque"
+                  as='a'
+                  href='/flash-deals'
                 >
                   Centre des offres
                 </Button>
