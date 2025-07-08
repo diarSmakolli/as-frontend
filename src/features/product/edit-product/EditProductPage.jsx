@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Flex,
@@ -50,10 +50,10 @@ import {
   FiInfo,
   FiGlobe,
 } from "react-icons/fi";
-import axios from 'axios';
-import { productService } from '../services/productService';
-import { companiesService } from '../../company/services/companiesService';
-import { categoryService } from '../../category/service/categoryService';
+import axios from "axios";
+import { productService } from "../services/productService";
+import { companiesService } from "../../company/services/companiesService";
+import { categoryService } from "../../category/service/categoryService";
 import { useAuth } from "../../administration/authContext/authContext";
 import { usePreferences } from "../../administration/authContext/preferencesProvider";
 import SidebarContent from "../../administration/layouts/SidebarContent";
@@ -61,18 +61,17 @@ import MobileNav from "../../administration/layouts/MobileNav";
 import SettingsModal from "../../administration/components/settings/SettingsModal";
 import { handleApiError } from "../../../commons/handleApiError";
 import Loader from "../../../commons/Loader";
-import ImageUpload from '../create-product/components/ImageUpload';
-import CategoriesSelector from '../create-product/components/CategoriesSelector';
-import ProductServicesForm from '../create-product/components/ProductServicesForm';
-import CustomDetailsForm from '../create-product/components/CustomDetailsForm';
-import CustomOptionsForm from '../create-product/components/CustomOptionsForm';
-import ExistingImageManager from './components/ExistingImageManager';
-import RichTextEditor from '../create-product/components/RichTextEditor';
-import { API_BASE_URL } from '../../../commons/api';
+import ImageUpload from "../create-product/components/ImageUpload";
+import CategoriesSelector from "../create-product/components/CategoriesSelector";
+import ProductServicesForm from "../create-product/components/ProductServicesForm";
+import CustomDetailsForm from "../create-product/components/CustomDetailsForm";
+import CustomOptionsForm from "../create-product/components/CustomOptionsForm";
+import ExistingImageManager from "./components/ExistingImageManager";
+import RichTextEditor from "../create-product/components/RichTextEditor";
+import { API_BASE_URL } from "../../../commons/api";
 
 const MotionBox = motion.create(Box);
 const MotionCard = motion.create(Card);
-
 
 const EditProductPage = () => {
   const { productId } = useParams();
@@ -87,33 +86,33 @@ const EditProductPage = () => {
 
   // Form data state
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    short_description: '',
-    sku: '',
-    barcode: '',
-    ean: '',
-    weight: '',
-    weight_unit: 'kg',
-    measures_unit: 'cm',
-    unit_type: 'pcs',
-    width: '',
-    height: '',
-    length: '',
-    thickness: '',
-    depth: '',
+    title: "",
+    description: "",
+    short_description: "",
+    sku: "",
+    barcode: "",
+    ean: "",
+    weight: "",
+    weight_unit: "kg",
+    measures_unit: "cm",
+    unit_type: "pcs",
+    width: "",
+    height: "",
+    length: "",
+    thickness: "",
+    depth: "",
     lead_time: 5,
-    meta_title: '',
-    meta_description: '',
-    meta_keywords: '',
-    purchase_price_nett: '',
-    regular_price_nett: '',
+    meta_title: "",
+    meta_description: "",
+    meta_keywords: "",
+    purchase_price_nett: "",
+    regular_price_nett: "",
     is_discounted: false,
-    discount_percentage_nett: '',
-    final_price_nett: '',
-    tax_id: '',
-    supplier_id: '',
-    company_id: '',
+    discount_percentage_nett: "",
+    final_price_nett: "",
+    tax_id: "",
+    supplier_id: "",
+    company_id: "",
     is_active: true,
     is_published: false,
     is_available_on_stock: true,
@@ -130,7 +129,7 @@ const EditProductPage = () => {
     new_images: [],
     services: [],
     categories: [],
-    custom_details: []
+    custom_details: [],
   });
 
   // Dropdown data
@@ -158,24 +157,18 @@ const EditProductPage = () => {
 
   // Fetch dropdown data - FIXED TO USE CORRECT API ENDPOINTS
   const fetchDropdownData = useCallback(async () => {
-    console.log('Starting to fetch dropdown data...');
     try {
       // Fetch all required data in parallel using correct endpoints
-      const [taxResponse, companiesResponse, categoriesResponse] = await Promise.all([
-        // Use the correct tax endpoint that works
-        axios.get(`${API_BASE_URL}/taxes/get-taxes`, {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" }
-        }),
-        companiesService.getAllCompanies(),
-        categoryService.getAllCategories()
-      ]);
-
-      console.log('Raw API responses:', {
-        taxes: taxResponse,
-        companies: companiesResponse,
-        categories: categoriesResponse
-      });
+      const [taxResponse, companiesResponse, categoriesResponse] =
+        await Promise.all([
+          // Use the correct tax endpoint that works
+          axios.get(`${API_BASE_URL}/taxes/get-taxes`, {
+            withCredentials: true,
+            headers: { "Content-Type": "application/json" },
+          }),
+          companiesService.getAllCompanies(),
+          categoryService.getAllCategories(),
+        ]);
 
       // Handle taxes response from /api/taxes/get-taxes
       let taxesData = [];
@@ -191,9 +184,15 @@ const EditProductPage = () => {
       let companiesData = [];
       if (companiesResponse?.data?.data?.companies) {
         companiesData = companiesResponse.data.data.companies;
-      } else if (companiesResponse?.data?.data && Array.isArray(companiesResponse.data.data)) {
+      } else if (
+        companiesResponse?.data?.data &&
+        Array.isArray(companiesResponse.data.data)
+      ) {
         companiesData = companiesResponse.data.data;
-      } else if (companiesResponse?.data && Array.isArray(companiesResponse.data)) {
+      } else if (
+        companiesResponse?.data &&
+        Array.isArray(companiesResponse.data)
+      ) {
         companiesData = companiesResponse.data;
       }
 
@@ -201,33 +200,37 @@ const EditProductPage = () => {
       let categoriesData = [];
       if (categoriesResponse?.data?.data?.categories) {
         categoriesData = categoriesResponse.data.data.categories;
-      } else if (categoriesResponse?.data?.data && Array.isArray(categoriesResponse.data.data)) {
+      } else if (
+        categoriesResponse?.data?.data &&
+        Array.isArray(categoriesResponse.data.data)
+      ) {
         categoriesData = categoriesResponse.data.data;
-      } else if (categoriesResponse?.data && Array.isArray(categoriesResponse.data)) {
+      } else if (
+        categoriesResponse?.data &&
+        Array.isArray(categoriesResponse.data)
+      ) {
         categoriesData = categoriesResponse.data;
       }
 
-      console.log('Processed dropdown data:', {
-        taxes: taxesData,
-        companies: companiesData,
-        categories: categoriesData
-      });
-
       // Set the state with fetched data
-      setTaxes(Array.isArray(taxesData) ? taxesData.filter(tax => !tax.is_inactive) : []);
-      setCompanies(Array.isArray(companiesData) ? companiesData.filter(company => !company.is_inactive) : []);
-      setCategories(Array.isArray(categoriesData) ? categoriesData.filter(cat => cat.is_active !== false) : []);
-
-      console.log('Final state data:', {
-        taxesCount: Array.isArray(taxesData) ? taxesData.length : 0,
-        companiesCount: Array.isArray(companiesData) ? companiesData.length : 0,
-        categoriesCount: Array.isArray(categoriesData) ? categoriesData.length : 0
-      });
-
+      setTaxes(
+        Array.isArray(taxesData)
+          ? taxesData.filter((tax) => !tax.is_inactive)
+          : []
+      );
+      setCompanies(
+        Array.isArray(companiesData)
+          ? companiesData.filter((company) => !company.is_inactive)
+          : []
+      );
+      setCategories(
+        Array.isArray(categoriesData)
+          ? categoriesData.filter((cat) => cat.is_active !== false)
+          : []
+      );
     } catch (error) {
-      console.error('Error fetching dropdown data:', error);
       handleApiError(error, toast);
-      
+
       // Set empty arrays as fallback
       setTaxes([]);
       setCompanies([]);
@@ -243,70 +246,95 @@ const EditProductPage = () => {
     }
 
     try {
-      console.log('Fetching product details for ID:', productId);
       const response = await productService.getProductById(productId);
-      
-      if (response.data?.status === 'success') {
+
+      if (response.data?.status === "success") {
         const product = response.data.data.product;
-        console.log('Product data received:', product);
-        
+
         // Update form data with product details
         setFormData({
-          title: product.title || '',
-          description: product.description || '',
-          short_description: product.short_description || '',
-          sku: product.sku || '',
-          barcode: product.barcode || '',
-          ean: product.ean || '',
-          weight: product.weight || '',
-          weight_unit: product.weight_unit || 'kg',
-          measures_unit: product.measures_unit || 'cm',
-          unit_type: product.unit_type || 'pcs',
-          width: product.width || '',
-          height: product.height || '',
-          length: product.length || '',
-          thickness: product.thickness || '',
-          depth: product.depth || '',
+          title: product.title || "",
+          description: product.description || "",
+          short_description: product.short_description || "",
+          sku: product.sku || "",
+          barcode: product.barcode || "",
+          ean: product.ean || "",
+          weight: product.weight || "",
+          weight_unit: product.weight_unit || "kg",
+          measures_unit: product.measures_unit || "cm",
+          unit_type: product.unit_type || "pcs",
+          width: product.width || "",
+          height: product.height || "",
+          length: product.length || "",
+          thickness: product.thickness || "",
+          depth: product.depth || "",
           lead_time: product.lead_time || 5,
-          meta_title: product.meta_title || '',
-          meta_description: product.meta_description || '',
-          meta_keywords: product.meta_keywords || '',
-          purchase_price_nett: product.purchase_price_nett || '',
-          regular_price_nett: product.regular_price_nett || '',
+          meta_title: product.meta_title || "",
+          meta_description: product.meta_description || "",
+          meta_keywords: product.meta_keywords || "",
+          purchase_price_nett: product.purchase_price_nett || "",
+          regular_price_nett: product.regular_price_nett || "",
           is_discounted: product.is_discounted || false,
-          discount_percentage_nett: product.discount_percentage_nett || '',
-          final_price_nett: product.final_price_nett || '',
-          tax_id: product.tax_id || '',
-          supplier_id: product.supplier_id || '',
-          company_id: product.company_id || '',
+          discount_percentage_nett: product.discount_percentage_nett || "",
+          final_price_nett: product.final_price_nett || "",
+          tax_id: product.tax_id || "",
+          supplier_id: product.supplier_id || "",
+          company_id: product.company_id || "",
           is_active: product.is_active !== undefined ? product.is_active : true,
-          is_published: product.is_published !== undefined ? product.is_published : false,
-          is_available_on_stock: product.is_available_on_stock !== undefined ? product.is_available_on_stock : true,
-          shipping_free: product.shipping_free !== undefined ? product.shipping_free : false,
-          mark_as_top_seller: product.mark_as_top_seller !== undefined ? product.mark_as_top_seller : false,
-          mark_as_new: product.mark_as_new !== undefined ? product.mark_as_new : false,
-          mark_as_featured: product.mark_as_featured !== undefined ? product.mark_as_featured : false,
-          is_digital: product.is_digital !== undefined ? product.is_digital : false,
-          is_physical: product.is_physical !== undefined ? product.is_physical : true,
-          is_delivery_only: product.is_delivery_only !== undefined ? product.is_delivery_only : true,
-          is_special_offer: product.is_special_offer !== undefined ? product.is_special_offer : false,
-          custom_options: Array.isArray(product.custom_options) ? product.custom_options : [],
+          is_published:
+            product.is_published !== undefined ? product.is_published : false,
+          is_available_on_stock:
+            product.is_available_on_stock !== undefined
+              ? product.is_available_on_stock
+              : true,
+          shipping_free:
+            product.shipping_free !== undefined ? product.shipping_free : false,
+          mark_as_top_seller:
+            product.mark_as_top_seller !== undefined
+              ? product.mark_as_top_seller
+              : false,
+          mark_as_new:
+            product.mark_as_new !== undefined ? product.mark_as_new : false,
+          mark_as_featured:
+            product.mark_as_featured !== undefined
+              ? product.mark_as_featured
+              : false,
+          is_digital:
+            product.is_digital !== undefined ? product.is_digital : false,
+          is_physical:
+            product.is_physical !== undefined ? product.is_physical : true,
+          is_delivery_only:
+            product.is_delivery_only !== undefined
+              ? product.is_delivery_only
+              : true,
+          is_special_offer:
+            product.is_special_offer !== undefined
+              ? product.is_special_offer
+              : false,
+          custom_options: Array.isArray(product.custom_options)
+            ? product.custom_options
+            : [],
           existing_images: Array.isArray(product.images) ? product.images : [],
           new_images: [],
-          services: Array.isArray(product.product_services) ? product.product_services : [],
-          categories: Array.isArray(product.categories) ? product.categories.map(cat => cat.id) : [],
-          custom_details: Array.isArray(product.custom_details) ? product.custom_details : []
+          services: Array.isArray(product.product_services)
+            ? product.product_services
+            : [],
+          categories: Array.isArray(product.categories)
+            ? product.categories.map((cat) => cat.id)
+            : [],
+          custom_details: Array.isArray(product.custom_details)
+            ? product.custom_details
+            : [],
         });
 
         setCurrentProduct(product);
-        console.log('Form data updated successfully');
       } else {
-        throw new Error('Invalid response format');
+        throw new Error("Invalid response format");
       }
     } catch (error) {
-      console.error('Error fetching product details:', error);
+      console.error("Error fetching product details:", error);
       handleApiError(error, toast);
-      navigate('/products-console');
+      navigate("/products-console");
     } finally {
       setLoading(false);
     }
@@ -322,7 +350,7 @@ const EditProductPage = () => {
         // Then fetch product details
         await fetchProductDetails();
       } catch (error) {
-        console.error('Error initializing page:', error);
+        console.error("Error initializing page:", error);
         setLoading(false);
       }
     };
@@ -336,22 +364,21 @@ const EditProductPage = () => {
 
   // Form handlers
   const handleInputChange = (name, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Clear validation error
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+      setErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
 
   const handleCustomOptionsChange = (customOptions) => {
-    console.log('Custom options changed in edit page:', customOptions);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      custom_options: customOptions
+      custom_options: customOptions,
     }));
   };
 
@@ -384,66 +411,76 @@ const EditProductPage = () => {
   //   }
   // };
 
-  const handleCustomOptionValueImageUpload = async (optionId, valueId, file) => {
-  try {
-    await productService.updateCustomOptionValueImage(optionId, valueId, file);
-    // Fetch updated custom options
-    const res = await productService.getProductCustomOptions(currentProduct.id);
-    if (res.data?.data?.custom_options) {
-      setFormData(prev => ({
-        ...prev,
-        custom_options: res.data.data.custom_options
-      }));
+  const handleCustomOptionValueImageUpload = async (
+    optionId,
+    valueId,
+    file
+  ) => {
+    try {
+      await productService.updateCustomOptionValueImage(
+        optionId,
+        valueId,
+        file
+      );
+      // Fetch updated custom options
+      const res = await productService.getProductCustomOptions(
+        currentProduct.id
+      );
+      if (res.data?.data?.custom_options) {
+        setFormData((prev) => ({
+          ...prev,
+          custom_options: res.data.data.custom_options,
+        }));
+      }
+      toast({
+        title: "Image updated!",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Image upload failed",
+        description: error.response?.data?.message || "Please try again.",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
     }
-    toast({
-      title: "Image updated!",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
-  } catch (error) {
-    toast({
-      title: "Image upload failed",
-      description: error.response?.data?.message || "Please try again.",
-      status: "error",
-      duration: 4000,
-      isClosable: true,
-    });
-  }
-};
+  };
 
   const handleImagesChange = (images) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      new_images: images
+      new_images: images,
     }));
   };
 
   const handleExistingImagesChange = (images) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      existing_images: images
+      existing_images: images,
     }));
   };
 
   const handleCategoriesChange = (categories) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      categories
+      categories,
     }));
   };
 
   const handleServicesChange = (services) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      services
+      services,
     }));
   };
 
   const handleCustomDetailsChange = (customDetails) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      custom_details: customDetails
+      custom_details: customDetails,
     }));
   };
 
@@ -451,16 +488,20 @@ const EditProductPage = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.title?.trim()) newErrors.title = 'Title is required';
-    if (!formData.description?.trim()) newErrors.description = 'Description is required';
-    if (!formData.weight) newErrors.weight = 'Weight is required';
-    if (!formData.purchase_price_nett) newErrors.purchase_price_nett = 'Purchase price is required';
-    if (!formData.regular_price_nett) newErrors.regular_price_nett = 'Regular price is required';
-    
+    if (!formData.title?.trim()) newErrors.title = "Title is required";
+    if (!formData.description?.trim())
+      newErrors.description = "Description is required";
+    if (!formData.weight) newErrors.weight = "Weight is required";
+    if (!formData.purchase_price_nett)
+      newErrors.purchase_price_nett = "Purchase price is required";
+    if (!formData.regular_price_nett)
+      newErrors.regular_price_nett = "Regular price is required";
+
     if (!formData.tax_id) {
-      newErrors.tax_id = 'Tax is required';
+      newErrors.tax_id = "Tax is required";
       if (taxes.length === 0) {
-        newErrors.tax_id = 'No taxes available. Please create a tax rate first.';
+        newErrors.tax_id =
+          "No taxes available. Please create a tax rate first.";
       }
     }
 
@@ -469,13 +510,15 @@ const EditProductPage = () => {
   };
 
   const isFormValid = () => {
-    return formData.title?.trim() && 
-           formData.description?.trim() && 
-           formData.weight && 
-           formData.purchase_price_nett && 
-           formData.regular_price_nett && 
-           formData.tax_id &&
-           taxes.length > 0; // Ensure taxes are loaded
+    return (
+      formData.title?.trim() &&
+      formData.description?.trim() &&
+      formData.weight &&
+      formData.purchase_price_nett &&
+      formData.regular_price_nett &&
+      formData.tax_id &&
+      taxes.length > 0
+    ); // Ensure taxes are loaded
   };
 
   // Submit handler
@@ -534,9 +577,10 @@ const EditProductPage = () => {
         }
       });
 
-      console.log('Submitting updated custom options:', formData.custom_options);
-
-      const response = await productService.updateProduct(productId, formDataToSend);
+      const response = await productService.updateProduct(
+        productId,
+        formDataToSend
+      );
 
       toast({
         title: "Success!",
@@ -548,10 +592,12 @@ const EditProductPage = () => {
 
       navigate(`/products-console/${productId}`);
     } catch (error) {
-      console.error('Error updating product:', error);
+      console.error("Error updating product:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to update product. Please try again.",
+        description:
+          error.response?.data?.message ||
+          "Failed to update product. Please try again.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -586,7 +632,9 @@ const EditProductPage = () => {
         <Box ml={{ base: 0, md: 60 }} p="8">
           <Alert status="error" borderRadius="xl" boxShadow="lg">
             <AlertIcon />
-            <AlertDescription>Product not found or has been removed.</AlertDescription>
+            <AlertDescription>
+              Product not found or has been removed.
+            </AlertDescription>
           </Alert>
           <Button
             mt={6}

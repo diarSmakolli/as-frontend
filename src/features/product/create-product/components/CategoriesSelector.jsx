@@ -69,14 +69,11 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
   const searchBg = useColorModeValue("gray.50", "gray.700");
 
   const handleCategoryToggle = (categoryId) => {
-    console.log('Toggling category:', categoryId);
-    console.log('Current selected:', selectedCategories);
     
     const newSelected = selectedCategories.includes(categoryId)
       ? selectedCategories.filter(id => id !== categoryId)
       : [...selectedCategories, categoryId];
     
-    console.log('New selected:', newSelected);
     onCategoriesChange(newSelected);
   };
 

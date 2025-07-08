@@ -52,10 +52,10 @@ const ImageUpload = ({ onImagesChange }) => {
       return true;
     });
 
-    if (images.length + validFiles.length > 10) {
+    if (images.length + validFiles.length > 25) {
       toast({
         title: 'Too many images',
-        description: 'Maximum 10 images allowed',
+        description: 'Maximum 25 images allowed',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -125,7 +125,7 @@ const ImageUpload = ({ onImagesChange }) => {
               Click to upload or drag and drop
             </Text>
             <Text color="gray.500" fontSize="sm">
-              PNG, JPG, JPEG up to 10MB (Max 10 images)
+              PNG, JPG, JPEG up to 10MB (Max 25 images)
             </Text>
           </VStack>
         </VStack>

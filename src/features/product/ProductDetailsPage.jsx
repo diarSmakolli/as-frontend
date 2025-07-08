@@ -347,7 +347,6 @@ const ProductDetailsPage = () => {
         duration: 5000,
         isClosable: true,
       });
-      console.log("error: ", error)
     } finally {
       setPublishing(false);
     }

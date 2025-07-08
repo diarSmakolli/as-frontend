@@ -144,7 +144,6 @@ const ProductServicesForm = ({ companies, services, onServicesChange }) => {
       newServices = [...services, serviceData];
     }
 
-    console.log('Updated services array:', newServices);
     onServicesChange(newServices);
     resetForm();
 

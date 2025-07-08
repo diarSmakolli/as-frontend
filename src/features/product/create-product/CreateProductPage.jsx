@@ -167,12 +167,9 @@ const CreateProductPage = () => {
                            categoriesResponse.data?.data || 
                            [];
       
-      console.log('Categories response:', categoriesResponse.data);
-      console.log('Categories data:', categoriesData);
       
       setCategories(categoriesData);
     } catch (error) {
-      console.error('Error loading initial data:', error);
       handleApiError(error, toast);
     } finally {
       setLoadingData(false);
@@ -198,7 +195,6 @@ const CreateProductPage = () => {
   };
 
   const handleCustomOptionsChange = (customOptions) => {
-    console.log('Custom options changed:', customOptions);
     setFormData(prev => ({
       ...prev,
       custom_options: customOptions
@@ -250,7 +246,6 @@ const CreateProductPage = () => {
         }
       });
 
-      console.log('Custom options being sent:', formData.custom_options);
 
       const response = await productService.createProduct(formDataToSend);
 
