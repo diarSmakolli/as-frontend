@@ -1292,8 +1292,8 @@ function CustomerProductPage() {
                                               Included
                                             </Text>
                                           )} */}
-                                          // Around line 1030-1060, replace the
-                                          price display logic:
+                                          {/* // Around line 1030-1060, replace the
+                                          price display logic: */}
                                           {parseFloat(value.price_modifier) >
                                           0 ? (
                                             <Text
