@@ -353,6 +353,43 @@ function CustomerProductPage() {
   }, [product?.custom_options]);
 
   // Calculate total price including services and custom options
+  // const calculateTotalPrice = () => {
+  //   if (!product) return 0;
+
+  //   // Start from the base price (final_price.gross)
+  //   let basePrice = product.pricing.final_price.gross || 0;
+
+  //   // Add selected services price
+  //   let servicesPrice = selectedServices.reduce((sum, serviceId) => {
+  //     const service = productServices.find((s) => s.id === serviceId);
+  //     return sum + (service ? parseFloat(service.price || 0) : 0);
+  //   }, 0);
+
+  //   // Add custom options price
+  //   let customOptionsPrice = Object.entries(selectedCustomOptions).reduce(
+  //     (sum, [optionId, valueData]) => {
+  //       if (valueData && valueData.price_modifier) {
+  //         if (valueData.price_modifier_type === "percentage") {
+  //           return (
+  //             sum + (basePrice * parseFloat(valueData.price_modifier)) / 100
+  //           );
+  //         } else {
+  //           return sum + parseFloat(valueData.price_modifier);
+  //         }
+  //       }
+  //       return sum;
+  //     },
+  //     0
+  //   );
+
+  //   // Total for one quantity
+  //   const totalOne = basePrice + servicesPrice + customOptionsPrice;
+
+  //   // Multiply by quantity
+  //   return totalOne * quantity;
+  // };
+
+  // Calculate total price including services and custom options
   const calculateTotalPrice = () => {
     if (!product) return 0;
 
@@ -365,16 +402,18 @@ function CustomerProductPage() {
       return sum + (service ? parseFloat(service.price || 0) : 0);
     }, 0);
 
-    // Add custom options price
+    // Add custom options price with proper handling of fixed vs percentage
     let customOptionsPrice = Object.entries(selectedCustomOptions).reduce(
       (sum, [optionId, valueData]) => {
         if (valueData && valueData.price_modifier) {
+          const priceModifier = parseFloat(valueData.price_modifier);
+
           if (valueData.price_modifier_type === "percentage") {
-            return (
-              sum + (basePrice * parseFloat(valueData.price_modifier)) / 100
-            );
+            // Calculate percentage of base price
+            return sum + (basePrice * priceModifier) / 100;
           } else {
-            return sum + parseFloat(valueData.price_modifier);
+            // Fixed amount (default case for 'fixed', 'm2', 'm3', etc.)
+            return sum + priceModifier;
           }
         }
         return sum;
