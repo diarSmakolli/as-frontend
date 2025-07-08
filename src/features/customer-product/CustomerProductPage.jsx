@@ -1148,7 +1148,6 @@ function CustomerProductPage() {
                           letterSpacing="tight"
                           fontFamily={"Bricolage Grotesque"}
                         >
-                          {/* <Icon as={FaPalette} mr={2} color="purple.500" />{" "} */}
                           Configurable Options
                         </Heading>
                         <VStack align="stretch" spacing={5}>
@@ -1258,7 +1257,7 @@ function CustomerProductPage() {
                                             {value.display_name ||
                                               value.option_value}
                                           </Text>
-                                          {parseFloat(value.price_modifier) >
+                                          {/* {parseFloat(value.price_modifier) >
                                           0 ? (
                                             <Text
                                               fontSize="xs"
@@ -1283,6 +1282,51 @@ function CustomerProductPage() {
                                                 value.price_modifier
                                               ).toFixed(2)}
                                               €
+                                            </Text>
+                                          ) : (
+                                            <Text
+                                              fontSize="xs"
+                                              color="gray.500"
+                                              fontFamily={"Bricolage Grotesque"}
+                                            >
+                                              Included
+                                            </Text>
+                                          )} */}
+                                          // Around line 1030-1060, replace the
+                                          price display logic:
+                                          {parseFloat(value.price_modifier) >
+                                          0 ? (
+                                            <Text
+                                              fontSize="xs"
+                                              fontWeight="bold"
+                                              color="black"
+                                              fontFamily={"Bricolage Grotesque"}
+                                            >
+                                              {value.price_modifier_type ===
+                                              "percentage"
+                                                ? `+${parseFloat(
+                                                    value.price_modifier
+                                                  ).toFixed(2)}%`
+                                                : `${parseFloat(
+                                                    value.price_modifier
+                                                  ).toFixed(2)}€`}
+                                            </Text>
+                                          ) : parseFloat(value.price_modifier) <
+                                            0 ? (
+                                            <Text
+                                              fontSize="xs"
+                                              fontWeight="bold"
+                                              color="red.600"
+                                              fontFamily={"Bricolage Grotesque"}
+                                            >
+                                              {value.price_modifier_type ===
+                                              "percentage"
+                                                ? `${parseFloat(
+                                                    value.price_modifier
+                                                  ).toFixed(2)}%`
+                                                : `${parseFloat(
+                                                    value.price_modifier
+                                                  ).toFixed(2)}€`}
                                             </Text>
                                           ) : (
                                             <Text
@@ -1333,11 +1377,21 @@ function CustomerProductPage() {
                                     }
                                   }}
                                 >
-                                  {option.option_values?.map((value) => (
+                                  {/* {option.option_values?.map((value) => (
                                     <option key={value.id} value={value.id}>
                                       {value.display_name || value.option_value}
                                       {parseFloat(value.price_modifier) > 0 &&
                                         ` (+${value.price_modifier}€)`}
+                                    </option>
+                                  ))} */}
+                                  {option.option_values?.map((value) => (
+                                    <option key={value.id} value={value.id}>
+                                      {value.display_name || value.option_value}
+                                      {parseFloat(value.price_modifier) > 0 &&
+                                        (value.price_modifier_type ===
+                                        "percentage"
+                                          ? ` (+${value.price_modifier}%)`
+                                          : ` (+${value.price_modifier}€)`)}
                                     </option>
                                   ))}
                                 </Select>
@@ -2444,7 +2498,7 @@ function CustomerProductPage() {
                                         {value.display_name ||
                                           value.option_value}
                                       </Text>
-                                      {parseFloat(value.price_modifier) > 0 ? (
+                                      {/* {parseFloat(value.price_modifier) > 0 ? (
                                         <Text
                                           fontSize="xs"
                                           fontWeight="bold"
@@ -2468,6 +2522,49 @@ function CustomerProductPage() {
                                             value.price_modifier
                                           ).toFixed(2)}
                                           €
+                                        </Text>
+                                      ) : (
+                                        <Text
+                                          fontSize="xs"
+                                          color="gray.500"
+                                          fontFamily={"Bricolage Grotesque"}
+                                        >
+                                          Included
+                                        </Text>
+                                      )} */}
+
+                                      {parseFloat(value.price_modifier) > 0 ? (
+                                        <Text
+                                          fontSize="xs"
+                                          fontWeight="bold"
+                                          color="black"
+                                          fontFamily={"Bricolage Grotesque"}
+                                        >
+                                          {value.price_modifier_type ===
+                                          "percentage"
+                                            ? `+${parseFloat(
+                                                value.price_modifier
+                                              ).toFixed(2)}%`
+                                            : `${parseFloat(
+                                                value.price_modifier
+                                              ).toFixed(2)}€`}
+                                        </Text>
+                                      ) : parseFloat(value.price_modifier) <
+                                        0 ? (
+                                        <Text
+                                          fontSize="xs"
+                                          fontWeight="bold"
+                                          color="red.600"
+                                          fontFamily={"Bricolage Grotesque"}
+                                        >
+                                          {value.price_modifier_type ===
+                                          "percentage"
+                                            ? `${parseFloat(
+                                                value.price_modifier
+                                              ).toFixed(2)}%`
+                                            : `${parseFloat(
+                                                value.price_modifier
+                                              ).toFixed(2)}€`}
                                         </Text>
                                       ) : (
                                         <Text
@@ -2517,11 +2614,20 @@ function CustomerProductPage() {
                                 }
                               }}
                             >
-                              {option.option_values?.map((value) => (
+                              {/* {option.option_values?.map((value) => (
                                 <option key={value.id} value={value.id}>
                                   {value.display_name || value.option_value}
                                   {parseFloat(value.price_modifier) > 0 &&
                                     ` (+${value.price_modifier}€)`}
+                                </option>
+                              ))} */}
+                              {option.option_values?.map((value) => (
+                                <option key={value.id} value={value.id}>
+                                  {value.display_name || value.option_value}
+                                  {parseFloat(value.price_modifier) > 0 &&
+                                    (value.price_modifier_type === "percentage"
+                                      ? ` (+${value.price_modifier}%)`
+                                      : ` (+${value.price_modifier}€)`)}
                                 </option>
                               ))}
                             </Select>
