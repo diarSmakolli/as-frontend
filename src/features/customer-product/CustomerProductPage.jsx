@@ -1205,7 +1205,7 @@ function CustomerProductPage() {
                                                 }
                                                 w="full"
                                                 h="full"
-                                                objectFit="cover"
+                                                objectFit="fill"
                                               />
                                             </Box>
                                           )}
