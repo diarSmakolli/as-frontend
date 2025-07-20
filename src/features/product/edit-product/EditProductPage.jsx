@@ -208,6 +208,8 @@ const handleDimensionalPricingChange = (dimensionalData) => {
     max_height: 0,
     min_depth: 0,
     max_depth: 0,
+    min_length: 0,
+    max_length: 0,
     premium_width_from: 0,
     premium_width_to: 0,
     premium_height_from: 0,
@@ -411,6 +413,7 @@ const handleDimensionalPricingChange = (dimensionalData) => {
         premium_height_to: product.premium_height_to || 0,
         premium_depth_from: product.premium_depth_from || 0,
         premium_depth_to: product.premium_depth_to || 0,
+        
         standard_width: product.standard_width || 0,
         standard_height: product.standard_height || 0,
         standard_depth: product.standard_depth || 0,
@@ -1523,81 +1526,6 @@ const handleDimensionalPricingChange = (dimensionalData) => {
                 </CardBody>
               </MotionCard>
 
-              {/* Dimensional Pricing */}
-              {/* <MotionCard
-                {...slideUp}
-                transition={{ delay: 0.35 }}
-                bg={cardBg}
-                borderRadius="xl"
-                borderWidth="1px"
-                borderColor={borderColor}
-              >
-                <CardHeader bg="orange.50" py={4}>
-                  <HStack>
-                    <FiDollarSign />
-                    <Text fontWeight="medium" color="orange.800">
-                      Dimensional Pricing Configuration
-                    </Text>
-                  </HStack>
-                </CardHeader>
-                <CardBody>
-                  <DimensionalPricingForm
-                    formData={formData}
-                    onDimensionalPricingChange={handleDimensionalPricingChange}
-                    errors={errors}
-                  />
-                </CardBody>
-              </MotionCard> */}
-              {/* <MotionCard
-                {...slideUp}
-                transition={{ delay: 0.35 }}
-                bg={cardBg}
-                borderRadius="xl"
-                borderWidth="1px"
-                borderColor={borderColor}
-              >
-                <CardHeader bg="orange.50" py={4}>
-                  <HStack>
-                    <FiDollarSign />
-                    <Text fontWeight="medium" color="orange.800">
-                      Dimensional Pricing Configuration
-                    </Text>
-                  </HStack>
-                </CardHeader>
-                <CardBody>
-                  <DimensionalPricingForm
-                    formData={formData}
-                    onDimensionalPricingChange={handleDimensionalPricingChange}
-                    errors={errors}
-                  />
-                </CardBody>
-              </MotionCard> */}
-
-              {/* <MotionCard
-                {...slideUp}
-                bg={cardBg}
-                borderRadius="xl"
-                borderWidth="1px"
-                borderColor={borderColor}
-              >
-                <CardHeader bg="green.50" py={4}>
-                  <HStack>
-                    <Icon as={FiSettings} color="green.500" />
-                    <Text fontWeight="medium" color="green.800">
-                      Dimensional Pricing Configuration
-                    </Text>
-                  </HStack>
-                </CardHeader>
-                <CardBody>
-                  <DimensionalPricingForm
-                    formData={formData}
-                    onChange={handleDimensionalPricingChange}
-                    errors={errors}
-                  />
-                </CardBody>
-              </MotionCard> */}
-
-              {/* Add this new accordion item after the "Physical Properties" card and before "Product Features" */}
               <MotionCard
                 {...slideUp}
                 transition={{ delay: 0.45 }}
@@ -2069,6 +1997,72 @@ const handleDimensionalPricingChange = (dimensionalData) => {
                                 </HStack>
                               </Box>
                             )}
+
+                            {(formData.dimensional_calculation_type ===
+                              "linear-meter" ||
+                              formData.dimensional_calculation_type ===
+                                "meter") && (
+                              <Box>
+                                <Text
+                                  fontSize="sm"
+                                  fontWeight="medium"
+                                  mb={2}
+                                  color="gray.600"
+                                >
+                                  Premium Length Range ({formData.measures_unit}
+                                  )
+                                </Text>
+                                <HStack spacing={2}>
+                                  <VStack align="stretch" spacing={1} flex={1}>
+                                    <Text fontSize="xs" color="gray.500">
+                                      From
+                                    </Text>
+                                    <NumberInput
+                                      value={formData.premium_length_from}
+                                      onChange={(value) =>
+                                        handleInputChange(
+                                          "premium_length_from",
+                                          parseFloat(value) || 0
+                                        )
+                                      }
+                                      min={0}
+                                      precision={2}
+                                      size="sm"
+                                    >
+                                      <NumberInputField
+                                        placeholder="0"
+                                        bg="gray.50"
+                                      />
+                                    </NumberInput>
+                                  </VStack>
+                                  <Text fontSize="sm" color="gray.400" mt={4}>
+                                    to
+                                  </Text>
+                                  <VStack align="stretch" spacing={1} flex={1}>
+                                    <Text fontSize="xs" color="gray.500">
+                                      To
+                                    </Text>
+                                    <NumberInput
+                                      value={formData.premium_length_to}
+                                      onChange={(value) =>
+                                        handleInputChange(
+                                          "premium_length_to",
+                                          parseFloat(value) || 0
+                                        )
+                                      }
+                                      min={0}
+                                      precision={2}
+                                      size="sm"
+                                    >
+                                      <NumberInputField
+                                        placeholder="0"
+                                        bg="gray.50"
+                                      />
+                                    </NumberInput>
+                                  </VStack>
+                                </HStack>
+                              </Box>
+                            )}
                           </SimpleGrid>
 
                           {/* Help text for premium pricing */}
@@ -2218,6 +2212,50 @@ const handleDimensionalPricingChange = (dimensionalData) => {
                                 </NumberInput>
                               </HStack>
                             </VStack>
+
+                            {/* ADD Length Limits */}
+                            <VStack align="stretch" spacing={2}>
+                              <Text fontSize="sm" color="gray.600">
+                                Length Limits ({formData.measures_unit})
+                              </Text>
+                              <HStack>
+                                <NumberInput
+                                  value={formData.min_length}
+                                  onChange={(value) =>
+                                    handleInputChange(
+                                      "min_length",
+                                      parseFloat(value) || 0
+                                    )
+                                  }
+                                  min={0}
+                                  precision={2}
+                                  size="sm"
+                                >
+                                  <NumberInputField
+                                    placeholder="Min"
+                                    bg="gray.50"
+                                  />
+                                </NumberInput>
+                                <Text>to</Text>
+                                <NumberInput
+                                  value={formData.max_length}
+                                  onChange={(value) =>
+                                    handleInputChange(
+                                      "max_length",
+                                      parseFloat(value) || 0
+                                    )
+                                  }
+                                  min={0}
+                                  precision={2}
+                                  size="sm"
+                                >
+                                  <NumberInputField
+                                    placeholder="Max"
+                                    bg="gray.50"
+                                  />
+                                </NumberInput>
+                              </HStack>
+                            </VStack>
                           </SimpleGrid>
                         </Box>
 
@@ -2283,6 +2321,26 @@ const handleDimensionalPricingChange = (dimensionalData) => {
                                 <NumberInputField bg="gray.50" />
                               </NumberInput>
                             </FormControl>
+
+                            <FormControl>
+                              <FormLabel fontSize="sm">
+                                Standard Length ({formData.measures_unit})
+                              </FormLabel>
+                              <NumberInput
+                                value={formData.standard_length}
+                                onChange={(value) =>
+                                  handleInputChange(
+                                    "standard_length",
+                                    parseFloat(value) || 0
+                                  )
+                                }
+                                min={0}
+                                precision={2}
+                              >
+                                <NumberInputField bg="gray.50" />
+                              </NumberInput>
+                            </FormControl>
+
                           </SimpleGrid>
                         </Box>
                       </>
