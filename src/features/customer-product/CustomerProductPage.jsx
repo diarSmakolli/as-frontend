@@ -1536,7 +1536,7 @@ function CustomerProductPage() {
                           letterSpacing="tight"
                           fontFamily="Bogle"
                         >
-                          Configurable Options
+                          Options configurables
                         </Heading>
 
                         {/* Global scrollable container for all custom options */}
@@ -1572,20 +1572,21 @@ function CustomerProductPage() {
                                 <Box
                                   mb={6}
                                   p={4}
-                                  borderWidth={1}
+                                  borderWidth={0}
                                   borderRadius="md"
                                   bg="white"
-                                  shadow="sm"
+                                  shadow="none"
                                 >
                                   <Text
                                     fontSize="lg"
                                     fontWeight="semibold"
                                     mb={3}
+                                    fontFamily="Bogle"
                                   >
-                                    Customize Dimensions
+                                    Personnaliser les dimensions
                                   </Text>
-                                  <Text fontSize="sm" color="gray.600" mb={4}>
-                                    Calculation Type:{" "}
+                                  <Text fontSize="sm" color="gray.600" mb={4} fontFamily="Bogle">
+                                    Type de calcul:{" "}
                                     {
                                       pricingConfig?.dimensional_calculation_type
                                     }
@@ -2950,16 +2951,16 @@ function CustomerProductPage() {
                   letterSpacing="tight"
                   fontFamily={"Bogle"}
                 >
-                  Configurable Options
+                  Options configurables
                 </Heading>
                 <VStack align="stretch" spacing={5}>
                   {product?.is_dimensional_pricing && pricingConfig && (
                     <Box
                       mb={6}
                       p={4}
-                      borderWidth={1}
+                      borderWidth={0}
                       borderRadius="md"
-                      bg="gray.50"
+                      bg="transparent"
                     >
                       <Text
                         fontSize="md"
@@ -2967,7 +2968,7 @@ function CustomerProductPage() {
                         mb={3}
                         fontFamily={"Bogle"}
                       >
-                        Customize Dimensions
+                        Personnaliser les dimensions
                       </Text>
                       <Text
                         fontSize="sm"
