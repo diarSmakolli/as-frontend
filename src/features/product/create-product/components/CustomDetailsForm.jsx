@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   VStack,
@@ -30,100 +30,131 @@ import {
   Flex,
   Divider,
   Tooltip,
-} from '@chakra-ui/react';
-import { 
-  FiPlus, 
-  FiEdit, 
-  FiTrash2, 
+} from "@chakra-ui/react";
+import {
+  FiPlus,
+  FiEdit,
+  FiTrash2,
   FiInfo,
   FiTag,
   FiEye,
-  FiSettings
-} from 'react-icons/fi';
-import { motion } from 'framer-motion';
+  FiSettings,
+} from "react-icons/fi";
+import { motion } from "framer-motion";
+import { customToastContainerStyle } from "../../../../commons/toastStyles";
 
 const MotionBox = motion.create(Box);
 
 const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
   const toast = useToast();
-  const { isOpen: isFormOpen, onToggle: toggleForm } = useDisclosure({ defaultIsOpen: true });
+  const { isOpen: isFormOpen, onToggle: toggleForm } = useDisclosure({
+    defaultIsOpen: true,
+  });
   const { isOpen: isPreviewOpen, onToggle: togglePreview } = useDisclosure();
-  
+
   const [currentDetail, setCurrentDetail] = useState({
     // key: '',
-    label: '',
-    value: ''
+    label: "",
+    value: "",
   });
   const [errors, setErrors] = useState({});
   const [editingIndex, setEditingIndex] = useState(null);
 
   const commonDetails = [
-    { key: 'material', label: 'Material', placeholder: 'e.g., Wood, Metal, Plastic', icon: '🔧' },
-    { key: 'color', label: 'Color', placeholder: 'e.g., Black, White, Red', icon: '🎨' },
-    { key: 'brand', label: 'Brand', placeholder: 'e.g., Sony, Apple, Samsung', icon: '🏷️' },
-    { key: 'model', label: 'Model', placeholder: 'e.g., XYZ-123', icon: '📱' },
-    { key: 'warranty', label: 'Warranty', placeholder: 'e.g., 2 Years', icon: '🛡️' },
-    { key: 'country_of_origin', label: 'Country of Origin', placeholder: 'e.g., Germany', icon: '🌍' },
-    { key: 'certification', label: 'Certification', placeholder: 'e.g., CE, FCC', icon: '✅' },
-    { key: 'energy_rating', label: 'Energy Rating', placeholder: 'e.g., A++', icon: '⚡' },
-    { key: 'dimensions', label: 'Dimensions', placeholder: 'e.g., 50x30x20 cm', icon: '📏' },
-    { key: 'weight_capacity', label: 'Weight Capacity', placeholder: 'e.g., 150 kg', icon: '⚖️' }
+    {
+      key: "material",
+      label: "Material",
+      placeholder: "e.g., Wood, Metal, Plastic",
+      icon: "🔧",
+    },
+    {
+      key: "color",
+      label: "Color",
+      placeholder: "e.g., Black, White, Red",
+      icon: "🎨",
+    },
+    {
+      key: "brand",
+      label: "Brand",
+      placeholder: "e.g., Sony, Apple, Samsung",
+      icon: "🏷️",
+    },
+    { key: "model", label: "Model", placeholder: "e.g., XYZ-123", icon: "📱" },
+    {
+      key: "warranty",
+      label: "Warranty",
+      placeholder: "e.g., 2 Years",
+      icon: "🛡️",
+    },
+    {
+      key: "country_of_origin",
+      label: "Country of Origin",
+      placeholder: "e.g., Germany",
+      icon: "🌍",
+    },
+    {
+      key: "certification",
+      label: "Certification",
+      placeholder: "e.g., CE, FCC",
+      icon: "✅",
+    },
+    {
+      key: "energy_rating",
+      label: "Energy Rating",
+      placeholder: "e.g., A++",
+      icon: "⚡",
+    },
+    {
+      key: "dimensions",
+      label: "Dimensions",
+      placeholder: "e.g., 50x30x20 cm",
+      icon: "📏",
+    },
+    {
+      key: "weight_capacity",
+      label: "Weight Capacity",
+      placeholder: "e.g., 150 kg",
+      icon: "⚖️",
+    },
   ];
 
   const handleInputChange = (name, value) => {
-    setCurrentDetail(prev => ({
+    setCurrentDetail((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+      setErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
 
   const validateDetail = () => {
     const newErrors = {};
-    
-    // if (!currentDetail.key?.trim()) {
-    //   newErrors.key = 'Key is required';
-    // } else if (!/^[a-z0-9_]+$/.test(currentDetail.key.toLowerCase())) {
-    //   newErrors.key = 'Key must contain only letters, numbers, and underscores';
-    // }
-    
+
     if (!currentDetail.label?.trim()) {
-      newErrors.label = 'Label is required';
+      newErrors.label = "Label is required";
     }
-    
+
     if (!currentDetail.value?.trim()) {
-      newErrors.value = 'Value is required';
+      newErrors.value = "Value is required";
     }
-    
-    // // Check if key already exists (except when editing)
-    // const existingIndex = customDetails.findIndex(detail => 
-    //   detail.key.toLowerCase() === currentDetail.key.toLowerCase()
-    // );
-    
-    // if (existingIndex !== -1 && existingIndex !== editingIndex) {
-    //   newErrors.key = 'A detail with this key already exists';
-    // }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // const sanitizeKey = (key) => {
-  //   return key.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/_{2,}/g, '_');
-  // };
-
   const addOrUpdateDetail = () => {
     if (!validateDetail()) {
       toast({
-        title: 'Validation Error',
-        description: 'Please fix the form errors before adding the detail',
-        status: 'error',
+        title: "Validation Error",
+        description: "Please fix the form errors before adding the detail",
+        status: "error",
         duration: 3000,
         isClosable: true,
+        variant: 'custom',
+        containerStyle: customToastContainerStyle
       });
       return;
     }
@@ -158,19 +189,23 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
     resetForm();
 
     toast({
-      title: editingIndex !== null ? 'Detail Updated' : 'Detail Added',
-      description: `${detailData.label} has been ${editingIndex !== null ? 'updated' : 'added'} successfully`,
-      status: 'success',
+      title: editingIndex !== null ? "Detail Updated" : "Detail Added",
+      description: `${detailData.label} has been ${
+        editingIndex !== null ? "updated" : "added"
+      } successfully`,
+      status: "success",
       duration: 2000,
       isClosable: true,
+      variant: 'custom',
+      containerStyle: customToastContainerStyle
     });
   };
 
   const resetForm = () => {
     setCurrentDetail({
       // key: '',
-      label: '',
-      value: ''
+      label: "",
+      value: "",
     });
     setErrors({});
     setEditingIndex(null);
@@ -180,7 +215,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
     setCurrentDetail({
       // key: detail.key,
       label: detail.label,
-      value: ''
+      value: "",
     });
     if (!isFormOpen) toggleForm();
   };
@@ -195,13 +230,15 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
   const removeDetail = (index) => {
     const newDetails = customDetails.filter((_, i) => i !== index);
     onCustomDetailsChange(newDetails);
-    
+
     toast({
-      title: 'Detail Removed',
-      description: 'Custom detail has been removed successfully',
-      status: 'info',
+      title: "Detail Removed",
+      description: "Custom detail has been removed successfully",
+      status: "info",
       duration: 2000,
       isClosable: true,
+      variant: 'custom',
+      containerStyle: customToastContainerStyle
     });
   };
 
@@ -215,7 +252,8 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
           </Text>
           {customDetails.length > 0 && (
             <Badge colorScheme="green" variant="subtle">
-              {customDetails.length} detail{customDetails.length !== 1 ? 's' : ''}
+              {customDetails.length} detail
+              {customDetails.length !== 1 ? "s" : ""}
             </Badge>
           )}
         </HStack>
@@ -227,7 +265,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
               variant="ghost"
               onClick={togglePreview}
             >
-              {isPreviewOpen ? 'Hide Preview' : 'Preview'}
+              {isPreviewOpen ? "Hide Preview" : "Preview"}
             </Button>
           )}
           <Button
@@ -237,7 +275,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
             onClick={toggleForm}
             variant={isFormOpen ? "outline" : "solid"}
           >
-            {isFormOpen ? 'Hide Form' : 'Add Detail'}
+            {isFormOpen ? "Hide Form" : "Add Detail"}
           </Button>
         </HStack>
       </HStack>
@@ -249,7 +287,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
             Quick Add Common Details
           </Text>
           <Wrap spacing={2}>
-            {commonDetails.map(detail => (
+            {commonDetails.map((detail) => (
               <WrapItem>
                 <Tooltip label={detail.placeholder} placement="top">
                   <Button
@@ -275,7 +313,9 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
             <HStack>
               <FiTag />
               <Text fontWeight="medium" color="green.800">
-                {editingIndex !== null ? 'Edit Custom Detail' : 'Add Custom Detail'}
+                {editingIndex !== null
+                  ? "Edit Custom Detail"
+                  : "Add Custom Detail"}
               </Text>
             </HStack>
           </CardHeader>
@@ -308,18 +348,19 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
                   </FormLabel>
                   <Input
                     value={currentDetail.label}
-                    onChange={(e) => handleInputChange('label', e.target.value)}
+                    onChange={(e) => handleInputChange("label", e.target.value)}
                     placeholder="e.g., Material"
                     bg="gray.50"
                     border="1px"
                     borderColor="gray.200"
                     _hover={{ borderColor: "gray.300" }}
-                    _focus={{ borderColor: "green.400", boxShadow: "0 0 0 1px #38a169" }}
+                    _focus={{
+                      borderColor: "green.400",
+                      boxShadow: "0 0 0 1px #38a169",
+                    }}
                   />
                   <FormErrorMessage>{errors.label}</FormErrorMessage>
-                  <FormHelperText>
-                    Label shown to customers
-                  </FormHelperText>
+                  <FormHelperText>Label shown to customers</FormHelperText>
                 </FormControl>
 
                 <FormControl isInvalid={!!errors.value}>
@@ -328,18 +369,19 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
                   </FormLabel>
                   <Input
                     value={currentDetail.value}
-                    onChange={(e) => handleInputChange('value', e.target.value)}
+                    onChange={(e) => handleInputChange("value", e.target.value)}
                     placeholder="e.g., Premium Wood"
                     bg="gray.50"
                     border="1px"
                     borderColor="gray.200"
                     _hover={{ borderColor: "gray.300" }}
-                    _focus={{ borderColor: "green.400", boxShadow: "0 0 0 1px #38a169" }}
+                    _focus={{
+                      borderColor: "green.400",
+                      boxShadow: "0 0 0 1px #38a169",
+                    }}
                   />
                   <FormErrorMessage>{errors.value}</FormErrorMessage>
-                  <FormHelperText>
-                    The actual detail content
-                  </FormHelperText>
+                  <FormHelperText>The actual detail content</FormHelperText>
                 </FormControl>
               </SimpleGrid>
 
@@ -356,7 +398,12 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
               )} */}
 
               {/* Action Buttons */}
-              <HStack justify="flex-end" pt={4} borderTop="1px" borderColor="gray.200">
+              <HStack
+                justify="flex-end"
+                pt={4}
+                borderTop="1px"
+                borderColor="gray.200"
+              >
                 <Button variant="ghost" onClick={resetForm}>
                   Cancel
                 </Button>
@@ -365,7 +412,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
                   onClick={addOrUpdateDetail}
                   leftIcon={editingIndex !== null ? <FiEdit /> : <FiPlus />}
                 >
-                  {editingIndex !== null ? 'Update Detail' : 'Add Detail'}
+                  {editingIndex !== null ? "Update Detail" : "Add Detail"}
                 </Button>
               </HStack>
             </VStack>
@@ -379,7 +426,7 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
           <Text fontSize="md" fontWeight="medium" color="gray.700">
             Added Details ({customDetails.length})
           </Text>
-          
+
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
             {customDetails.map((detail, index) => (
               <MotionBox
@@ -473,7 +520,13 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
             </HStack>
           </CardHeader>
           <CardBody>
-            <Box bg="white" p={4} borderRadius="md" border="1px" borderColor="blue.200">
+            <Box
+              bg="white"
+              p={4}
+              borderRadius="md"
+              border="1px"
+              borderColor="blue.200"
+            >
               <Text fontSize="md" fontWeight="bold" color="gray.900" mb={3}>
                 Product Specifications
               </Text>
@@ -499,9 +552,10 @@ const CustomDetailsForm = ({ customDetails, onCustomDetailsChange }) => {
         <AlertIcon />
         <Box>
           <AlertDescription fontSize="sm">
-            <strong>Custom Details</strong> help customers understand your product better. 
-            Add specifications like materials, dimensions, certifications, or any unique features 
-            that make your product special.
+            <strong>Custom Details</strong> help customers understand your
+            product better. Add specifications like materials, dimensions,
+            certifications, or any unique features that make your product
+            special.
           </AlertDescription>
         </Box>
       </Alert>

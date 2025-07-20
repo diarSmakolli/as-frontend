@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 import {
   Box,
   VStack,
@@ -11,10 +11,10 @@ import {
   Badge,
   useToast,
   Center,
-  Image
-} from '@chakra-ui/react';
-import { FiUpload, FiX, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
-import { motion } from 'framer-motion';
+  Image,
+} from "@chakra-ui/react";
+import { FiUpload, FiX, FiArrowLeft, FiArrowRight } from "react-icons/fi";
+import { motion } from "framer-motion";
 
 const MotionBox = motion.create(Box);
 
@@ -26,39 +26,46 @@ const ImageUpload = ({ onImagesChange }) => {
 
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
-    
+
     // Validate files
-    const validFiles = files.filter(file => {
-      if (!file.type.startsWith('image/')) {
+    const validFiles = files.filter((file) => {
+      if (!file.type.startsWith("image/")) {
         toast({
-          title: 'Invalid file type',
+          title: "Invalid file type",
           description: `${file.name} is not a valid image file`,
-          status: 'error',
+          status: "error",
           duration: 3000,
           isClosable: true,
+          variant: "custom",
+          containerStyle: customToastContainerStyle,
         });
         return false;
       }
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB limit
         toast({
-          title: 'File too large',
+          title: "File too large",
           description: `${file.name} is too large. Maximum size is 10MB`,
-          status: 'error',
+          status: "error",
           duration: 3000,
           isClosable: true,
+          variant: "custom",
+          containerStyle: customToastContainerStyle,
         });
         return false;
       }
       return true;
     });
 
-    if (images.length + validFiles.length > 25) {
+    if (images.length + validFiles.length > 10) {
       toast({
-        title: 'Too many images',
-        description: 'Maximum 25 images allowed',
-        status: 'error',
+        title: "Too many images",
+        description: "Maximum 10 images allowed",
+        status: "error",
         duration: 3000,
         isClosable: true,
+        variant: "custom",
+        containerStyle: customToastContainerStyle,
       });
       return;
     }
@@ -68,14 +75,17 @@ const ImageUpload = ({ onImagesChange }) => {
     onImagesChange(newImages);
 
     // Create previews
-    validFiles.forEach(file => {
+    validFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setPreviews(prev => [...prev, {
-          id: Date.now() + Math.random(),
-          url: e.target.result,
-          name: file.name
-        }]);
+        setPreviews((prev) => [
+          ...prev,
+          {
+            id: Date.now() + Math.random(),
+            url: e.target.result,
+            name: file.name,
+          },
+        ]);
       };
       reader.readAsDataURL(file);
     });
@@ -84,7 +94,7 @@ const ImageUpload = ({ onImagesChange }) => {
   const removeImage = (index) => {
     const newImages = images.filter((_, i) => i !== index);
     const newPreviews = previews.filter((_, i) => i !== index);
-    
+
     setImages(newImages);
     setPreviews(newPreviews);
     onImagesChange(newImages);
@@ -93,13 +103,13 @@ const ImageUpload = ({ onImagesChange }) => {
   const moveImage = (fromIndex, toIndex) => {
     const newImages = [...images];
     const newPreviews = [...previews];
-    
+
     const movedImage = newImages.splice(fromIndex, 1)[0];
     const movedPreview = newPreviews.splice(fromIndex, 1)[0];
-    
+
     newImages.splice(toIndex, 0, movedImage);
     newPreviews.splice(toIndex, 0, movedPreview);
-    
+
     setImages(newImages);
     setPreviews(newPreviews);
     onImagesChange(newImages);
@@ -125,11 +135,11 @@ const ImageUpload = ({ onImagesChange }) => {
               Click to upload or drag and drop
             </Text>
             <Text color="gray.500" fontSize="sm">
-              PNG, JPG, JPEG up to 10MB (Max 25 images)
+              PNG, JPG, JPEG up to 10MB (Max 10 images)
             </Text>
           </VStack>
         </VStack>
-        
+
         <Input
           ref={fileInputRef}
           type="file"
@@ -169,7 +179,7 @@ const ImageUpload = ({ onImagesChange }) => {
                     h="100%"
                     objectFit="cover"
                   />
-                  
+
                   {/* Controls Overlay */}
                   <Box
                     position="absolute"
@@ -200,7 +210,7 @@ const ImageUpload = ({ onImagesChange }) => {
                           aria-label="Move left"
                         />
                       )}
-                      
+
                       {/* Remove */}
                       <IconButton
                         icon={<FiX />}
@@ -213,7 +223,7 @@ const ImageUpload = ({ onImagesChange }) => {
                         }}
                         aria-label="Remove image"
                       />
-                      
+
                       {/* Move Right */}
                       {index < previews.length - 1 && (
                         <IconButton
@@ -245,7 +255,7 @@ const ImageUpload = ({ onImagesChange }) => {
                     </Badge>
                   )}
                 </Box>
-                
+
                 <Text
                   p={2}
                   fontSize="xs"
@@ -263,16 +273,32 @@ const ImageUpload = ({ onImagesChange }) => {
       )}
 
       {/* Help Text */}
-      <Box bg="blue.50" p={4} borderRadius="md" borderLeft="4px" borderColor="blue.400">
+      <Box
+        bg="blue.50"
+        p={4}
+        borderRadius="md"
+        borderLeft="4px"
+        borderColor="blue.400"
+      >
         <VStack align="start" spacing={1}>
           <Text fontSize="sm" color="blue.800" fontWeight="medium">
             Image Upload Guidelines:
           </Text>
-          <Text fontSize="xs" color="blue.700">• First image will be used as the main product image</Text>
-          <Text fontSize="xs" color="blue.700">• You can reorder images using the arrow buttons</Text>
-          <Text fontSize="xs" color="blue.700">• Supported formats: JPEG, PNG, WebP</Text>
-          <Text fontSize="xs" color="blue.700">• Maximum file size: 10MB per image</Text>
-          <Text fontSize="xs" color="blue.700">• Recommended resolution: 800x800px or higher</Text>
+          <Text fontSize="xs" color="blue.700">
+            • First image will be used as the main product image
+          </Text>
+          <Text fontSize="xs" color="blue.700">
+            • You can reorder images using the arrow buttons
+          </Text>
+          <Text fontSize="xs" color="blue.700">
+            • Supported formats: JPEG, PNG, WebP
+          </Text>
+          <Text fontSize="xs" color="blue.700">
+            • Maximum file size: 10MB per image
+          </Text>
+          <Text fontSize="xs" color="blue.700">
+            • Recommended resolution: 800x800px or higher
+          </Text>
         </VStack>
       </Box>
     </VStack>
