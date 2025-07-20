@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback } from "react";
 import {
   Box,
   SimpleGrid,
@@ -17,32 +17,24 @@ import {
   Alert,
   AlertIcon,
   useBreakpointValue,
-} from '@chakra-ui/react';
-import {
-  FaHeart,
-  FaBox,
-  FaChevronUp,
-} from 'react-icons/fa';
-import { useExploreAllProducts } from '../../features/home/hooks/useExploreAllProducts';
-import { useNavigate } from 'react-router-dom';
+  Skeleton,
+  SkeletonCircle,
+  SkeletonText,
+} from "@chakra-ui/react";
+import { FaHeart, FaBox, FaChevronUp, FaHome } from "react-icons/fa";
+import { useExploreAllProducts } from "../../features/home/hooks/useExploreAllProducts";
+import { useNavigate } from "react-router-dom";
 
 const ExploreAll = ({ initialFilters = {} }) => {
   const bottomRef = useRef();
-  
-  const {
-    products,
-    loading,
-    error,
-    hasMore,
-    totalCount,
-    loadMore,
-    filters,
-  } = useExploreAllProducts({
-    limit: 30,
-    sort_by: "created_at",
-    sort_order: "DESC",
-    ...initialFilters
-  });
+
+  const { products, loading, error, hasMore, totalCount, loadMore, filters } =
+    useExploreAllProducts({
+      limit: 30,
+      sort_by: "created_at",
+      sort_order: "DESC",
+      ...initialFilters,
+    });
 
   const columns = useBreakpointValue({
     base: 2,
@@ -61,17 +53,17 @@ const ExploreAll = ({ initialFilters = {} }) => {
       slug: apiProduct.slug,
       title: apiProduct.title,
       image: apiProduct.main_image_url,
-      price: apiProduct.pricing.final_price_nett,
-      originalPrice: apiProduct.pricing.is_discounted 
-        ? apiProduct.pricing.regular_price_nett 
+      price: apiProduct.pricing.final_price_gross,
+      originalPrice: apiProduct.pricing.is_discounted
+        ? apiProduct.pricing.regular_price_gross
         : null,
       discountPercentage: apiProduct.pricing.discount_percentage,
-      tag: apiProduct.badges.is_new 
-        ? "NEW" 
-        : apiProduct.badges.is_featured 
-        ? "FEATURED" 
-        : apiProduct.badges.is_on_sale 
-        ? "SALE" 
+      tag: apiProduct.badges.is_new
+        ? "NEW"
+        : apiProduct.badges.is_featured
+        ? "FEATURED"
+        : apiProduct.badges.is_on_sale
+        ? "SALE"
         : null,
       badges: apiProduct.badges,
       category: apiProduct.category,
@@ -84,7 +76,7 @@ const ExploreAll = ({ initialFilters = {} }) => {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
   };
 
@@ -102,9 +94,9 @@ const ExploreAll = ({ initialFilters = {} }) => {
           loadMore();
         }
       },
-      { 
+      {
         threshold: 0.1,
-        rootMargin: '100px'
+        rootMargin: "100px",
       }
     );
 
@@ -116,23 +108,78 @@ const ExploreAll = ({ initialFilters = {} }) => {
   }, [hasMore, loading, loadMore]);
 
   if (error) {
+    navigate('/')
+  }
+
+  if (products.length === 0) {
     return (
-      <Alert status="error" borderRadius="md">
-        <AlertIcon />
-        {error}
-        <Button 
-          ml={4} 
-          size="sm" 
-          onClick={() => window.location.reload()}
+      <>
+        <Box
+          minW="full"
+          p={8}
+          textAlign="center"
+          color="gray.500"
+          bg="transparent"
+          borderRadius="12px"
+          border="0px"
+          borderColor="brown.200"
         >
-          Retry
-        </Button>
-      </Alert>
+          <VStack spacing={4}>
+            <VStack spacing={2}>
+              <Text fontSize="xl" fontWeight="500" color="gray.600" fontFamily='Bogle'>
+                Aucun produit à explorer disponible
+              </Text>
+              <Text fontSize="sm" color="gray.400" fontFamily='Bogle'>
+                Revenez bientôt ou essayez d'ajuster vos filtres
+              </Text>
+            </VStack>
+          </VStack>
+        </Box>
+      </>
+    );
+  }
+
+  if (!loading && products.length === 0) {
+    return (
+      <Center py={16}>
+        <VStack spacing={4}>
+          <Box
+            w="16"
+            h="16"
+            bg="gray.100"
+            borderRadius="full"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Icon as={FaBox} boxSize="8" color="gray.300" />
+          </Box>
+          <VStack spacing={2}>
+            <Text
+              fontSize="lg"
+              fontWeight="medium"
+              color="gray.600"
+              fontFamily="Bogle"
+            >
+              Aucun produit trouvé pour explorer.
+            </Text>
+            <Text
+              fontSize="sm"
+              color="gray.400"
+              textAlign="center"
+              fontFamily="Bogle"
+            >
+              Essayez d'ajuster votre recherche ou vos filtres
+            </Text>
+          </VStack>
+        </VStack>
+      </Center>
     );
   }
 
   return (
     <Box position="relative" minH="400px">
+      
       {/* Products Grid */}
       <SimpleGrid columns={columns} spacing={4} mb={8}>
         {products.map((apiProduct, index) => {
@@ -142,19 +189,29 @@ const ExploreAll = ({ initialFilters = {} }) => {
           return (
             <Card
               key={productId}
-              bg="white"
-              borderRadius="12px"
+              bg="transparent"
+              borderRadius="0px"
               overflow="hidden"
-              shadow="sm"
-              _hover={{ 
-                shadow: "md", 
-                transform: "translateY(-2px)" 
-              }}
+              shadow="none"
               transition="all 0.2s"
               cursor="pointer"
-              border="1px"
-              borderColor="gray.100"
-              onClick={handleProductClick(product.slug)}
+              borderWidth="0px"
+              borderColor="gray.400"
+              minW={{ base: "200px", sm: "200px", md: "225px" }}
+              maxW={{ base: "200px", sm: "200px", md: "225px" }}
+              flexShrink={0}
+              onClick={handleProductClick(product?.slug)}
+              _before={{
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                opacity: 0.3,
+                pointerEvents: "none",
+                zIndex: 0,
+              }}
             >
               <Box position="relative">
                 <Image
@@ -173,58 +230,14 @@ const ExploreAll = ({ initialFilters = {} }) => {
                       justifyContent="center"
                     >
                       <VStack spacing={2}>
-                        <Icon
-                          as={FaBox}
-                          fontSize="2xl"
-                          color="gray.400"
-                        />
-                        <Text
-                          fontSize="xs"
-                          color="gray.500"
-                          textAlign="center"
-                        >
+                        <Icon as={FaBox} fontSize="2xl" color="gray.400" />
+                        <Text fontSize="xs" color="gray.500" textAlign="center">
                           No Image
                         </Text>
                       </VStack>
                     </Box>
                   }
                 />
-
-                {/* Top Badge with AS Solutions color */}
-                {product.tag && (
-                  <Badge
-                    position="absolute"
-                    top="2"
-                    left="2"
-                    bg={product.badges.is_new ? "green.500" : "rgb(239,48,84)"}
-                    color="white"
-                    fontSize="xs"
-                    fontWeight="bold"
-                    px="2"
-                    py="1"
-                    borderRadius="md"
-                  >
-                    {product.tag}
-                  </Badge>
-                )}
-
-                {/* Discount Badge */}
-                {product.discountPercentage > 0 && (
-                  <Badge
-                    position="absolute"
-                    top="2"
-                    right="12"
-                    bg="red.500"
-                    color="white"
-                    fontSize="xs"
-                    fontWeight="bold"
-                    px="2"
-                    py="1"
-                    borderRadius="md"
-                  >
-                    -{Math.round(product.discountPercentage)}% OFF
-                  </Badge>
-                )}
 
                 {/* Heart Icon */}
                 <IconButton
@@ -247,84 +260,89 @@ const ExploreAll = ({ initialFilters = {} }) => {
 
               <CardBody p={3}>
                 <VStack align="start" spacing={2}>
-                  <Text
-                    fontSize="sm"
-                    color="gray.800"
-                    noOfLines={2}
-                    lineHeight="short"
-                    minH="40px"
-                    title={product.title}
-                  >
-                    {product.title}
-                  </Text>
-
                   <VStack align="start" spacing={1} w="full">
-                    <HStack spacing={2} w="full" align="center">
+                    <HStack spacing={2} w="full" align="center" flexWrap="wrap">
                       <Text
-                        fontSize="lg"
+                        fontSize={{ base: "lg", sm: "xl" }}
                         fontWeight="bold"
-                        color="rgb(239,48,84)"
+                        color="navy"
+                        fontFamily="Bogle"
                       >
-                        €{product.price.toFixed(2)}
+                        $ {product.price.toFixed(2)}
                       </Text>
 
-                      {product.originalPrice && (
-                        <Text
-                          fontSize="sm"
-                          color="gray.500"
-                          textDecoration="line-through"
-                        >
-                          €{product.originalPrice.toFixed(2)}
-                        </Text>
-                      )}
+                      {product.originalPrice &&
+                        product.originalPrice > product.price && (
+                          <>
+                            <Text
+                              fontSize={{ base: "xs", sm: "sm" }}
+                              color="gray.500"
+                              textDecoration="line-through"
+                              fontFamily="Bogle"
+                            >
+                              $ {product.originalPrice.toFixed(2)}
+                            </Text>
+
+                            {/* Responsive discount badge */}
+                            <Badge
+                              bg="red.600"
+                              fontFamily="Bogle"
+                              color="white"
+                              fontSize={{ base: "xs", sm: "sm" }}
+                              fontWeight="bold"
+                              px={{ base: "1", sm: "2" }}
+                              py="0"
+                              borderRadius="md"
+                              textTransform="uppercase"
+                              flexShrink={0}
+                            >
+                              -
+                              {Math.round(
+                                ((product.originalPrice - product.price) /
+                                  product.originalPrice) *
+                                  100
+                              )}
+                              % OFF
+                            </Badge>
+                          </>
+                        )}
                     </HStack>
 
-                    {/* Company name */}
-                    {product.company && (
-                      <Text
-                        fontSize="xs"
-                        color="gray.500"
-                        noOfLines={1}
-                      >
-                        by {product.company.business_name || product.company.market_name}
-                      </Text>
-                    )}
 
-                    {/* Category */}
-                    {product.category && (
-                      <Text
-                        fontSize="xs"
-                        color="blue.500"
-                        noOfLines={1}
-                      >
-                        {product.category.name}
-                      </Text>
-                    )}
 
-                    {/* Badges */}
-                    <HStack spacing={1} flexWrap="wrap">
-                      {product.badges?.free_shipping && (
-                        <Badge
-                          size="sm"
-                          colorScheme="green"
-                          variant="subtle"
-                          fontSize="2xs"
-                        >
-                          Free Shipping
-                        </Badge>
-                      )}
 
-                      {product.is_recently_added && (
-                        <Badge
-                          size="sm"
-                          colorScheme="purple"
-                          variant="subtle"
-                          fontSize="2xs"
-                        >
-                          Recent
-                        </Badge>
-                      )}
-                    </HStack>
+
+                    <Text
+                      fontSize="sm"
+                      color="black"
+                      noOfLines={2}
+                      lineHeight="short"
+                      minH="40px"
+                      title={product.title}
+                      fontWeight="500"
+                      as="a"
+                      href={`/product/${product.slug}`}
+                      fontFamily="Fira Sans"
+                    >
+                      {product.title}
+                    </Text>
+
+                    <Button
+                      fontFamily="Bogle"
+                      size="sm"
+                      bg="transparent"
+                      color="gray.900"
+                      _hover={{ bg: "transparent", borderWidth: "2px" }}
+                      _active={{ bg: "transparent" }}
+                      _focus={{ bg: "transparent" }}
+                      px={10}
+                      variant="outline"
+                      borderColor="navy"
+                      rounded="full"
+                      borderWidth="1px"
+                    >
+                      Add
+                    </Button>
                   </VStack>
                 </VStack>
               </CardBody>
@@ -335,32 +353,80 @@ const ExploreAll = ({ initialFilters = {} }) => {
 
       {/* Loading indicator */}
       {loading && (
-        <Center py={8}>
-          <VStack spacing={4}>
-            <Spinner
-              thickness="4px"
-              speed="0.65s"
-              emptyColor="gray.200"
-              color="rgb(239,48,84)"
-              size="xl"
-            />
-            <Text color="gray.600">Loading more products...</Text>
-            <Text fontSize="sm" color="gray.400">
-              {products.length} of {totalCount} products loaded
-            </Text>
-          </VStack>
-        </Center>
+        <SimpleGrid columns={columns} spacing={4} mb={8}>
+          {[...Array(12)].map((_, index) => (
+            <Card
+              key={`skeleton-${index}`}
+              bg="white"
+              borderRadius="12px"
+              overflow="hidden"
+              shadow="sm"
+              border="1px"
+              borderColor="gray.100"
+            >
+              {/* Image Skeleton */}
+              <Box position="relative">
+                <Skeleton height="200px" />
+
+                {/* Badge Skeletons */}
+                <Box position="absolute" top="2" left="2">
+                  <Skeleton height="20px" width="50px" borderRadius="md" />
+                </Box>
+
+                <Box position="absolute" top="2" right="12">
+                  <Skeleton height="20px" width="60px" borderRadius="md" />
+                </Box>
+
+                {/* Heart Icon Skeleton */}
+                <Box position="absolute" top="2" right="2">
+                  <SkeletonCircle size="32px" />
+                </Box>
+              </Box>
+
+              {/* Content Skeleton */}
+              <CardBody p={3}>
+                <VStack align="start" spacing={2}>
+                  {/* Title Skeleton */}
+                  <VStack align="start" spacing={1} w="full">
+                    <Skeleton height="16px" width="100%" />
+                    <Skeleton height="16px" width="80%" />
+                  </VStack>
+
+                  {/* Price Section Skeleton */}
+                  <VStack align="start" spacing={1} w="full">
+                    <HStack spacing={2} w="full" align="center">
+                      <Skeleton height="20px" width="70px" />
+                      <Skeleton height="16px" width="60px" />
+                    </HStack>
+
+                    {/* Company Skeleton */}
+                    <Skeleton height="12px" width="60%" />
+
+                    {/* Category Skeleton */}
+                    <Skeleton height="12px" width="50%" />
+
+                    {/* Badges Skeleton */}
+                    <HStack spacing={1} flexWrap="wrap">
+                      <Skeleton height="16px" width="60px" borderRadius="md" />
+                      <Skeleton height="16px" width="40px" borderRadius="md" />
+                    </HStack>
+                  </VStack>
+                </VStack>
+              </CardBody>
+            </Card>
+          ))}
+        </SimpleGrid>
       )}
 
       {/* End of results */}
       {!hasMore && products.length > 0 && (
         <Box py={8}>
           <VStack spacing={4}>
-            <Text color="gray.500" textAlign="center" fontSize="lg">
-              🎉 You've reached the end!
+            <Text color="gray.500" textAlign="center" fontSize="lg" fontFamily='Bogle'>
+              Tu as atteint la fin
             </Text>
-            <Text fontSize="sm" color="gray.400" textAlign="center">
-              Showing all {totalCount} products
+            <Text fontSize="sm" color="gray.400" textAlign="center" fontFamily='Bogle'>
+              Affichage de tous les {totalCount} produits
             </Text>
             <Button
               leftIcon={<Icon as={FaChevronUp} />}
@@ -369,41 +435,14 @@ const ExploreAll = ({ initialFilters = {} }) => {
               size="sm"
               onClick={scrollToTop}
             >
-              Back to top
+              Retour en haut
             </Button>
           </VStack>
         </Box>
-      )}
-
-      {/* Empty state */}
-      {!loading && !products.length === 0 && (
-        <Center py={16}>
-          <VStack spacing={4}>
-            <Box
-              w="16"
-              h="16"
-              bg="gray.100"
-              borderRadius="full"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Icon as={FaBox} boxSize="8" color="gray.300" />
-            </Box>
-            <VStack spacing={2}>
-              <Text fontSize="lg" fontWeight="medium" color="gray.600">
-                No products found for exploring.
-              </Text>
-              <Text fontSize="sm" color="gray.400" textAlign="center">
-                Try adjusting your search or filters
-              </Text>
-            </VStack>
-          </VStack>
-        </Center>
-     )}
+      )}      
 
       {/* Scroll trigger element - invisible div that triggers loading */}
-      <div ref={bottomRef} style={{ height: '1px', visibility: 'hidden' }} />
+      <div ref={bottomRef} style={{ height: "1px", visibility: "hidden" }} />
     </Box>
   );
 };

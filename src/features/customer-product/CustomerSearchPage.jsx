@@ -43,6 +43,8 @@ import {
   useDisclosure as useCollapseDisclosure,
   Collapse,
   Center,
+  Skeleton,
+  SkeletonCircle,
 } from "@chakra-ui/react";
 import {
   FaFilter,
@@ -52,7 +54,7 @@ import {
   FaChevronDown,
   FaChevronUp,
 } from "react-icons/fa";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { homeService } from "../home/services/homeService";
 import Navbar from "../../shared-customer/components/Navbar";
 import Footer from "../../shared-customer/components/Footer";
@@ -94,7 +96,7 @@ const FilterSidebar = React.memo(
           <Text
             fontSize="lg"
             fontWeight="bold"
-            fontFamily={"Bricolage Grotesque"}
+            fontFamily="Bogle"
           >
             Filters{" "}
             {getSelectedFiltersCount() > 0 && `(${getSelectedFiltersCount()})`}
@@ -103,7 +105,7 @@ const FilterSidebar = React.memo(
             size="sm"
             variant="ghost"
             onClick={clearFilters}
-            fontFamily={"Bricolage Grotesque"}
+            fontFamily="Bogle"
           >
             Clear All
           </Button>
@@ -163,7 +165,7 @@ const FilterSidebar = React.memo(
         <Box>
           <HStack mb={3}>
             <FaEuroSign color="gray.500" />
-            <Text fontWeight="semibold" fontFamily={"Bricolage Grotesque"}>
+            <Text fontWeight="semibold" fontFamily="Bogle">
               Price Range
             </Text>
           </HStack>
@@ -236,7 +238,7 @@ const FilterSidebar = React.memo(
         <Box>
           <HStack mb={3}>
             <FaBoxOpen color="gray.500" />
-            <Text fontWeight="semibold" fontFamily={"Bricolage Grotesque"}>
+            <Text fontWeight="semibold" fontFamily="Bogle">
               Availability
             </Text>
           </HStack>
@@ -330,7 +332,7 @@ const FilterSidebar = React.memo(
                     <VStack align="start" spacing={0}>
                       <Text
                         fontWeight="semibold"
-                        fontFamily={"Bricolage Grotesque"}
+                        fontFamily="Bogle"
                       >
                         Filter by Specifications
                       </Text>
@@ -518,6 +520,7 @@ const FilterSidebar = React.memo(
 );
 
 const CustomerSearchPage = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -619,13 +622,10 @@ const CustomerSearchPage = () => {
           throw new Error(result.message);
         }
       } catch (error) {
-        toast({
-          title: "Search Error",
-          description: "Failed to search products. Please try again.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+        setProducts([]);
+        setTotalCount(0);
+        setHasMore(false);
+        navigate("/error");
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -834,8 +834,382 @@ const CustomerSearchPage = () => {
     { value: "newest", label: "Newest First" },
   ];
 
+  if (loading) {
+    return (
+      <>
+        <Box minH="100vh" bg="gray.50">
+          {/* Navbar Skeleton */}
+          <Box bg="white" borderBottom="1px" borderColor="gray.100" py={4}>
+            <Container maxW="8xl">
+              <HStack spacing={6} justify="space-between">
+                <Skeleton height="40px" width="120px" borderRadius="md" />
+                <HStack spacing={4} flex={1} justify="center">
+                  <Skeleton height="32px" width="80px" borderRadius="md" />
+                  <Skeleton height="32px" width="100px" borderRadius="md" />
+                  <Skeleton height="32px" width="90px" borderRadius="md" />
+                  <Skeleton height="32px" width="110px" borderRadius="md" />
+                </HStack>
+                <HStack spacing={3}>
+                  <SkeletonCircle size="40px" />
+                  <SkeletonCircle size="40px" />
+                  <Skeleton height="40px" width="100px" borderRadius="md" />
+                </HStack>
+              </HStack>
+            </Container>
+          </Box>
+
+          <Container maxW="8xl" py={6}>
+            {/* Header Section Skeleton */}
+            <VStack spacing={6} mb={8}>
+              <Flex
+                w="full"
+                justify="space-between"
+                align="center"
+                wrap="wrap"
+                gap={4}
+              >
+                <VStack align="start" spacing={3}>
+                  {/* Flash Deals Title with Lightning Icon */}
+                  <HStack spacing={3}>
+                    <SkeletonCircle size="24px" />
+                    <Skeleton height="32px" width="180px" />
+                  </HStack>
+
+                  {/* Subtitle */}
+                  <Skeleton height="24px" width="250px" />
+
+                  {/* Filter count */}
+                  <Skeleton height="16px" width="120px" />
+
+                  {/* Description */}
+                  <Skeleton height="14px" width="350px" />
+                </VStack>
+
+                <HStack spacing={4}>
+                  {/* Mobile Filter Button Skeleton */}
+                  <Skeleton
+                    height="40px"
+                    width="100px"
+                    borderRadius="md"
+                    display={{ base: "block", lg: "none" }}
+                  />
+
+                  {/* Sort Section */}
+                  <HStack spacing={2}>
+                    <Skeleton
+                      height="16px"
+                      width="40px"
+                      display={{ base: "none", md: "block" }}
+                    />
+                    <Skeleton height="32px" width="160px" borderRadius="md" />
+                  </HStack>
+                </HStack>
+              </Flex>
+            </VStack>
+
+            {/* Main Content Grid */}
+            <Grid templateColumns={{ base: "1fr", lg: "300px 1fr" }} gap={6}>
+              {/* Desktop Filter Sidebar Skeleton */}
+              <Box display={{ base: "none", lg: "block" }}>
+                <VStack
+                  align="stretch"
+                  spacing={6}
+                  p={4}
+                  bg="gray.50"
+                  borderRadius="lg"
+                >
+                  {/* Filter Header */}
+                  <HStack justify="space-between">
+                    <Skeleton height="20px" width="140px" />
+                    <Skeleton height="20px" width="60px" />
+                  </HStack>
+
+                  {/* Active Filters Section */}
+                  <Box>
+                    <Skeleton height="16px" width="100px" mb={2} />
+                    <HStack spacing={2}>
+                      <Skeleton
+                        height="24px"
+                        width="80px"
+                        borderRadius="full"
+                      />
+                      <Skeleton
+                        height="24px"
+                        width="60px"
+                        borderRadius="full"
+                      />
+                      <Skeleton
+                        height="24px"
+                        width="70px"
+                        borderRadius="full"
+                      />
+                    </HStack>
+                  </Box>
+
+                  <Skeleton height="1px" width="100%" />
+
+                  {/* Price Range Filter */}
+                  <VStack align="stretch" spacing={3}>
+                    <HStack>
+                      <SkeletonCircle size="16px" />
+                      <Skeleton height="18px" width="90px" />
+                    </HStack>
+
+                    <HStack spacing={2} w="full">
+                      <VStack spacing={1} flex={1}>
+                        <Skeleton height="12px" width="60px" />
+                        <Skeleton
+                          height="32px"
+                          width="100%"
+                          borderRadius="md"
+                        />
+                      </VStack>
+                      <Skeleton
+                        height="16px"
+                        width="20px"
+                        alignSelf="end"
+                        mb={2}
+                      />
+                      <VStack spacing={1} flex={1}>
+                        <Skeleton height="12px" width="60px" />
+                        <Skeleton
+                          height="32px"
+                          width="100%"
+                          borderRadius="md"
+                        />
+                      </VStack>
+                    </HStack>
+
+                    <HStack spacing={2} w="full">
+                      <Skeleton height="32px" flex={1} borderRadius="md" />
+                      <Skeleton height="32px" flex={1} borderRadius="md" />
+                    </HStack>
+                  </VStack>
+
+                  <Skeleton height="1px" width="100%" />
+
+                  {/* Discount Range Filter */}
+                  <VStack align="stretch" spacing={3}>
+                    <HStack>
+                      <SkeletonCircle size="16px" />
+                      <Skeleton height="18px" width="110px" />
+                    </HStack>
+
+                    <HStack spacing={2} w="full">
+                      <VStack spacing={1} flex={1}>
+                        <Skeleton height="12px" width="80px" />
+                        <Skeleton
+                          height="32px"
+                          width="100%"
+                          borderRadius="md"
+                        />
+                      </VStack>
+                      <Skeleton
+                        height="16px"
+                        width="20px"
+                        alignSelf="end"
+                        mb={2}
+                      />
+                      <VStack spacing={1} flex={1}>
+                        <Skeleton height="12px" width="80px" />
+                        <Skeleton
+                          height="32px"
+                          width="100%"
+                          borderRadius="md"
+                        />
+                      </VStack>
+                    </HStack>
+
+                    <HStack spacing={2} w="full">
+                      <Skeleton height="32px" flex={1} borderRadius="md" />
+                      <Skeleton height="32px" flex={1} borderRadius="md" />
+                    </HStack>
+                  </VStack>
+
+                  <Skeleton height="1px" width="100%" />
+
+                  {/* Availability Filter */}
+                  <VStack align="stretch" spacing={3}>
+                    <HStack>
+                      <SkeletonCircle size="16px" />
+                      <Skeleton height="18px" width="80px" />
+                    </HStack>
+
+                    <HStack justify="space-between" align="center">
+                      <Skeleton height="16px" width="180px" />
+                      <Skeleton
+                        height="24px"
+                        width="48px"
+                        borderRadius="full"
+                      />
+                    </HStack>
+                  </VStack>
+
+                  {/* Additional Filter Categories */}
+                  {[...Array(2)].map((_, index) => (
+                    <VStack key={index} align="stretch" spacing={3}>
+                      <Skeleton height="1px" width="100%" />
+                      <HStack>
+                        <SkeletonCircle size="16px" />
+                        <Skeleton height="18px" width="120px" />
+                      </HStack>
+                      <VStack spacing={2} align="stretch">
+                        {[...Array(3)].map((_, i) => (
+                          <HStack key={i} justify="space-between">
+                            <HStack>
+                              <SkeletonCircle size="16px" />
+                              <Skeleton height="16px" width="100px" />
+                            </HStack>
+                            <Skeleton height="16px" width="20px" />
+                          </HStack>
+                        ))}
+                      </VStack>
+                    </VStack>
+                  ))}
+                </VStack>
+              </Box>
+
+              {/* Products Grid Skeleton */}
+              <Box>
+                {/* Loading Animation with Spinner */}
+                <VStack py={8} spacing={6}>
+                  <HStack spacing={3}>
+                    <Skeleton height="40px" width="40px" borderRadius="full" />
+                    <VStack spacing={2}>
+                      <Skeleton height="20px" width="200px" />
+                      <Skeleton height="16px" width="150px" />
+                    </VStack>
+                  </HStack>
+                </VStack>
+
+                {/* Product Cards Grid Skeleton */}
+                <SimpleGrid
+                  columns={{ base: 2, md: 3, lg: 4, xl: 5 }}
+                  spacing={4}
+                  mb={8}
+                >
+                  {[...Array(20)].map((_, index) => (
+                    <Box
+                      key={index}
+                      bg="white"
+                      borderRadius="lg"
+                      overflow="hidden"
+                      shadow="sm"
+                    >
+                      {/* Product Image */}
+                      <Box position="relative">
+                        <Skeleton height="200px" />
+
+                        {/* Flash Deal Badge */}
+                        <Box position="absolute" top={2} left={2}>
+                          <Skeleton
+                            height="24px"
+                            width="60px"
+                            borderRadius="full"
+                          />
+                        </Box>
+
+                        {/* Discount Badge */}
+                        <Box position="absolute" top={2} right={2}>
+                          <Skeleton
+                            height="24px"
+                            width="40px"
+                            borderRadius="full"
+                          />
+                        </Box>
+
+                        {/* Urgency Indicator */}
+                        <Box position="absolute" bottom={2} left={2}>
+                          <Skeleton
+                            height="20px"
+                            width="80px"
+                            borderRadius="full"
+                          />
+                        </Box>
+                      </Box>
+
+                      {/* Product Info */}
+                      <VStack p={3} spacing={3} align="stretch">
+                        {/* Product Title */}
+                        <VStack spacing={1} align="stretch">
+                          <Skeleton height="16px" width="100%" />
+                          <Skeleton height="16px" width="80%" />
+                        </VStack>
+
+                        {/* Price Section */}
+                        <VStack spacing={1} align="stretch">
+                          <HStack justify="space-between" align="center">
+                            <Skeleton height="20px" width="70px" />
+                            <Skeleton height="16px" width="50px" />
+                          </HStack>
+                          <Skeleton height="14px" width="60px" />
+                        </VStack>
+
+                        {/* Savings */}
+                        <Skeleton height="16px" width="90px" />
+
+                        {/* Progress Bar for Stock/Time */}
+                        <VStack spacing={1}>
+                          <Skeleton
+                            height="8px"
+                            width="100%"
+                            borderRadius="full"
+                          />
+                          <Skeleton height="12px" width="60%" />
+                        </VStack>
+
+                        {/* Action Button */}
+                        <Skeleton height="36px" borderRadius="md" />
+                      </VStack>
+                    </Box>
+                  ))}
+                </SimpleGrid>
+
+                {/* Load More Button Skeleton */}
+                <VStack spacing={4}>
+                  <Skeleton height="40px" width="200px" borderRadius="md" />
+                </VStack>
+              </Box>
+            </Grid>
+          </Container>
+
+          {/* Footer Skeleton */}
+          <Box bg="gray.900" mt={12} py={8}>
+            <Container maxW="8xl">
+              <SimpleGrid columns={{ base: 1, md: 4 }} spacing={8}>
+                {[...Array(4)].map((_, i) => (
+                  <VStack key={i} align="start" spacing={4}>
+                    <Skeleton height="20px" width="120px" />
+                    <VStack align="start" spacing={2}>
+                      <Skeleton height="16px" width="80px" />
+                      <Skeleton height="16px" width="100px" />
+                      <Skeleton height="16px" width="90px" />
+                      <Skeleton height="16px" width="70px" />
+                    </VStack>
+                  </VStack>
+                ))}
+              </SimpleGrid>
+
+              <Skeleton height="1px" width="100%" my={8} />
+
+              <HStack justify="space-between" wrap="wrap" gap={4}>
+                <Skeleton height="16px" width="200px" />
+                <HStack spacing={4}>
+                  <Skeleton height="32px" width="32px" borderRadius="md" />
+                  <Skeleton height="32px" width="32px" borderRadius="md" />
+                  <Skeleton height="32px" width="32px" borderRadius="md" />
+                  <Skeleton height="32px" width="32px" borderRadius="md" />
+                </HStack>
+              </HStack>
+            </Container>
+          </Box>
+        </Box>
+      </>
+    );
+  }
+
   return (
-    <Box minH="100vh" bg="gray.50">
+    <Box minH="100vh" bg="#fff">
       <Navbar />
 
       <Container maxW="8xl" py={6}>
@@ -852,7 +1226,7 @@ const CustomerSearchPage = () => {
               <Text
                 fontSize="xl"
                 fontWeight="bold"
-                fontFamily={"Bricolage Grotesque"}
+                fontFamily="Bogle"
               >
                 {loading ? "Searching..." : `${totalCount} Results found`}
                 {query && ` for "${query}"`}
@@ -877,7 +1251,7 @@ const CustomerSearchPage = () => {
                 variant="outline"
                 display={{ base: "flex", lg: "none" }}
                 onClick={onOpen}
-                fontFamily={"Bricolage Grotesque"}
+                fontFamily="Bogle"
               >
                 Filters{" "}
                 {getSelectedFiltersCount() > 0 &&
@@ -942,13 +1316,13 @@ const CustomerSearchPage = () => {
             ) : products.length === 0 ? (
               <>
                 <Center>
-                  <Text fontFamily={"Bricolage Grotesque"} fontSize={"xl"}>
+                  <Text fontFamily="Bogle" fontSize={"xl"}>
                     No products found in {query}.
                   </Text>
                 </Center>
                 <Center>
                   <Text
-                    fontFamily={"Bricolage Grotesque"}
+                    fontFamily="Bogle"
                     fontSize={"md"}
                     mt={5}
                     color="gray.600"
@@ -958,7 +1332,7 @@ const CustomerSearchPage = () => {
                 </Center>
                 <Center>
                   <Text
-                    fontFamily={"Bricolage Grotesque"}
+                    fontFamily="Bogle"
                     fontSize={"md"}
                     mt={5}
                     color="gray.600"
@@ -972,8 +1346,8 @@ const CustomerSearchPage = () => {
             ) : (
               <>
                 <SimpleGrid
-                  columns={{ base: 2, md: 3, lg: 4, xl: 5 }}
-                  spacing={4}
+                  columns={{ base: 2, md: 4 }}
+                  spacing={12}
                   mb={8}
                 >
                   {products.map((product) => (
@@ -997,10 +1371,11 @@ const CustomerSearchPage = () => {
                       borderColor="blue.500"
                       borderWidth={0}
                       color="white"
+                      rounded='3px'
                       p={5}
-                      _hover={{ bg: "rgb(239, 48, 84)" }}
-                      bg="rgb(239, 48, 84)"
-                      fontFamily={"Bricolage Grotesque"}
+                      _hover={{ bg: "rgb(241, 36, 36)" }}
+                      bg="rgb(241, 36, 36)"
+                      fontFamily={"Bogle"}
                     >
                       Show More Products
                     </Button>

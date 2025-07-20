@@ -568,7 +568,7 @@ function Navbar() {
                                       color: "rgb(239,48,84)",
                                       bg: "transparent",
                                     }}
-                                    fontFamily={"Bricolage Grotesque"}
+                                    fontFamily="Bogle"
                                     onClick={() => {
                                       navigateToCategory(subCategory.slug);
                                     }}
@@ -623,7 +623,7 @@ function Navbar() {
                                               bg: "rgba(239,48,84,0.05)",
                                             }}
                                             borderRadius="md"
-                                            fontFamily={"Bricolage Grotesque"}
+                                            fontFamily="Bogle"
                                             onClick={() => {
                                               navigateToCategory(child.slug);
                                             }}
@@ -675,7 +675,7 @@ function Navbar() {
                             size="md"
                             color="gray.800"
                             mb={4}
-                            fontFamily="Bricolage Grotesque"
+                            fontFamily="Bogle"
                           >
                             Popular in {expandedCategory.name}
                           </Heading>
@@ -987,7 +987,7 @@ function Navbar() {
                   _hover={{ bg: "rgb(219,28,64)" }}
                   borderRadius="8px"
                   px={4}
-                  fontFamily={"Bricolage Grotesque"}
+                  fontFamily="Bogle"
                 >
                   Get the app
                 </Button>
@@ -1073,7 +1073,7 @@ function Navbar() {
                 color="gray.600"
                 _hover={{ color: "rgb(239,48,84)" }}
                 fontSize="sm"
-                fontFamily={"Bricolage Grotesque"}
+                fontFamily="Bogle"
               >
                 Log in
               </Button>
@@ -1085,7 +1085,7 @@ function Navbar() {
                 borderRadius="full"
                 px={4}
                 fontSize="xs"
-                fontFamily={"Bricolage Grotesque"}
+                fontFamily="Bogle"
               >
                 Get the app
               </Button>
@@ -1206,8 +1206,6 @@ function Navbar() {
               color="rgb(239,48,84)"
               fontWeight="semibold"
               textAlign="center"
-              as='a'
-              href='/'
             >
               Maison
             </Text>
@@ -1314,22 +1312,22 @@ function Navbar() {
                 <Button
                   leftIcon={<Icon as={FaBars} />}
                   variant="solid"
-                  bg="rgb(239,48,84)"
+                  bg="rgb(241, 36, 36)"
                   color="white"
                   _hover={{
-                    bg: "rgb(219,28,64)",
+                    bg: "rgb(241, 36, 36)",
                     transform: "translateY(-1px)",
                     shadow: "lg",
                   }}
                   fontSize="sm"
-                  rounded="lg"
+                  rounded="md"
                   flexShrink={0}
                   px={4}
                   py={2}
                   h="auto"
                   transition="all 0.2s ease"
                   onMouseEnter={onCategoryOpen}
-                  fontFamily="Bricolage Grotesque"
+                  fontFamily="Bogle"
                 >
                   Toutes les catégories
                 </Button>
@@ -1431,8 +1429,6 @@ function Navbar() {
               flexShrink={0}
               minW="auto"
               rounded="full"
-              as='a'
-              href='/flash-deals'
             >
               Centre des offres
             </Button>
@@ -1716,7 +1712,7 @@ function Navbar() {
                                                     fontSize="sm"
                                                     lineHeight="1.4"
                                                     flex={1}
-                                                    fontFamily="Bricolage Grotesque"
+                                                    fontFamily="Bogle"
                                                   >
                                                     {child.name}
                                                   </Text>
@@ -1809,7 +1805,7 @@ function Navbar() {
                   minW="auto"
                   rounded="full"
                   whiteSpace="nowrap"
-                  fontFamily="Bricolage Grotesque"
+                  fontFamily="Bogle"
                 >
                   Nouveautés
                 </Button>
@@ -1829,9 +1825,7 @@ function Navbar() {
                   minW="auto"
                   rounded="full"
                   whiteSpace="nowrap"
-                  fontFamily="Bricolage Grotesque"
-                  as='a'
-                  href='/flash-deals'
+                  fontFamily="Bogle"
                 >
                   Centre des offres
                 </Button>
@@ -1888,7 +1882,7 @@ function Navbar() {
                         minW="auto"
                         rounded="full"
                         whiteSpace="nowrap"
-                        fontFamily="Bricolage Grotesque"
+                        fontFamily="Bogle"
                         onClick={() => {
                           navigateToCategory(category.slug);
                         }}
@@ -1914,7 +1908,7 @@ function Navbar() {
                   minW="auto"
                   rounded="full"
                   whiteSpace="nowrap"
-                  fontFamily="Bricolage Grotesque"
+                  fontFamily="Bogle"
                 >
                   Support
                 </Button>

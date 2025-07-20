@@ -165,6 +165,7 @@ import MobileNav from '../administration/layouts/MobileNav';
 import SettingsModal from '../administration/components/settings/SettingsModal';
 import Loader from '../../commons/Loader';
 import { formatWithTimezone, formatOptions } from '../../commons/formatOptions';
+import { customToastContainerStyle } from '../../commons/toastStyles';
 
 const MotionBox = motion.create(Box);
 const MotionCard = motion.create(Card);
@@ -238,9 +239,7 @@ const ProductDetailsPage = () => {
         throw new Error('Invalid response format');
       }
     } catch (error) {
-      console.error('Error fetching product details:', error);
-      handleApiError(error, toast);
-      navigate('/products-console');
+      handleApiError(error);
     } finally {
       setLoading(false);
     }
@@ -265,11 +264,13 @@ const ProductDetailsPage = () => {
         status: "success",
         duration: 3000,
         isClosable: true,
+        variant: "custom",
+        containerStyle: customToastContainerStyle
       });
 
       fetchProductDetails();
     } catch (error) {
-      handleApiError(error, toast);
+      handleApiError(error);
     } finally {
       setUpdatingStatus(false);
     }
@@ -292,6 +293,8 @@ const ProductDetailsPage = () => {
           status: "success",
           duration: 5000,
           isClosable: true,
+          variant: 'custom',
+          containerStyle: customToastContainerStyle
         });
 
         // Navigate to the new product or stay on current
@@ -301,14 +304,7 @@ const ProductDetailsPage = () => {
         }
       }
     } catch (error) {
-      console.error('Error duplicating product:', error);
-      toast({
-        title: "Duplication Failed",
-        description: error.message || "Failed to duplicate product. Please try again.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+        handleApiError(error);
     } finally {
       setDuplicating(false);
     }
@@ -337,16 +333,12 @@ const ProductDetailsPage = () => {
           status: "success",
           duration: 5000,
           isClosable: true,
+          variant: 'custom',
+          containerStyle: customToastContainerStyle
         });
       }
     } catch (error) {
-      toast({
-        title: "Publish Failed",
-        description: error.message || "Failed to publish product",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+        handleApiError(error);
     } finally {
       setPublishing(false);
     }
@@ -374,18 +366,14 @@ const ProductDetailsPage = () => {
           status: "success",
           duration: 5000,
           isClosable: true,
+          variant: 'custom',
+          containerStyle: customToastContainerStyle
         });
         
         navigate('/products-console');
       }
     } catch (error) {
-      toast({
-        title: "Archive Failed",
-        description: error.message || "Failed to archive product",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+        handleApiError(error);
     } finally {
       setArchiving(false);
     }
@@ -414,18 +402,14 @@ const ProductDetailsPage = () => {
           status: "success",
           duration: 5000,
           isClosable: true,
+          variant: 'custom',
+          containerStyle: customToastContainerStyle
         });
         
         fetchProductDetails();
       }
     } catch (error) {
-      toast({
-        title: "Unarchive Failed",
-        description: error.message || "Failed to unarchive product",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+        handleApiError(error);
     } finally {
       setUnarchiving(false);
     }
@@ -454,16 +438,12 @@ const ProductDetailsPage = () => {
           status: "success",
           duration: 5000,
           isClosable: true,
+          variant: 'custom',
+          containerStyle: customToastContainerStyle
         });
       }
     } catch (error) {
-      toast({
-        title: "Unpublish Failed",
-        description: error.message || "Failed to unpublish product",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      handleApiError(error);
     } finally {
       setUnpublishing(false);
     }

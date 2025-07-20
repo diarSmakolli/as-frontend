@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from "react";
 import {
   Box,
   VStack,
@@ -45,11 +45,11 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
-} from '@chakra-ui/react';
-import { 
-  FiPlus, 
-  FiEdit, 
-  FiTrash2, 
+} from "@chakra-ui/react";
+import {
+  FiPlus,
+  FiEdit,
+  FiTrash2,
   FiSettings,
   FiType,
   FiList,
@@ -63,100 +63,274 @@ import {
   FiEye,
   FiUpload,
   FiX,
-} from 'react-icons/fi';
-import { motion } from 'framer-motion';
-import { v4 as uuidv4 } from 'uuid';
+} from "react-icons/fi";
+import { motion } from "framer-motion";
+import { v4 as uuidv4 } from "uuid";
 
 const MotionBox = motion.create(Box);
 
-const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOptionValueImageUpload }) => {
+const CustomOptionsForm = ({
+  customOptions = [],
+  onCustomOptionsChange,
+  onOptionValueImageUpload,
+}) => {
   const toast = useToast();
-  const { isOpen: isFormOpen, onToggle: toggleForm } = useDisclosure({ defaultIsOpen: false });
-  const { isOpen: isValueModalOpen, onOpen: onValueModalOpen, onClose: onValueModalClose } = useDisclosure();
-  
+  const { isOpen: isFormOpen, onToggle: toggleForm } = useDisclosure({
+    defaultIsOpen: false,
+  });
+  const {
+    isOpen: isValueModalOpen,
+    onOpen: onValueModalOpen,
+    onClose: onValueModalClose,
+  } = useDisclosure();
+
   const [currentOption, setCurrentOption] = useState({
-    option_name: '',
-    option_type: 'text',
+    option_name: "",
+    option_type: "text",
     is_required: false,
     is_active: true,
     affects_price: false,
-    price_modifier_type: 'fixed',
+    price_modifier_type: "fixed",
     base_price_modifier: 0,
-    placeholder_text: '',
-    help_text: '',
+    placeholder_text: "",
+    help_text: "",
     sort_order: 0,
-    option_values: []
+    option_values: [],
   });
-  
+
+  // const [currentValue, setCurrentValue] = useState({
+  //   option_value: "",
+  //   display_name: "",
+  //   price_modifier: 0,
+  //   price_modifier_type: "fixed",
+  //   image: null,
+  //   image_preview: null,
+  //   image_alt_text: "",
+  //   is_default: false,
+  //   is_active: true,
+  //   sort_order: 0,
+  //   stock_quantity: null,
+  //   is_in_stock: true,
+  // });
+
   const [currentValue, setCurrentValue] = useState({
-    option_value: '',
-    display_name: '',
+    option_value: "",
+    display_name: "",
     price_modifier: 0,
-    price_modifier_type: 'fixed',
+    price_modifier_type: "fixed",
+    price_per_m2: 0,
+    price_per_m3: 0,
+    price_per_linear_meter: 0,
+    price_per_meter: 0,
     image: null,
     image_preview: null,
-    image_alt_text: '',
+    image_url: null,
+    image_alt_text: "",
     is_default: false,
     is_active: true,
     sort_order: 0,
     stock_quantity: null,
-    is_in_stock: true
+    is_in_stock: true,
   });
-  
+
   const [editingValueIndex, setEditingValueIndex] = useState(null);
   const [errors, setErrors] = useState({});
   const [editingIndex, setEditingIndex] = useState(null);
   const fileInputRef = useRef(null);
 
   const optionTypes = [
-    { value: 'text', label: 'Text Input', icon: FiType, hasValues: false },
+    { value: "text", label: "Text Input", icon: FiType, hasValues: false },
     // { value: 'textarea', label: 'Textarea', icon: FiType, hasValues: false },
     // { value: 'select', label: 'Dropdown Select', icon: FiList, hasValues: true },
-    { value: 'radio', label: 'Radio Buttons', icon: FiCircle, hasValues: true },
+    { value: "radio", label: "Radio Buttons", icon: FiCircle, hasValues: true },
     // { value: 'checkbox', label: 'Checkboxes', icon: FiSquare, hasValues: true },
     // { value: 'file', label: 'File Upload', icon: FiFile, hasValues: false },
     // { value: 'date', label: 'Date Picker', icon: FiCalendar, hasValues: false },
-    { value: 'number', label: 'Number Input', icon: FiHash, hasValues: false }
+    { value: "number", label: "Number Input", icon: FiHash, hasValues: false },
   ];
 
   const handleInputChange = (name, value) => {
-    setCurrentOption(prev => ({
+    setCurrentOption((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+      setErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
 
+  // const handleValueInputChange = (name, value) => {
+  //   setCurrentValue((prev) => ({
+  //     ...prev,
+  //     [name]: value,
+  //   }));
+  // };
+
+  // const handleImageUpload = (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
+
+  //   if (!file.type.startsWith("image/")) {
+  //     toast({
+  //       title: "Invalid file type",
+  //       description: "Please select an image file",
+  //       status: "error",
+  //       duration: 3000,
+  //       isClosable: true,
+  //     });
+  //     return;
+  //   }
+
+  //   if (file.size > 5 * 1024 * 1024) {
+  //     toast({
+  //       title: "File too large",
+  //       description: "Image must be less than 5MB",
+  //       status: "error",
+  //       duration: 3000,
+  //       isClosable: true,
+  //     });
+  //     return;
+  //   }
+
+  //   const reader = new FileReader();
+  //   reader.onload = (e) => {
+  //     setCurrentValue((prev) => ({
+  //       ...prev,
+  //       image: file,
+  //       image_preview: e.target.result,
+  //       image_alt_text:
+  //         prev.image_alt_text || prev.option_value || "Option image",
+  //     }));
+  //   };
+  //   reader.readAsDataURL(file);
+  // };
+
+  // v2.0
+
+  // const handleValueInputChange = (name, value) => {
+  //   setCurrentValue((prev) => {
+  //     const updated = { ...prev, [name]: value };
+
+  //     // ENHANCED: Handle dimensional pricing mapping
+  //     if (name === "price_modifier" || name === "price_modifier_type") {
+  //       // Reset all dimensional fields first
+  //       updated.price_per_m2 = 0;
+  //       updated.price_per_m3 = 0;
+  //       updated.price_per_linear_meter = 0;
+  //       updated.price_per_meter = 0;
+
+  //       // If we have a price modifier and a dimensional type, map it correctly
+  //       const priceValue =
+  //         name === "price_modifier" ? value : prev.price_modifier;
+  //       const priceType =
+  //         name === "price_modifier_type" ? value : prev.price_modifier_type;
+
+  //       if (priceValue > 0 && priceType) {
+  //         switch (priceType) {
+  //           case "m2":
+  //             updated.price_per_m2 = priceValue;
+  //             updated.price_modifier = 0; // Clear generic modifier for dimensional types
+  //             break;
+  //           case "m3":
+  //             updated.price_per_m3 = priceValue;
+  //             updated.price_modifier = 0;
+  //             break;
+  //           case "linear-meter":
+  //             updated.price_per_linear_meter = priceValue;
+  //             updated.price_modifier = 0;
+  //             break;
+  //           case "meter":
+  //             updated.price_per_meter = priceValue;
+  //             updated.price_modifier = 0;
+  //             break;
+  //           case "fixed":
+  //           case "percentage":
+  //             // Keep price_modifier for these types
+  //             break;
+  //           default:
+  //             break;
+  //         }
+  //       }
+  //     }
+
+  //     return updated;
+  //   });
+  // };
+
   const handleValueInputChange = (name, value) => {
-    setCurrentValue(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setCurrentValue((prev) => {
+      const newValue = { ...prev, [name]: value };
+
+      // Enhanced: Handle dimensional pricing field mapping
+      if (name === "price_modifier") {
+        // When price_modifier changes, update the appropriate dimensional field
+        switch (prev.price_modifier_type) {
+          case "m2":
+            newValue.price_per_m2 = parseFloat(value) || 0;
+            break;
+          case "m3":
+            newValue.price_per_m3 = parseFloat(value) || 0;
+            break;
+          case "linear-meter":
+            newValue.price_per_linear_meter = parseFloat(value) || 0;
+            break;
+          case "meter":
+            newValue.price_per_meter = parseFloat(value) || 0;
+            break;
+          default:
+            // For fixed and percentage, keep in price_modifier
+            break;
+        }
+      }
+
+      // When price_modifier_type changes, update price_modifier from the appropriate field
+      if (name === "price_modifier_type") {
+        switch (value) {
+          case "m2":
+            newValue.price_modifier = prev.price_per_m2 || 0;
+            break;
+          case "m3":
+            newValue.price_modifier = prev.price_per_m3 || 0;
+            break;
+          case "linear-meter":
+            newValue.price_modifier = prev.price_per_linear_meter || 0;
+            break;
+          case "meter":
+            newValue.price_modifier = prev.price_per_meter || 0;
+            break;
+          default:
+            // For fixed and percentage, keep current price_modifier
+            break;
+        }
+      }
+
+      return newValue;
+    });
   };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
       toast({
-        title: 'Invalid file type',
-        description: 'Please select an image file',
-        status: 'error',
+        title: "Invalid file type",
+        description: "Please select an image file (JPG, PNG, GIF, WebP)",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
       return;
     }
 
+    // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: 'File too large',
-        description: 'Image must be less than 5MB',
-        status: 'error',
+        title: "File too large",
+        description: "Image must be less than 5MB",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -165,111 +339,132 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      setCurrentValue(prev => ({
+      setCurrentValue((prev) => ({
         ...prev,
         image: file,
         image_preview: e.target.result,
-        image_alt_text: prev.image_alt_text || prev.option_value || 'Option image'
+        image_url: null, // Clear existing URL when new image is selected
+        image_alt_text:
+          prev.image_alt_text || prev.option_value || "Option image",
       }));
     };
+
+    reader.onerror = () => {
+      toast({
+        title: "Error reading file",
+        description: "Failed to read the selected image file",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    };
+
     reader.readAsDataURL(file);
   };
 
   const removeImage = () => {
-    setCurrentValue(prev => ({
+    setCurrentValue((prev) => ({
       ...prev,
       image: null,
       image_preview: null,
-      image_alt_text: ''
+      image_url: null,
+      image_alt_text: "",
     }));
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const validateOption = () => {
     const newErrors = {};
-    
+
     if (!currentOption.option_name?.trim()) {
-      newErrors.option_name = 'Option name is required';
+      newErrors.option_name = "Option name is required";
     }
-    
-    const selectedType = optionTypes.find(type => type.value === currentOption.option_type);
-    if (selectedType?.hasValues && currentOption.option_values.length === 0) {
-      newErrors.option_values = 'At least one option value is required for this type';
-    }
-    
-    const existingIndex = customOptions.findIndex(option => 
-      option.option_name?.toLowerCase() === currentOption.option_name?.toLowerCase()
+
+    const selectedType = optionTypes.find(
+      (type) => type.value === currentOption.option_type
     );
-    
-    if (existingIndex !== -1 && existingIndex !== editingIndex) {
-      newErrors.option_name = 'An option with this name already exists';
+    if (selectedType?.hasValues && currentOption.option_values.length === 0) {
+      newErrors.option_values =
+        "At least one option value is required for this type";
     }
-    
+
+    const existingIndex = customOptions.findIndex(
+      (option) =>
+        option.option_name?.toLowerCase() ===
+        currentOption.option_name?.toLowerCase()
+    );
+
+    if (existingIndex !== -1 && existingIndex !== editingIndex) {
+      newErrors.option_name = "An option with this name already exists";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateValue = () => {
-    if (!currentValue.option_value?.trim()) {
-      toast({
-        title: 'Value Required',
-        description: 'Option value is required',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-      return false;
-    }
+  // const validateValue = () => {
+  //   if (!currentValue.option_value?.trim()) {
+  //     toast({
+  //       title: "Value Required",
+  //       description: "Option value is required",
+  //       status: "error",
+  //       duration: 3000,
+  //       isClosable: true,
+  //     });
+  //     return false;
+  //   }
 
-    const existingIndex = currentOption.option_values.findIndex(val => 
-      val.option_value?.toLowerCase() === currentValue.option_value?.toLowerCase()
-    );
-    
-    if (existingIndex !== -1 && existingIndex !== editingValueIndex) {
-      toast({
-        title: 'Duplicate Value',
-        description: 'This option value already exists',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-      return false;
-    }
+  //   const existingIndex = currentOption.option_values.findIndex(
+  //     (val) =>
+  //       val.option_value?.toLowerCase() ===
+  //       currentValue.option_value?.toLowerCase()
+  //   );
 
-    return true;
-  };
+  //   if (existingIndex !== -1 && existingIndex !== editingValueIndex) {
+  //     toast({
+  //       title: "Duplicate Value",
+  //       description: "This option value already exists",
+  //       status: "error",
+  //       duration: 3000,
+  //       isClosable: true,
+  //     });
+  //     return false;
+  //   }
 
-  const openValueModal = (valueIndex = null) => {
-    if (valueIndex !== null) {
-      const value = currentOption.option_values[valueIndex];
-      setCurrentValue({
-        ...value,
-        // If editing and value has image_url but no image, set preview for display
-        image: null,
-        image_preview: value.image_preview || value.image_url || null
-      });
-      setEditingValueIndex(valueIndex);
-    } else {
-      setCurrentValue({
-        option_value: '',
-        display_name: '',
-        price_modifier: 0,
-        price_modifier_type: 'fixed',
-        image: null,
-        image_preview: null,
-        image_alt_text: '',
-        is_default: currentOption.option_values.length === 0,
-        is_active: true,
-        sort_order: currentOption.option_values.length,
-        stock_quantity: null,
-        is_in_stock: true
-      });
-      setEditingValueIndex(null);
-    }
-    onValueModalOpen();
-  };
+  //   return true;
+  // };
+
+  // const openValueModal = (valueIndex = null) => {
+  //   if (valueIndex !== null) {
+  //     const value = currentOption.option_values[valueIndex];
+  //     setCurrentValue({
+  //       ...value,
+  //       // If editing and value has image_url but no image, set preview for display
+  //       image: null,
+  //       image_preview: value.image_preview || value.image_url || null,
+  //     });
+  //     setEditingValueIndex(valueIndex);
+  //   } else {
+  //     setCurrentValue({
+  //       option_value: "",
+  //       display_name: "",
+  //       price_modifier: 0,
+  //       price_modifier_type: "fixed",
+  //       image: null,
+  //       image_preview: null,
+  //       image_alt_text: "",
+  //       is_default: currentOption.option_values.length === 0,
+  //       is_active: true,
+  //       sort_order: currentOption.option_values.length,
+  //       stock_quantity: null,
+  //       is_in_stock: true,
+  //     });
+  //     setEditingValueIndex(null);
+  //   }
+  //   onValueModalOpen();
+  // };
 
   // const saveOptionValue = () => {
   //   if (!validateValue()) return;
@@ -314,119 +509,662 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
   //   });
   // };
 
-  const saveOptionValue = async () => {
-  if (!validateValue()) return;
+  // const saveOptionValue = async () => {
+  //   if (!validateValue()) return;
 
-  const valueData = {
-    ...currentValue,
-    display_name: currentValue.display_name || currentValue.option_value,
-    sort_order: editingValueIndex !== null ? currentValue.sort_order : currentOption.option_values.length,
-    image: currentValue.image instanceof File ? currentValue.image : null,
-    image_preview: currentValue.image_preview || null,
-    image_url: !currentValue.image && currentValue.image_preview && typeof currentValue.image_preview === "string"
-      ? currentValue.image_preview
-      : currentValue.image_url || null
-  };
+  //   const valueData = {
+  //     ...currentValue,
+  //     display_name: currentValue.display_name || currentValue.option_value,
+  //     sort_order:
+  //       editingValueIndex !== null
+  //         ? currentValue.sort_order
+  //         : currentOption.option_values.length,
+  //     image: currentValue.image instanceof File ? currentValue.image : null,
+  //     image_preview: currentValue.image_preview || null,
+  //     image_url:
+  //       !currentValue.image &&
+  //       currentValue.image_preview &&
+  //       typeof currentValue.image_preview === "string"
+  //         ? currentValue.image_preview
+  //         : currentValue.image_url || null,
+  //   };
 
-  let newValues;
-  let newValueId = valueData.id || valueData._id; // Use existing id if present
+  //   let newValues;
+  //   let newValueId = valueData.id || valueData._id; // Use existing id if present
 
-  if (editingValueIndex !== null) {
-    newValues = [...currentOption.option_values];
-    newValues[editingValueIndex] = valueData;
-  } else {
-    newValues = [...currentOption.option_values, valueData];
-  }
+  //   if (editingValueIndex !== null) {
+  //     newValues = [...currentOption.option_values];
+  //     newValues[editingValueIndex] = valueData;
+  //   } else {
+  //     newValues = [...currentOption.option_values, valueData];
+  //   }
 
-  setCurrentOption(prev => ({
-    ...prev,
-    option_values: newValues
-  }));
+  //   setCurrentOption((prev) => ({
+  //     ...prev,
+  //     option_values: newValues,
+  //   }));
 
-  onValueModalClose();
-  setEditingValueIndex(null);
-  resetCurrentValue();
+  //   onValueModalClose();
+  //   setEditingValueIndex(null);
+  //   resetCurrentValue();
 
-  toast({
-    title: editingValueIndex !== null ? 'Value Updated' : 'Value Added',
-    description: `${valueData.option_value} has been ${editingValueIndex !== null ? 'updated' : 'added'} successfully`,
-    status: 'success',
-    duration: 2000,
-    isClosable: true,
-  });
+  //   toast({
+  //     title: editingValueIndex !== null ? "Value Updated" : "Value Added",
+  //     description: `${valueData.option_value} has been ${
+  //       editingValueIndex !== null ? "updated" : "added"
+  //     } successfully`,
+  //     status: "success",
+  //     duration: 2000,
+  //     isClosable: true,
+  //   });
 
-  // --- NEW: Upload image if needed ---
-  // Only do this if editing an existing value (has id) and a new image file is present
-  if (
-    typeof onOptionValueImageUpload === "function" &&
-    valueData.image instanceof File &&
-    currentOption.id && // option must have id from backend
-    (valueData.id || valueData._id) // value must have id from backend
-  ) {
-    try {
-      await onOptionValueImageUpload(
-        currentOption.id,
-        valueData.id || valueData._id,
-        valueData.image
-      );
-      // Optionally, refresh the option values from backend here
-    } catch (err) {
+  //   // --- NEW: Upload image if needed ---
+  //   // Only do this if editing an existing value (has id) and a new image file is present
+  //   if (
+  //     typeof onOptionValueImageUpload === "function" &&
+  //     valueData.image instanceof File &&
+  //     currentOption.id && // option must have id from backend
+  //     (valueData.id || valueData._id) // value must have id from backend
+  //   ) {
+  //     try {
+  //       await onOptionValueImageUpload(
+  //         currentOption.id,
+  //         valueData.id || valueData._id,
+  //         valueData.image
+  //       );
+  //       // Optionally, refresh the option values from backend here
+  //     } catch (err) {
+  //       toast({
+  //         title: "Image upload failed",
+  //         description:
+  //           err?.response?.data?.message || "Could not upload image.",
+  //         status: "error",
+  //         duration: 4000,
+  //         isClosable: true,
+  //       });
+  //     }
+  //   }
+  // };
+
+  // v2.0
+
+  // v2.0
+
+  const validateValue = () => {
+    if (!currentValue.option_value?.trim()) {
       toast({
-        title: "Image upload failed",
-        description: err?.response?.data?.message || "Could not upload image.",
+        title: "Value Required",
+        description: "Option value is required",
         status: "error",
-        duration: 4000,
+        duration: 3000,
         isClosable: true,
       });
+      return false;
     }
-  }
-};
+
+    // Enhanced: Validate dimensional pricing
+    const isDimensionalType = ["m2", "m3", "linear-meter", "meter"].includes(
+      currentValue.price_modifier_type
+    );
+
+    // if (isDimensionalType && currentValue.price_modifier > 0) {
+    //   // For dimensional types, the price_modifier will be mapped to the appropriate field
+    //   // No additional validation needed here as the backend will handle the mapping
+    // }
+
+    const existingIndex = currentOption.option_values.findIndex(
+      (val) =>
+        val.option_value?.toLowerCase() ===
+        currentValue.option_value?.toLowerCase()
+    );
+
+    if (existingIndex !== -1 && existingIndex !== editingValueIndex) {
+      toast({
+        title: "Duplicate Value",
+        description: "This option value already exists",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  // const openValueModal = (valueIndex = null) => {
+  //   if (valueIndex !== null) {
+  //     const value = currentOption.option_values[valueIndex];
+  //     setCurrentValue({
+  //       ...value,
+  //       // Preserve existing image data
+  //       image: null, // Reset file input
+  //       image_preview: value.image_preview || value.image_url || null,
+  //       image_url: value.image_url || null,
+  //       // Ensure new pricing fields are included
+  //       price_per_m2: value.price_per_m2 || 0,
+  //       price_per_m3: value.price_per_m3 || 0,
+  //       price_per_linear_meter: value.price_per_linear_meter || 0,
+  //       price_per_meter: value.price_per_meter || 0,
+  //     });
+  //     setEditingValueIndex(valueIndex);
+  //   } else {
+  //     setCurrentValue({
+  //       option_value: "",
+  //       display_name: "",
+  //       price_modifier: 0,
+  //       price_modifier_type: "fixed",
+  //       price_per_m2: 0,
+  //       price_per_m3: 0,
+  //       price_per_linear_meter: 0,
+  //       price_per_meter: 0,
+  //       image: null,
+  //       image_preview: null,
+  //       image_url: null,
+  //       image_alt_text: "",
+  //       is_default: currentOption.option_values.length === 0,
+  //       is_active: true,
+  //       sort_order: currentOption.option_values.length,
+  //       stock_quantity: null,
+  //       is_in_stock: true,
+  //     });
+  //     setEditingValueIndex(null);
+  //   }
+  //   onValueModalOpen();
+  // };
+
+  // const saveOptionValue = async () => {
+  //   if (!validateValue()) return;
+
+  //   const valueData = {
+  //     ...currentValue,
+  //     display_name: currentValue.display_name || currentValue.option_value,
+  //     sort_order:
+  //       editingValueIndex !== null
+  //         ? currentValue.sort_order
+  //         : currentOption.option_values.length,
+  //     image: currentValue.image instanceof File ? currentValue.image : null,
+  //     image_preview: currentValue.image_preview || null,
+  //     image_url:
+  //       !currentValue.image &&
+  //       currentValue.image_preview &&
+  //       typeof currentValue.image_preview === "string"
+  //         ? currentValue.image_preview
+  //         : currentValue.image_url || null,
+  //   };
+
+  //   let newValues;
+  //   if (editingValueIndex !== null) {
+  //     newValues = [...currentOption.option_values];
+  //     newValues[editingValueIndex] = valueData;
+  //   } else {
+  //     newValues = [...currentOption.option_values, valueData];
+  //   }
+
+  //   setCurrentOption((prev) => ({
+  //     ...prev,
+  //     option_values: newValues,
+  //   }));
+
+  //   onValueModalClose();
+  //   setEditingValueIndex(null);
+  //   resetCurrentValue();
+
+  //   toast({
+  //     title: editingValueIndex !== null ? "Value Updated" : "Value Added",
+  //     description: `${valueData.option_value} has been ${
+  //       editingValueIndex !== null ? "updated" : "added"
+  //     } successfully`,
+  //     status: "success",
+  //     duration: 2000,
+  //     isClosable: true,
+  //   });
+
+  //   // Image upload logic - only for existing options/values from backend
+  //   if (
+  //     typeof onOptionValueImageUpload === "function" &&
+  //     valueData.image instanceof File
+  //   ) {
+  //     // For new products, we'll handle image uploads during product creation
+  //     // For existing products with backend IDs, we can upload immediately
+  //     const optionId = currentOption.id; // Backend ID
+  //     const valueId = valueData.id || valueData._id; // Backend ID
+
+  //     if (optionId && valueId) {
+  //       try {
+  //         await onOptionValueImageUpload(optionId, valueId, valueData.image);
+  //         toast({
+  //           title: "Image uploaded successfully",
+  //           description: "Option value image has been uploaded.",
+  //           status: "success",
+  //           duration: 2000,
+  //           isClosable: true,
+  //         });
+  //       } catch (err) {
+  //         console.error("Image upload failed:", err);
+  //         toast({
+  //           title: "Image upload failed",
+  //           description:
+  //             err?.response?.data?.message || "Could not upload image.",
+  //           status: "error",
+  //           duration: 4000,
+  //           isClosable: true,
+  //         });
+  //       }
+  //     }
+  //     // If no backend IDs, the image will be handled during product creation/update
+  //   }
+  // };
+
+  // const resetCurrentValue = () => {
+  //   setCurrentValue({
+  //     option_value: "",
+  //     display_name: "",
+  //     price_modifier: 0,
+  //     price_modifier_type: "fixed",
+  //     image: null,
+  //     image_preview: null,
+  //     image_alt_text: "",
+  //     is_default: false,
+  //     is_active: true,
+  //     sort_order: 0,
+  //     stock_quantity: null,
+  //     is_in_stock: true,
+  //   });
+  // };
+
+  //   const openValueModal = (valueIndex = null) => {
+  //   if (valueIndex !== null) {
+  //     const value = currentOption.option_values[valueIndex];
+
+  //     // Enhanced: Calculate the correct price_modifier based on type
+  //     let displayPriceModifier = value.price_modifier || 0;
+
+  //     // If it's a dimensional type, get the value from the appropriate field
+  //     switch (value.price_modifier_type) {
+  //       case "m2":
+  //         displayPriceModifier = value.price_per_m2 || value.price_modifier || 0;
+  //         break;
+  //       case "m3":
+  //         displayPriceModifier = value.price_per_m3 || value.price_modifier || 0;
+  //         break;
+  //       case "linear-meter":
+  //         displayPriceModifier = value.price_per_linear_meter || value.price_modifier || 0;
+  //         break;
+  //       case "meter":
+  //         displayPriceModifier = value.price_per_meter || value.price_modifier || 0;
+  //         break;
+  //       default:
+  //         displayPriceModifier = value.price_modifier || 0;
+  //         break;
+  //     }
+
+  //     setCurrentValue({
+  //       ...value,
+  //       price_modifier: displayPriceModifier, // Set the display value
+  //       image: null, // Reset file input
+  //       image_preview: value.image_preview || value.image_url || null,
+  //       image_url: value.image_url || null,
+  //       // Ensure all dimensional fields are included
+  //       price_per_m2: value.price_per_m2 || 0,
+  //       price_per_m3: value.price_per_m3 || 0,
+  //       price_per_linear_meter: value.price_per_linear_meter || 0,
+  //       price_per_meter: value.price_per_meter || 0,
+  //     });
+  //     setEditingValueIndex(valueIndex);
+  //   } else {
+  //     setCurrentValue({
+  //       option_value: "",
+  //       display_name: "",
+  //       price_modifier: 0,
+  //       price_modifier_type: "fixed",
+  //       price_per_m2: 0,
+  //       price_per_m3: 0,
+  //       price_per_linear_meter: 0,
+  //       price_per_meter: 0,
+  //       image: null,
+  //       image_preview: null,
+  //       image_url: null,
+  //       image_alt_text: "",
+  //       is_default: currentOption.option_values.length === 0,
+  //       is_active: true,
+  //       sort_order: currentOption.option_values.length,
+  //       stock_quantity: null,
+  //       is_in_stock: true,
+  //     });
+  //     setEditingValueIndex(null);
+  //   }
+  //   onValueModalOpen();
+  // };
+
+  const openValueModal = (valueIndex = null) => {
+    if (valueIndex !== null) {
+      const value = currentOption.option_values[valueIndex];
+
+      // Enhanced: Ensure price_modifier shows the correct value based on type
+      let displayPriceModifier = value.price_modifier || 0;
+
+      // If we have dimensional pricing data, use it to set the price_modifier for display
+      switch (value.price_modifier_type) {
+        case "m2":
+          displayPriceModifier =
+            value.price_per_m2 || value.price_modifier || 0;
+          break;
+        case "m3":
+          displayPriceModifier =
+            value.price_per_m3 || value.price_modifier || 0;
+          break;
+        case "linear-meter":
+          displayPriceModifier =
+            value.price_per_linear_meter || value.price_modifier || 0;
+          break;
+        case "meter":
+          displayPriceModifier =
+            value.price_per_meter || value.price_modifier || 0;
+          break;
+        default:
+          displayPriceModifier = value.price_modifier || 0;
+          break;
+      }
+
+      setCurrentValue({
+        ...value,
+        // Preserve existing image data
+        image: null, // Reset file input
+        image_preview: value.image_preview || value.image_url || null,
+        image_url: value.image_url || null,
+        // Ensure price_modifier shows the correct value
+        price_modifier: displayPriceModifier,
+        // Ensure new pricing fields are included with fallbacks
+        price_per_m2: value.price_per_m2 || 0,
+        price_per_m3: value.price_per_m3 || 0,
+        price_per_linear_meter: value.price_per_linear_meter || 0,
+        price_per_meter: value.price_per_meter || 0,
+      });
+      setEditingValueIndex(valueIndex);
+    } else {
+      setCurrentValue({
+        option_value: "",
+        display_name: "",
+        price_modifier: 0,
+        price_modifier_type: "fixed",
+        price_per_m2: 0,
+        price_per_m3: 0,
+        price_per_linear_meter: 0,
+        price_per_meter: 0,
+        image: null,
+        image_preview: null,
+        image_url: null,
+        image_alt_text: "",
+        is_default: currentOption.option_values.length === 0,
+        is_active: true,
+        sort_order: currentOption.option_values.length,
+        stock_quantity: null,
+        is_in_stock: true,
+      });
+      setEditingValueIndex(null);
+    }
+    onValueModalOpen();
+  };
+
+  // const saveOptionValue = async () => {
+  //   if (!validateValue()) return;
+
+  //   // Enhanced: Log the dimensional pricing data being saved
+  //   console.log("Saving option value with dimensional pricing:", {
+  //     option_value: currentValue.option_value,
+  //     price_modifier: currentValue.price_modifier,
+  //     price_modifier_type: currentValue.price_modifier_type,
+  //     price_per_m2: currentValue.price_per_m2,
+  //     price_per_m3: currentValue.price_per_m3,
+  //     price_per_linear_meter: currentValue.price_per_linear_meter,
+  //     price_per_meter: currentValue.price_per_meter,
+  //   });
+
+  //   const valueData = {
+  //     ...currentValue,
+  //     display_name: currentValue.display_name || currentValue.option_value,
+  //     sort_order:
+  //       editingValueIndex !== null
+  //         ? currentValue.sort_order
+  //         : currentOption.option_values.length,
+  //     image: currentValue.image instanceof File ? currentValue.image : null,
+  //     image_preview: currentValue.image_preview || null,
+  //     image_url:
+  //       !currentValue.image &&
+  //       currentValue.image_preview &&
+  //       typeof currentValue.image_preview === "string"
+  //         ? currentValue.image_preview
+  //         : currentValue.image_url || null,
+  //   };
+
+  //   let newValues;
+  //   if (editingValueIndex !== null) {
+  //     newValues = [...currentOption.option_values];
+  //     newValues[editingValueIndex] = valueData;
+  //   } else {
+  //     newValues = [...currentOption.option_values, valueData];
+  //   }
+
+  //   setCurrentOption((prev) => ({
+  //     ...prev,
+  //     option_values: newValues,
+  //   }));
+
+  //   onValueModalClose();
+  //   setEditingValueIndex(null);
+  //   resetCurrentValue();
+
+  //   toast({
+  //     title: editingValueIndex !== null ? "Value Updated" : "Value Added",
+  //     description: `${valueData.option_value} has been ${
+  //       editingValueIndex !== null ? "updated" : "added"
+  //     } successfully`,
+  //     status: "success",
+  //     duration: 2000,
+  //     isClosable: true,
+  //   });
+
+  //   // Image upload logic remains the same...
+  //   if (
+  //     typeof onOptionValueImageUpload === "function" &&
+  //     valueData.image instanceof File
+  //   ) {
+  //     const optionId = currentOption.id;
+  //     const valueId = valueData.id || valueData._id;
+
+  //     if (optionId && valueId) {
+  //       try {
+  //         await onOptionValueImageUpload(optionId, valueId, valueData.image);
+  //         toast({
+  //           title: "Image uploaded successfully",
+  //           description: "Option value image has been uploaded.",
+  //           status: "success",
+  //           duration: 2000,
+  //           isClosable: true,
+  //         });
+  //       } catch (err) {
+  //         console.error("Image upload failed:", err);
+  //         toast({
+  //           title: "Image upload failed",
+  //           description:
+  //             err?.response?.data?.message || "Could not upload image.",
+  //           status: "error",
+  //           duration: 4000,
+  //           isClosable: true,
+  //         });
+  //       }
+  //     }
+  //   }
+  // };
+
+  const saveOptionValue = async () => {
+    if (!validateValue()) return;
+
+    // Enhanced: Ensure price_modifier is correctly set based on pricing type
+    let finalPriceModifier = currentValue.price_modifier;
+
+    // Update the appropriate dimensional field and ensure price_modifier is set
+    switch (currentValue.price_modifier_type) {
+      case "m2":
+        currentValue.price_per_m2 = finalPriceModifier;
+        break;
+      case "m3":
+        currentValue.price_per_m3 = finalPriceModifier;
+        break;
+      case "linear-meter":
+        currentValue.price_per_linear_meter = finalPriceModifier;
+        break;
+      case "meter":
+        currentValue.price_per_meter = finalPriceModifier;
+        break;
+      default:
+        // For fixed and percentage, price_modifier is used directly
+        break;
+    }
+
+    console.log("Saving option value with pricing data:", {
+      option_value: currentValue.option_value,
+      price_modifier: finalPriceModifier,
+      price_modifier_type: currentValue.price_modifier_type,
+      price_per_m2: currentValue.price_per_m2,
+      price_per_m3: currentValue.price_per_m3,
+      price_per_linear_meter: currentValue.price_per_linear_meter,
+      price_per_meter: currentValue.price_per_meter,
+    });
+
+    const valueData = {
+      ...currentValue,
+      price_modifier: finalPriceModifier, // Ensure this is set correctly
+      display_name: currentValue.display_name || currentValue.option_value,
+      sort_order:
+        editingValueIndex !== null
+          ? currentValue.sort_order
+          : currentOption.option_values.length,
+      image: currentValue.image instanceof File ? currentValue.image : null,
+      image_preview: currentValue.image_preview || null,
+      image_url:
+        !currentValue.image &&
+        currentValue.image_preview &&
+        typeof currentValue.image_preview === "string"
+          ? currentValue.image_preview
+          : currentValue.image_url || null,
+    };
+
+    // Rest of the function remains the same...
+    let newValues;
+    if (editingValueIndex !== null) {
+      newValues = [...currentOption.option_values];
+      newValues[editingValueIndex] = valueData;
+    } else {
+      newValues = [...currentOption.option_values, valueData];
+    }
+
+    setCurrentOption((prev) => ({
+      ...prev,
+      option_values: newValues,
+    }));
+
+    onValueModalClose();
+    setEditingValueIndex(null);
+    resetCurrentValue();
+
+    toast({
+      title: editingValueIndex !== null ? "Value Updated" : "Value Added",
+      description: `${valueData.option_value} has been ${
+        editingValueIndex !== null ? "updated" : "added"
+      } successfully`,
+      status: "success",
+      duration: 2000,
+      isClosable: true,
+    });
+
+    // Image upload logic remains the same...
+    if (
+      typeof onOptionValueImageUpload === "function" &&
+      valueData.image instanceof File
+    ) {
+      const optionId = currentOption.id;
+      const valueId = valueData.id || valueData._id;
+
+      if (optionId && valueId) {
+        try {
+          await onOptionValueImageUpload(optionId, valueId, valueData.image);
+          toast({
+            title: "Image uploaded successfully",
+            description: "Option value image has been uploaded.",
+            status: "success",
+            duration: 2000,
+            isClosable: true,
+          });
+        } catch (err) {
+          console.error("Image upload failed:", err);
+          toast({
+            title: "Image upload failed",
+            description:
+              err?.response?.data?.message || "Could not upload image.",
+            status: "error",
+            duration: 4000,
+            isClosable: true,
+          });
+        }
+      }
+    }
+  };
 
   const resetCurrentValue = () => {
     setCurrentValue({
-      option_value: '',
-      display_name: '',
+      option_value: "",
+      display_name: "",
       price_modifier: 0,
-      price_modifier_type: 'fixed',
+      price_modifier_type: "fixed",
+      price_per_m2: 0,
+      price_per_m3: 0,
+      price_per_linear_meter: 0,
+      price_per_meter: 0,
       image: null,
       image_preview: null,
-      image_alt_text: '',
+      image_url: null,
+      image_alt_text: "",
       is_default: false,
       is_active: true,
       sort_order: 0,
       stock_quantity: null,
-      is_in_stock: true
+      is_in_stock: true,
     });
   };
 
   const removeOptionValue = (index) => {
     const newValues = currentOption.option_values.filter((_, i) => i !== index);
-    if (newValues.length > 0 && currentOption.option_values[index]?.is_default) {
+    if (
+      newValues.length > 0 &&
+      currentOption.option_values[index]?.is_default
+    ) {
       newValues[0].is_default = true;
     }
-    setCurrentOption(prev => ({
+    setCurrentOption((prev) => ({
       ...prev,
-      option_values: newValues
+      option_values: newValues,
     }));
   };
 
   const setDefaultValue = (index) => {
     const newValues = currentOption.option_values.map((value, i) => ({
       ...value,
-      is_default: i === index
+      is_default: i === index,
     }));
-    setCurrentOption(prev => ({
+    setCurrentOption((prev) => ({
       ...prev,
-      option_values: newValues
+      option_values: newValues,
     }));
   };
 
   const addOrUpdateOption = () => {
     if (!validateOption()) {
       toast({
-        title: 'Validation Error',
-        description: 'Please fix the form errors before adding the option',
-        status: 'error',
+        title: "Validation Error",
+        description: "Please fix the form errors before adding the option",
+        status: "error",
         duration: 3000,
         isClosable: true,
       });
@@ -435,7 +1173,7 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
 
     const optionData = {
       ...currentOption,
-      id: editingIndex !== null ? customOptions[editingIndex]?.id : uuidv4()
+      id: editingIndex !== null ? customOptions[editingIndex]?.id : uuidv4(),
     };
 
     let newOptions;
@@ -451,9 +1189,11 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
     resetForm();
 
     toast({
-      title: editingIndex !== null ? 'Option Updated' : 'Option Added',
-      description: `${optionData.option_name} has been ${editingIndex !== null ? 'updated' : 'added'} successfully`,
-      status: 'success',
+      title: editingIndex !== null ? "Option Updated" : "Option Added",
+      description: `${optionData.option_name} has been ${
+        editingIndex !== null ? "updated" : "added"
+      } successfully`,
+      status: "success",
       duration: 2000,
       isClosable: true,
     });
@@ -461,17 +1201,17 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
 
   const resetForm = () => {
     setCurrentOption({
-      option_name: '',
-      option_type: 'text',
+      option_name: "",
+      option_type: "text",
       is_required: false,
       is_active: true,
       affects_price: false,
-      price_modifier_type: 'fixed',
+      price_modifier_type: "fixed",
       base_price_modifier: 0,
-      placeholder_text: '',
-      help_text: '',
+      placeholder_text: "",
+      help_text: "",
       sort_order: customOptions.length,
-      option_values: []
+      option_values: [],
     });
     setErrors({});
     setEditingIndex(null);
@@ -487,18 +1227,18 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
   const removeOption = (index) => {
     const newOptions = customOptions.filter((_, i) => i !== index);
     onCustomOptionsChange(newOptions);
-    
+
     toast({
-      title: 'Option Removed',
-      description: 'Custom option has been removed successfully',
-      status: 'info',
+      title: "Option Removed",
+      description: "Custom option has been removed successfully",
+      status: "info",
       duration: 2000,
       isClosable: true,
     });
   };
 
   const getOptionTypeConfig = (type) => {
-    return optionTypes.find(ot => ot.value === type) || optionTypes[0];
+    return optionTypes.find((ot) => ot.value === type) || optionTypes[0];
   };
 
   const currentTypeConfig = getOptionTypeConfig(currentOption.option_type);
@@ -513,7 +1253,8 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
           </Text>
           {customOptions.length > 0 && (
             <Badge colorScheme="purple" variant="subtle">
-              {customOptions.length} option{customOptions.length !== 1 ? 's' : ''}
+              {customOptions.length} option
+              {customOptions.length !== 1 ? "s" : ""}
             </Badge>
           )}
         </HStack>
@@ -524,7 +1265,7 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
           onClick={toggleForm}
           variant={isFormOpen ? "outline" : "solid"}
         >
-          {isFormOpen ? 'Hide Form' : 'Add Option'}
+          {isFormOpen ? "Hide Form" : "Add Option"}
         </Button>
       </HStack>
 
@@ -535,7 +1276,9 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
             <HStack>
               <FiSettings />
               <Text fontWeight="medium" color="purple.800">
-                {editingIndex !== null ? 'Edit Custom Option' : 'Add Custom Option'}
+                {editingIndex !== null
+                  ? "Edit Custom Option"
+                  : "Add Custom Option"}
               </Text>
             </HStack>
           </CardHeader>
@@ -549,7 +1292,9 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                   </FormLabel>
                   <Input
                     value={currentOption.option_name}
-                    onChange={(e) => handleInputChange('option_name', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("option_name", e.target.value)
+                    }
                     placeholder="e.g., Size, Color, Material"
                     bg="gray.50"
                     border="1px"
@@ -565,16 +1310,22 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                   <Select
                     value={currentOption.option_type}
                     onChange={(e) => {
-                      handleInputChange('option_type', e.target.value);
-                      if (!optionTypes.find(t => t.value === e.target.value)?.hasValues) {
-                        setCurrentOption(prev => ({ ...prev, option_values: [] }));
+                      handleInputChange("option_type", e.target.value);
+                      if (
+                        !optionTypes.find((t) => t.value === e.target.value)
+                          ?.hasValues
+                      ) {
+                        setCurrentOption((prev) => ({
+                          ...prev,
+                          option_values: [],
+                        }));
                       }
                     }}
                     bg="gray.50"
                     border="1px"
                     borderColor="gray.200"
                   >
-                    {optionTypes.map(type => (
+                    {optionTypes.map((type) => (
                       <option key={type.value} value={type.value}>
                         {type.label}
                       </option>
@@ -594,7 +1345,9 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                   </FormLabel>
                   <Input
                     value={currentOption.placeholder_text}
-                    onChange={(e) => handleInputChange('placeholder_text', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("placeholder_text", e.target.value)
+                    }
                     placeholder="e.g., Enter your preferred size"
                     bg="gray.50"
                   />
@@ -607,7 +1360,9 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                   </FormLabel>
                   <NumberInput
                     value={currentOption.sort_order}
-                    onChange={(value) => handleInputChange('sort_order', parseInt(value) || 0)}
+                    onChange={(value) =>
+                      handleInputChange("sort_order", parseInt(value) || 0)
+                    }
                     min={0}
                   >
                     <NumberInputField bg="gray.50" />
@@ -616,7 +1371,9 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                       <NumberDecrementStepper />
                     </NumberInputStepper>
                   </NumberInput>
-                  <FormHelperText>Display order (lower numbers appear first)</FormHelperText>
+                  <FormHelperText>
+                    Display order (lower numbers appear first)
+                  </FormHelperText>
                 </FormControl>
               </SimpleGrid>
 
@@ -626,12 +1383,16 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                 </FormLabel>
                 <Textarea
                   value={currentOption.help_text}
-                  onChange={(e) => handleInputChange('help_text', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("help_text", e.target.value)
+                  }
                   placeholder="Additional guidance for customers about this option"
                   rows={2}
                   bg="gray.50"
                 />
-                <FormHelperText>Help text displayed below the option</FormHelperText>
+                <FormHelperText>
+                  Help text displayed below the option
+                </FormHelperText>
               </FormControl>
 
               {/* Option Values Management */}
@@ -639,7 +1400,7 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                 <Box>
                   <FormControl isInvalid={!!errors.option_values}>
                     <FormLabel color="gray.700" fontWeight="500">
-                      Option Values * 
+                      Option Values *
                       <Badge colorScheme="purple" variant="outline" ml={2}>
                         Enhanced with Pricing & Images
                       </Badge>
@@ -658,15 +1419,22 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                           Add values with individual pricing and images
                         </Text>
                       </HStack>
-                      
-                      <FormErrorMessage>{errors.option_values}</FormErrorMessage>
+
+                      <FormErrorMessage>
+                        {errors.option_values}
+                      </FormErrorMessage>
                     </VStack>
                   </FormControl>
 
                   {/* Display added values */}
                   {currentOption.option_values.length > 0 && (
                     <Box mt={4}>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={3}>
+                      <Text
+                        fontSize="sm"
+                        fontWeight="medium"
+                        color="gray.700"
+                        mb={3}
+                      >
                         Added Values ({currentOption.option_values.length}):
                       </Text>
                       <VStack spacing={3} align="stretch">
@@ -679,8 +1447,13 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                                   {(value.image_preview || value.image_url) && (
                                     <Box>
                                       <Image
-                                        src={value.image_preview || value.image_url}
-                                        alt={value.image_alt_text || value.option_value}
+                                        src={
+                                          value.image_preview || value.image_url
+                                        }
+                                        alt={
+                                          value.image_alt_text ||
+                                          value.option_value
+                                        }
                                         boxSize="40px"
                                         objectFit="cover"
                                         borderRadius="md"
@@ -689,36 +1462,47 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                                       />
                                     </Box>
                                   )}
-                                  
+
                                   <VStack align="start" spacing={1} flex={1}>
                                     <HStack>
                                       <Text fontWeight="bold" fontSize="sm">
                                         {value.option_value}
                                       </Text>
                                       {value.is_default && (
-                                        <Badge colorScheme="purple" size="sm">Default</Badge>
+                                        <Badge colorScheme="purple" size="sm">
+                                          Default
+                                        </Badge>
                                       )}
                                       {!value.is_active && (
-                                        <Badge colorScheme="gray" size="sm">Inactive</Badge>
+                                        <Badge colorScheme="gray" size="sm">
+                                          Inactive
+                                        </Badge>
                                       )}
                                     </HStack>
-                                    
+
                                     {value.price_modifier > 0 && (
-                                      <Text fontSize="xs" color="green.600" fontWeight="medium">
-                                        +{value.price_modifier_type === 'percentage' 
-                                          ? `${value.price_modifier}%` 
+                                      <Text
+                                        fontSize="xs"
+                                        color="green.600"
+                                        fontWeight="medium"
+                                      >
+                                        +
+                                        {value.price_modifier_type ===
+                                        "percentage"
+                                          ? `${value.price_modifier}%`
                                           : `$${value.price_modifier}`}
                                       </Text>
                                     )}
-                                    
-                                    {value.stock_quantity !== null && value.stock_quantity !== undefined && (
-                                      <Text fontSize="xs" color="gray.500">
-                                        Stock: {value.stock_quantity}
-                                      </Text>
-                                    )}
+
+                                    {value.stock_quantity !== null &&
+                                      value.stock_quantity !== undefined && (
+                                        <Text fontSize="xs" color="gray.500">
+                                          Stock: {value.stock_quantity}
+                                        </Text>
+                                      )}
                                   </VStack>
                                 </HStack>
-                                
+
                                 <HStack spacing={1}>
                                   <IconButton
                                     icon={<FiEye />}
@@ -757,48 +1541,76 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
 
               {/* Settings */}
               <Box>
-                <Text color="gray.700" fontWeight="500" mb={4}>Settings</Text>
+                <Text color="gray.700" fontWeight="500" mb={4}>
+                  Settings
+                </Text>
                 <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
                   <FormControl display="flex" alignItems="center">
-                    <FormLabel htmlFor="is_required" mb="0" mr={3} color="gray.700">
+                    <FormLabel
+                      htmlFor="is_required"
+                      mb="0"
+                      mr={3}
+                      color="gray.700"
+                    >
                       Required Option
                     </FormLabel>
                     <Switch
                       id="is_required"
                       colorScheme="red"
                       isChecked={currentOption.is_required}
-                      onChange={(e) => handleInputChange('is_required', e.target.checked)}
+                      onChange={(e) =>
+                        handleInputChange("is_required", e.target.checked)
+                      }
                     />
                   </FormControl>
 
                   <FormControl display="flex" alignItems="center">
-                    <FormLabel htmlFor="affects_price" mb="0" mr={3} color="gray.700">
+                    <FormLabel
+                      htmlFor="affects_price"
+                      mb="0"
+                      mr={3}
+                      color="gray.700"
+                    >
                       Affects Price
                     </FormLabel>
                     <Switch
                       id="affects_price"
                       colorScheme="green"
                       isChecked={currentOption.affects_price}
-                      onChange={(e) => handleInputChange('affects_price', e.target.checked)}
+                      onChange={(e) =>
+                        handleInputChange("affects_price", e.target.checked)
+                      }
                     />
                   </FormControl>
 
                   <FormControl display="flex" alignItems="center">
-                    <FormLabel htmlFor="is_active" mb="0" mr={3} color="gray.700">
+                    <FormLabel
+                      htmlFor="is_active"
+                      mb="0"
+                      mr={3}
+                      color="gray.700"
+                    >
                       Active
                     </FormLabel>
                     <Switch
                       id="is_active"
                       colorScheme="purple"
                       isChecked={currentOption.is_active}
-                      onChange={(e) => handleInputChange('is_active', e.target.checked)}
+                      onChange={(e) =>
+                        handleInputChange("is_active", e.target.checked)
+                      }
                     />
                   </FormControl>
                 </SimpleGrid>
               </Box>
 
               {/* Action Buttons */}
-              <HStack justify="flex-end" pt={4} borderTop="1px" borderColor="gray.200">
+              <HStack
+                justify="flex-end"
+                pt={4}
+                borderTop="1px"
+                borderColor="gray.200"
+              >
                 <Button variant="ghost" onClick={resetForm}>
                   Cancel
                 </Button>
@@ -807,7 +1619,7 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                   onClick={addOrUpdateOption}
                   leftIcon={editingIndex !== null ? <FiEdit /> : <FiPlus />}
                 >
-                  {editingIndex !== null ? 'Update Option' : 'Add Option'}
+                  {editingIndex !== null ? "Update Option" : "Add Option"}
                 </Button>
               </HStack>
             </VStack>
@@ -822,7 +1634,11 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
           <ModalHeader>
             <HStack>
               <FiDollarSign />
-              <Text>{editingValueIndex !== null ? 'Edit Option Value' : 'Add Option Value'}</Text>
+              <Text>
+                {editingValueIndex !== null
+                  ? "Edit Option Value"
+                  : "Add Option Value"}
+              </Text>
             </HStack>
           </ModalHeader>
           <ModalCloseButton />
@@ -836,7 +1652,9 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                   </FormLabel>
                   <Input
                     value={currentValue.option_value}
-                    onChange={(e) => handleValueInputChange('option_value', e.target.value)}
+                    onChange={(e) =>
+                      handleValueInputChange("option_value", e.target.value)
+                    }
                     placeholder="e.g., M, L, XL"
                     bg="gray.50"
                   />
@@ -848,7 +1666,9 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                   </FormLabel>
                   <Input
                     value={currentValue.display_name}
-                    onChange={(e) => handleValueInputChange('display_name', e.target.value)}
+                    onChange={(e) =>
+                      handleValueInputChange("display_name", e.target.value)
+                    }
                     placeholder="e.g., Medium, Large"
                     bg="gray.50"
                   />
@@ -862,24 +1682,56 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                   Individual Pricing (Optional)
                 </Text>
                 <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-                  <FormControl>
+                  {/* <FormControl>
                     <FormLabel fontSize="sm">Price Modifier Type</FormLabel>
                     <Select
                       value={currentValue.price_modifier_type}
-                      onChange={(e) => handleValueInputChange('price_modifier_type', e.target.value)}
+                      onChange={(e) =>
+                        handleValueInputChange(
+                          "price_modifier_type",
+                          e.target.value
+                        )
+                      }
                       bg="gray.50"
                       size="sm"
                     >
                       <option value="fixed">Fixed Amount ($)</option>
                       <option value="percentage">Percentage (%)</option>
                     </Select>
-                  </FormControl>
+                  </FormControl> */}
 
                   <FormControl>
+                    <FormLabel fontSize="sm">Price Modifier Type</FormLabel>
+                    <Select
+                      value={currentValue.price_modifier_type}
+                      onChange={(e) =>
+                        handleValueInputChange(
+                          "price_modifier_type",
+                          e.target.value
+                        )
+                      }
+                      bg="gray.50"
+                      size="sm"
+                    >
+                      <option value="fixed">Fixed Amount ($)</option>
+                      <option value="percentage">Percentage (%)</option>
+                      <option value="m2">Per Square Meter (m²)</option>
+                      <option value="m3">Per Cubic Meter (m³)</option>
+                      <option value="linear-meter">Per Linear Meter</option>
+                      <option value="meter">Per Meter</option>
+                    </Select>
+                  </FormControl>
+
+                  {/* <FormControl>
                     <FormLabel fontSize="sm">Price Modifier</FormLabel>
                     <NumberInput
                       value={currentValue.price_modifier}
-                      onChange={(value) => handleValueInputChange('price_modifier', parseFloat(value) || 0)}
+                      onChange={(value) =>
+                        handleValueInputChange(
+                          "price_modifier",
+                          parseFloat(value) || 0
+                        )
+                      }
                       min={0}
                       precision={2}
                       size="sm"
@@ -891,7 +1743,170 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                       </NumberInputStepper>
                     </NumberInput>
                     <FormHelperText>
-                      For size "XL": +$5.00 means XL costs $5 more than base price
+                      For size "XL": +$5.00 means XL costs $5 more than base
+                      price
+                    </FormHelperText>
+                  </FormControl> */}
+                  {/* <FormControl>
+                    <FormLabel fontSize="sm">
+                      Price Modifier
+                      {currentValue.price_modifier_type === "percentage" &&
+                        " (%)"}
+                      {currentValue.price_modifier_type === "m2" && " (per m²)"}
+                      {currentValue.price_modifier_type === "m3" && " (per m³)"}
+                      {currentValue.price_modifier_type === "linear-meter" &&
+                        " (per linear meter)"}
+                      {currentValue.price_modifier_type === "meter" &&
+                        " (per meter)"}
+                      {currentValue.price_modifier_type === "fixed" && " ($)"}
+                    </FormLabel>
+                    <NumberInput
+                      value={currentValue.price_modifier}
+                      onChange={(value) =>
+                        handleValueInputChange(
+                          "price_modifier",
+                          parseFloat(value) || 0
+                        )
+                      }
+                      min={0}
+                      precision={2}
+                      size="sm"
+                    >
+                      <NumberInputField bg="gray.50" />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                    <FormHelperText>
+                      {currentValue.price_modifier_type === "fixed" &&
+                        "Fixed amount added to base price"}
+                      {currentValue.price_modifier_type === "percentage" &&
+                        "Percentage of base price"}
+                      {currentValue.price_modifier_type === "m2" &&
+                        "Additional cost per square meter"}
+                      {currentValue.price_modifier_type === "m3" &&
+                        "Additional cost per cubic meter"}
+                      {currentValue.price_modifier_type === "linear-meter" &&
+                        "Additional cost per linear meter"}
+                      {currentValue.price_modifier_type === "meter" &&
+                        "Additional cost per meter"}
+                    </FormHelperText>
+                  </FormControl> */}
+
+                  {/* <FormControl>
+                    <FormLabel fontSize="sm">
+                      Price Modifier
+                      {currentValue.price_modifier_type === "percentage" &&
+                        " (%)"}
+                      {currentValue.price_modifier_type === "m2" && " (per m²)"}
+                      {currentValue.price_modifier_type === "m3" && " (per m³)"}
+                      {currentValue.price_modifier_type === "linear-meter" &&
+                        " (per linear meter)"}
+                      {currentValue.price_modifier_type === "meter" &&
+                        " (per meter)"}
+                      {currentValue.price_modifier_type === "fixed" && " ($)"}
+                    </FormLabel>
+                    <NumberInput
+                      value={
+                        // Show the appropriate value based on price_modifier_type
+                        currentValue.price_modifier_type === "m2"
+                          ? currentValue.price_per_m2
+                          : currentValue.price_modifier_type === "m3"
+                          ? currentValue.price_per_m3
+                          : currentValue.price_modifier_type === "linear-meter"
+                          ? currentValue.price_per_linear_meter
+                          : currentValue.price_modifier_type === "meter"
+                          ? currentValue.price_per_meter
+                          : currentValue.price_modifier
+                      }
+                      onChange={(value) =>
+                        handleValueInputChange(
+                          "price_modifier",
+                          parseFloat(value) || 0
+                        )
+                      }
+                      min={0}
+                      precision={2}
+                      size="sm"
+                    >
+                      <NumberInputField bg="gray.50" />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                    <FormHelperText>
+                      {currentValue.price_modifier_type === "fixed" &&
+                        "Fixed amount added to base price"}
+                      {currentValue.price_modifier_type === "percentage" &&
+                        "Percentage of base price"}
+                      {currentValue.price_modifier_type === "m2" &&
+                        "Additional cost per square meter"}
+                      {currentValue.price_modifier_type === "m3" &&
+                        "Additional cost per cubic meter"}
+                      {currentValue.price_modifier_type === "linear-meter" &&
+                        "Additional cost per linear meter"}
+                      {currentValue.price_modifier_type === "meter" &&
+                        "Additional cost per meter"}
+                    </FormHelperText>
+                  </FormControl> */}
+
+                  <FormControl>
+                    <FormLabel fontSize="sm">
+                      Price Modifier
+                      {currentValue.price_modifier_type === "percentage" &&
+                        " (%)"}
+                      {currentValue.price_modifier_type === "m2" && " (per m²)"}
+                      {currentValue.price_modifier_type === "m3" && " (per m³)"}
+                      {currentValue.price_modifier_type === "linear-meter" &&
+                        " (per linear meter)"}
+                      {currentValue.price_modifier_type === "meter" &&
+                        " (per meter)"}
+                      {currentValue.price_modifier_type === "fixed" && " ($)"}
+                    </FormLabel>
+                    <NumberInput
+                      value={
+                        // Show the appropriate value based on price_modifier_type
+                        currentValue.price_modifier_type === "m2"
+                          ? currentValue.price_per_m2
+                          : currentValue.price_modifier_type === "m3"
+                          ? currentValue.price_per_m3
+                          : currentValue.price_modifier_type === "linear-meter"
+                          ? currentValue.price_per_linear_meter
+                          : currentValue.price_modifier_type === "meter"
+                          ? currentValue.price_per_meter
+                          : currentValue.price_modifier
+                      }
+                      onChange={(value) =>
+                        handleValueInputChange(
+                          "price_modifier",
+                          parseFloat(value) || 0
+                        )
+                      }
+                      min={0}
+                      precision={2}
+                      size="sm"
+                    >
+                      <NumberInputField bg="gray.50" />
+                      <NumberInputStepper>
+                        <NumberIncrementStepper />
+                        <NumberDecrementStepper />
+                      </NumberInputStepper>
+                    </NumberInput>
+                    <FormHelperText>
+                      {currentValue.price_modifier_type === "fixed" &&
+                        "Fixed amount added to base price"}
+                      {currentValue.price_modifier_type === "percentage" &&
+                        "Percentage of base price"}
+                      {currentValue.price_modifier_type === "m2" &&
+                        "Additional cost per square meter"}
+                      {currentValue.price_modifier_type === "m3" &&
+                        "Additional cost per cubic meter"}
+                      {currentValue.price_modifier_type === "linear-meter" &&
+                        "Additional cost per linear meter"}
+                      {currentValue.price_modifier_type === "meter" &&
+                        "Additional cost per meter"}
                     </FormHelperText>
                   </FormControl>
                 </SimpleGrid>
@@ -949,7 +1964,8 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                         <FiImage size="2em" color="gray" />
                         <Text color="gray.600">Click to upload image</Text>
                         <Text fontSize="xs" color="gray.500">
-                          PNG, JPG up to 5MB. Perfect for size charts or color swatches.
+                          PNG, JPG up to 5MB. Perfect for size charts or color
+                          swatches.
                         </Text>
                       </VStack>
                     </Box>
@@ -967,7 +1983,9 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                     <FormLabel fontSize="sm">Image Alt Text</FormLabel>
                     <Input
                       value={currentValue.image_alt_text}
-                      onChange={(e) => handleValueInputChange('image_alt_text', e.target.value)}
+                      onChange={(e) =>
+                        handleValueInputChange("image_alt_text", e.target.value)
+                      }
                       placeholder="Describe the image for accessibility"
                       size="sm"
                       bg="gray.50"
@@ -991,7 +2009,12 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                         <FormControl>
                           <Checkbox
                             isChecked={currentValue.is_default}
-                            onChange={(e) => handleValueInputChange('is_default', e.target.checked)}
+                            onChange={(e) =>
+                              handleValueInputChange(
+                                "is_default",
+                                e.target.checked
+                              )
+                            }
                           >
                             Default Value
                           </Checkbox>
@@ -1000,7 +2023,12 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                         <FormControl>
                           <Checkbox
                             isChecked={currentValue.is_active}
-                            onChange={(e) => handleValueInputChange('is_active', e.target.checked)}
+                            onChange={(e) =>
+                              handleValueInputChange(
+                                "is_active",
+                                e.target.checked
+                              )
+                            }
                           >
                             Active
                           </Checkbox>
@@ -1011,12 +2039,20 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                         <FormControl>
                           <FormLabel fontSize="sm">Stock Quantity</FormLabel>
                           <NumberInput
-                            value={currentValue.stock_quantity || ''}
-                            onChange={(value) => handleValueInputChange('stock_quantity', value ? parseInt(value) : null)}
+                            value={currentValue.stock_quantity || ""}
+                            onChange={(value) =>
+                              handleValueInputChange(
+                                "stock_quantity",
+                                value ? parseInt(value) : null
+                              )
+                            }
                             min={0}
                             size="sm"
                           >
-                            <NumberInputField bg="gray.50" placeholder="Unlimited" />
+                            <NumberInputField
+                              bg="gray.50"
+                              placeholder="Unlimited"
+                            />
                             <NumberInputStepper>
                               <NumberIncrementStepper />
                               <NumberDecrementStepper />
@@ -1028,7 +2064,12 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                           <FormLabel fontSize="sm">Sort Order</FormLabel>
                           <NumberInput
                             value={currentValue.sort_order}
-                            onChange={(value) => handleValueInputChange('sort_order', parseInt(value) || 0)}
+                            onChange={(value) =>
+                              handleValueInputChange(
+                                "sort_order",
+                                parseInt(value) || 0
+                              )
+                            }
                             min={0}
                             size="sm"
                           >
@@ -1051,7 +2092,7 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
               Cancel
             </Button>
             <Button colorScheme="purple" onClick={saveOptionValue}>
-              {editingValueIndex !== null ? 'Update Value' : 'Add Value'}
+              {editingValueIndex !== null ? "Update Value" : "Add Value"}
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -1063,10 +2104,10 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
           <Text fontSize="md" fontWeight="medium" color="gray.700">
             Added Options ({customOptions.length})
           </Text>
-          
+
           {customOptions.map((option, index) => {
             const typeConfig = getOptionTypeConfig(option.option_type);
-            
+
             return (
               <MotionBox
                 key={option.id || index}
@@ -1079,27 +2120,47 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                     <Flex justify="space-between" align="flex-start">
                       <VStack align="start" spacing={3} flex={1}>
                         <HStack spacing={3} wrap="wrap">
-                          <Text fontWeight="bold" color="gray.900" fontSize="lg">
+                          <Text
+                            fontWeight="bold"
+                            color="gray.900"
+                            fontSize="lg"
+                          >
                             {option.option_name}
                           </Text>
-                          <Badge colorScheme="purple" variant="solid" borderRadius="full">
+                          <Badge
+                            colorScheme="purple"
+                            variant="solid"
+                            borderRadius="full"
+                          >
                             <HStack spacing={1}>
                               <typeConfig.icon size="12px" />
                               <Text>{typeConfig.label}</Text>
                             </HStack>
                           </Badge>
                           {option.is_required && (
-                            <Badge colorScheme="red" variant="solid" borderRadius="full">
+                            <Badge
+                              colorScheme="red"
+                              variant="solid"
+                              borderRadius="full"
+                            >
                               Required
                             </Badge>
                           )}
                           {option.affects_price && (
-                            <Badge colorScheme="green" variant="solid" borderRadius="full">
+                            <Badge
+                              colorScheme="green"
+                              variant="solid"
+                              borderRadius="full"
+                            >
                               Affects Price
                             </Badge>
                           )}
                           {!option.is_active && (
-                            <Badge colorScheme="gray" variant="solid" borderRadius="full">
+                            <Badge
+                              colorScheme="gray"
+                              variant="solid"
+                              borderRadius="full"
+                            >
                               Inactive
                             </Badge>
                           )}
@@ -1112,67 +2173,134 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
                         )}
 
                         {option.placeholder_text && (
-                          <Text color="gray.500" fontSize="sm" fontStyle="italic">
+                          <Text
+                            color="gray.500"
+                            fontSize="sm"
+                            fontStyle="italic"
+                          >
                             Placeholder: "{option.placeholder_text}"
                           </Text>
                         )}
 
                         {/* Enhanced option values display */}
-                        {option.option_values && option.option_values.length > 0 && (
-                          <Box>
-                            <Text fontSize="sm" fontWeight="medium" color="gray.700" mb={2}>
-                              Values ({option.option_values.length}):
-                            </Text>
-                            <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={2}>
-                              {option.option_values.map((value, valueIndex) => (
-                                <Box
-                                  key={valueIndex}
-                                  p={2}
-                                  bg={value.is_default ? "purple.50" : "gray.50"}
-                                  border="1px" 
-                                  borderColor={value.is_default ? "purple.200" : "gray.200"}
-                                  borderRadius="md"
-                                  position="relative"
-                                >
-                                  <VStack spacing={1} align="stretch">
-                                    {(value.image_preview || value.image_url) && (
-                                      <Image
-                                        src={value.image_preview || value.image_url}
-                                        alt={value.image_alt_text || value.option_value}
-                                        boxSize="30px"
-                                        objectFit="cover"
-                                        borderRadius="sm"
-                                        mx="auto"
-                                      />
-                                    )}
-                                    <Text fontSize="xs" fontWeight={value.is_default ? "bold" : "normal"} textAlign="center">
-                                      {value.option_value}
-                                    </Text>
-                                    {value.price_modifier > 0 && (
-                                      <Text fontSize="xs" color="green.600" textAlign="center">
-                                        +{value.price_modifier_type === 'percentage' 
-                                          ? `${value.price_modifier}%` 
-                                          : `$${value.price_modifier}`}
-                                      </Text>
-                                    )}
-                                  </VStack>
-                                  {value.is_default && (
-                                    <Badge
-                                      position="absolute"
-                                      top="-5px"
-                                      right="-5px"
-                                      size="xs"
-                                      colorScheme="purple"
-                                      borderRadius="full"
+                        {option.option_values &&
+                          option.option_values.length > 0 && (
+                            <Box>
+                              <Text
+                                fontSize="sm"
+                                fontWeight="medium"
+                                color="gray.700"
+                                mb={2}
+                              >
+                                Values ({option.option_values.length}):
+                              </Text>
+                              <SimpleGrid
+                                columns={{ base: 2, md: 3, lg: 4 }}
+                                spacing={2}
+                              >
+                                {option.option_values.map(
+                                  (value, valueIndex) => (
+                                    <Box
+                                      key={valueIndex}
+                                      p={2}
+                                      bg={
+                                        value.is_default
+                                          ? "purple.50"
+                                          : "gray.50"
+                                      }
+                                      border="1px"
+                                      borderColor={
+                                        value.is_default
+                                          ? "purple.200"
+                                          : "gray.200"
+                                      }
+                                      borderRadius="md"
+                                      position="relative"
                                     >
-                                      Default
-                                    </Badge>
-                                  )}
-                                </Box>
-                              ))}
-                            </SimpleGrid>
-                          </Box>
-                        )}
+                                      <VStack spacing={1} align="stretch">
+                                        {(value.image_preview ||
+                                          value.image_url) && (
+                                          <Image
+                                            src={
+                                              value.image_preview ||
+                                              value.image_url
+                                            }
+                                            alt={
+                                              value.image_alt_text ||
+                                              value.option_value
+                                            }
+                                            boxSize="30px"
+                                            objectFit="cover"
+                                            borderRadius="sm"
+                                            mx="auto"
+                                          />
+                                        )}
+                                        <Text
+                                          fontSize="xs"
+                                          fontWeight={
+                                            value.is_default ? "bold" : "normal"
+                                          }
+                                          textAlign="center"
+                                        >
+                                          {value.option_value}
+                                        </Text>
+                                        {/* {value.price_modifier > 0 && (
+                                          <Text
+                                            fontSize="xs"
+                                            color="green.600"
+                                            textAlign="center"
+                                          >
+                                            +
+                                            {value.price_modifier_type ===
+                                            "percentage"
+                                              ? `${value.price_modifier}%`
+                                              : `$${value.price_modifier}`}
+                                          </Text>
+                                        )} */}
+                                        {value.price_modifier > 0 && (
+                                          <Text
+                                            fontSize="xs"
+                                            color="green.600"
+                                            fontWeight="medium"
+                                          >
+                                            +
+                                            {value.price_modifier_type ===
+                                            "percentage"
+                                              ? `${value.price_modifier}%`
+                                              : value.price_modifier_type ===
+                                                "m2"
+                                              ? `$${value.price_modifier}/m²`
+                                              : value.price_modifier_type ===
+                                                "m3"
+                                              ? `$${value.price_modifier}/m³`
+                                              : value.price_modifier_type ===
+                                                "linear-meter"
+                                              ? `$${value.price_modifier}/linear meter`
+                                              : value.price_modifier_type ===
+                                                "meter"
+                                              ? `$${value.price_modifier}/meter`
+                                              : `$${value.price_modifier}`}
+                                          </Text>
+                                        )}
+                                      </VStack>
+                                      {value.is_default && (
+                                        <Badge
+                                          position="absolute"
+                                          top="-5px"
+                                          right="-5px"
+                                          size="xs"
+                                          colorScheme="purple"
+                                          borderRadius="full"
+                                        >
+                                          Default
+                                        </Badge>
+                                      )}
+                                    </Box>
+                                  )
+                                )}
+                              </SimpleGrid>
+                            </Box>
+                          )}
                       </VStack>
 
                       <VStack spacing={2} ml={4}>
@@ -1215,7 +2343,8 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
               No Custom Options Added Yet
             </Text>
             <Text color="gray.500" fontSize="sm">
-              Add custom options like Size (M, L, XL) with individual pricing and images
+              Add custom options like Size (M, L, XL) with individual pricing
+              and images
             </Text>
             <Button
               leftIcon={<FiPlus />}
@@ -1234,9 +2363,10 @@ const CustomOptionsForm = ({ customOptions = [], onCustomOptionsChange, onOption
         <AlertIcon />
         <Box>
           <AlertDescription fontSize="sm">
-            <strong>Example:</strong> Create a "Size" option with values like M, L, XL, 2XL. 
-            Each size can have different pricing (XL +$5, 2XL +$10) and images (size charts). 
-            Perfect for clothing, furniture dimensions, or any product variations.
+            <strong>Example:</strong> Create a "Size" option with values like M,
+            L, XL, 2XL. Each size can have different pricing (XL +$5, 2XL +$10)
+            and images (size charts). Perfect for clothing, furniture
+            dimensions, or any product variations.
           </AlertDescription>
         </Box>
       </Alert>

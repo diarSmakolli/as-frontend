@@ -73,6 +73,12 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import Logo from "../../assets/logo-as.png";
+import AsSolutionsPhoto from '../../assets/welcome-as.png';
+import FlashSalePromo from '../../assets/flash-sale-4.png';
+import BabySalePromo from '../../assets/baby-3.png';
+import FournitureSalePromo from '../../assets/fourniture-2.png';
+import FourniturePromoSlide from '../../assets/fourniture-g.png';
+import GaragePromoSlide from '../../assets/garage.png';
 import { homeService } from "./services/homeService";
 import Footer from "../../shared-customer/components/Footer";
 import MobileCategoryNavigation from "../../shared-customer/components/MobileCategoryNavigation";
@@ -97,43 +103,17 @@ function Home() {
   const promoSlides = [
     {
       id: 1,
-      title: "Hot summer savings on what's cool",
-      subtitle: "Get it in as fast as an hour*",
-      buttonText: "Shop now",
-      bgGradient: "linear-gradient(135deg, #EBF8FF, #BEE3F8)",
-      image:
-        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200&h=200&fit=crop",
-      textColor: "blue.900",
-      subtitleColor: "blue.700",
-      buttonBg: "blue.600",
-      buttonHoverBg: "blue.700",
+      title: "",
+      subtitle: "",
+      buttonText: "",
+      bgGradient: "transparent",
+      image: GaragePromoSlide,
+      textColor: "transparent",
+      subtitleColor: "transparent",
+      buttonBg: "transparent",
+      buttonHoverBg: "transparent",
     },
-    {
-      id: 2,
-      title: "Summer fashion deals up to 60% off",
-      subtitle: "Limited time offer",
-      buttonText: "Explore deals",
-      bgGradient: "linear-gradient(135deg, #FEF3C7, #FCD34D)",
-      image:
-        "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=200&h=200&fit=crop",
-      textColor: "gray.800",
-      subtitleColor: "gray.700",
-      buttonBg: "gray.800",
-      buttonHoverBg: "gray.700",
-    },
-    {
-      id: 3,
-      title: "Premium home & garden essentials",
-      subtitle: "Transform your space",
-      buttonText: "Shop collection",
-      bgGradient: "linear-gradient(135deg, #F0FDF4, #86EFAC)",
-      image:
-        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop",
-      textColor: "green.900",
-      subtitleColor: "green.700",
-      buttonBg: "green.600",
-      buttonHoverBg: "green.700",
-    },
+   
   ];
 
   const handleProductClick = (slug) => {
@@ -170,7 +150,7 @@ function Home() {
     try {
       setNewArrivalsLoading(true);
       const response = await homeService.getNewArrivals({
-        limit: 24, // Fetch 24 products for horizontal scroll
+        limit: 24,
       });
 
       if (response.status === "success" && response.data?.products) {
@@ -213,7 +193,7 @@ function Home() {
       const response = await homeService.getFurnitureFlashDeals({
         limit: 24,
         min_discount: 15,
-        category_id: "edffdc4c-36bb-4b05-82c1-22fb322dc88f", // furniture
+        category_id: "edffdc4c-36bb-4b05-82c1-22fb322dc88f", // furniture id
       });
 
       if (response.status === "success" && response.data?.products) {
@@ -271,11 +251,12 @@ function Home() {
       isMegaDeal: apiProduct.badges?.mega_deal || false,
       isSpecialOffer: apiProduct.flash_deal?.is_special_offer || false,
       discountPercentage: apiProduct.flash_deal?.discount_percentage || 0,
+      isLimitedStock: apiProduct.flash_deal?.availability?.is_available || false,
     };
   };
 
   return (
-    <Box minH="100vh" bg="gray.50">
+    <Box minH="100vh" bg="#fff">
       {/* Header matching Wish design but with AS Solutions branding */}
       <Navbar />
 
@@ -294,62 +275,14 @@ function Home() {
             rowSpan={{ base: 1, lg: 2 }}
             bg="#F8E7A1"
             borderRadius="12px"
-            p={6}
+            p={0}
             position="relative"
             overflow="hidden"
             display="flex"
             flexDirection="column"
             justifyContent="space-between"
           >
-            <VStack align="start" spacing={3}>
-              <Heading
-                size="lg"
-                color="gray.800"
-                fontWeight="bold"
-                lineHeight="1.2"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Everything for July 4th
-              </Heading>
-              <Text
-                color="gray.700"
-                fontSize="sm"
-                textDecoration="underline"
-                cursor="pointer"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Shop now
-              </Text>
-            </VStack>
-
-            {/* Decorative elements */}
-            <Box position="absolute" top="20px" right="20px">
-              <Box
-                w="40px"
-                h="40px"
-                bg="red.500"
-                borderRadius="full"
-                opacity="0.8"
-              />
-            </Box>
-            <Box position="absolute" bottom="60px" right="40px">
-              <Box
-                w="60px"
-                h="60px"
-                bg="blue.500"
-                borderRadius="full"
-                opacity="0.6"
-              />
-            </Box>
-            <Box position="absolute" bottom="20px" left="20px">
-              <Box
-                w="30px"
-                h="30px"
-                bg="white"
-                borderRadius="full"
-                opacity="0.9"
-              />
-            </Box>
+            <Image src={FlashSalePromo} h="full" w="full" objectFit="fill" />
           </GridItem>
 
           {/* Center Column - Carousel */}
@@ -371,61 +304,20 @@ function Home() {
                 display="flex"
                 alignItems="center"
                 justifyContent="space-between"
-                p={6}
+                p={0}
                 transition="all 0.5s ease-in-out"
               >
-                <VStack align="start" spacing={3} flex="1">
-                  <Text
-                    fontSize="sm"
-                    fontWeight="bold"
-                    color={promoSlides[currentPromoSlide].subtitleColor}
-                    letterSpacing="wide"
-                  >
-                    {promoSlides[currentPromoSlide].subtitle}
-                  </Text>
-                  <Heading
-                    size="xl"
-                    color={promoSlides[currentPromoSlide].textColor}
-                    fontWeight="black"
-                    lineHeight="1.1"
-                    fontFamily={"Bricolage Grotesque"}
-                  >
-                    {promoSlides[currentPromoSlide].title}
-                  </Heading>
-                  <Button
-                    bg={promoSlides[currentPromoSlide].buttonBg}
-                    color="white"
-                    size="md"
-                    borderRadius="full"
-                    px={6}
-                    _hover={{
-                      bg: promoSlides[currentPromoSlide].buttonHoverBg,
-                      transform: "translateY(-1px)",
-                    }}
-                    transition="all 0.2s"
-                  >
-                    {promoSlides[currentPromoSlide].buttonText}
-                  </Button>
-                </VStack>
-
-                {/* Product showcase */}
-                <Box
-                  flex="1"
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  <Image
-                    src={promoSlides[currentPromoSlide].image}
-                    alt="Promotional item"
-                    borderRadius="xl"
-                    w="160px"
-                    h="160px"
-                    objectFit="cover"
-                    shadow="lg"
-                    transition="all 0.5s ease-in-out"
-                  />
-                </Box>
+                <Image
+                  src={promoSlides[currentPromoSlide].image}
+                  alt={`Promotional slide ${currentPromoSlide + 1}`}
+                  w="full"
+                  h="full"
+                  objectFit="cover" // Changed from "contain" to "cover" for full coverage
+                  transition="all 0.5s ease-in-out"
+                  _hover={{
+                    transform: "scale(1.02)",
+                  }}
+                />
               </Box>
 
               {/* Carousel indicators */}
@@ -502,49 +394,13 @@ function Home() {
           {/* Right Column - Only at AS Solutions */}
           <GridItem
             rowSpan={{ base: 1, lg: 1 }}
-            bg="#A7F3D0"
+            bg="#fdd844"
             borderRadius="12px"
-            p={6}
+            p={0}
             position="relative"
             overflow="hidden"
           >
-            <VStack align="start" spacing={3} h="full" justify="space-between">
-              <Box>
-                <Text fontSize="sm" fontWeight="bold" color="green.800" mb={2}>
-                  Only at AS Solutions
-                </Text>
-                <Heading
-                  size="md"
-                  color="green.900"
-                  fontWeight="bold"
-                  lineHeight="1.2"
-                  fontFamily={"Bricolage Grotesque"}
-                >
-                  Baby Evie toys & more
-                </Heading>
-                <Text
-                  fontSize="sm"
-                  color="green.800"
-                  textDecoration="underline"
-                  cursor="pointer"
-                  mt={2}
-                  fontFamily={"Bricolage Grotesque"}
-                >
-                  Shop new arrivals
-                </Text>
-              </Box>
-            </VStack>
-
-            {/* Cute character illustration placeholder */}
-            <Box position="absolute" bottom="10px" right="10px">
-              <Box
-                w="80px"
-                h="80px"
-                bg="pink.200"
-                borderRadius="full"
-                opacity="0.8"
-              />
-            </Box>
+            <Image src={BabySalePromo} h="full" w="full" objectFit="fill" />
           </GridItem>
 
           {/* Bottom Left - Summer home trends */}
@@ -552,34 +408,16 @@ function Home() {
             colSpan={{ base: 1, lg: 1 }}
             bg="#FDE68A"
             borderRadius="12px"
-            p={4}
+            p={0}
             position="relative"
             overflow="hidden"
           >
-            <VStack align="start" spacing={2} h="full" justify="center">
-              <Heading
-                size="md"
-                color="orange.900"
-                fontWeight="bold"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Summer home trends from €6
-              </Heading>
-              <Text
-                fontSize="sm"
-                color="orange.800"
-                textDecoration="underline"
-                cursor="pointer"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Shop home
-              </Text>
-            </VStack>
-
-            {/* Home icon */}
-            <Box position="absolute" top="15px" right="15px">
-              <Icon as={FaHome} color="orange.600" boxSize="24px" />
-            </Box>
+            <Image
+              src={FournitureSalePromo}
+              h="full"
+              w="full"
+              objectFit="fill"
+            />
           </GridItem>
 
           {/* Bottom Right - Scoop exclusive */}
@@ -587,43 +425,18 @@ function Home() {
             colSpan={{ base: 1, lg: 1 }}
             bg="white"
             borderRadius="12px"
-            p={4}
+            p={0}
             position="relative"
             overflow="hidden"
             border="2px"
             borderColor="gray.200"
           >
-            <VStack align="start" spacing={2} h="full" justify="center">
-              <Heading
-                size="md"
-                color="gray.800"
-                fontWeight="bold"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Scoop—only at AS Solutions
-              </Heading>
-              <Text
-                fontSize="sm"
-                color="gray.600"
-                textDecoration="underline"
-                cursor="pointer"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Shop now
-              </Text>
-            </VStack>
-
-            {/* Fashion model image */}
-            <Box position="absolute" bottom="10px" right="10px">
-              <Image
-                src="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=60&h=60&fit=crop"
-                alt="Fashion"
-                borderRadius="full"
-                w="50px"
-                h="50px"
-                objectFit="cover"
-              />
-            </Box>
+            <Image
+              src={FourniturePromoSlide}
+              h="full"
+              w="full"
+              objectFit="fill"
+            />
           </GridItem>
         </Grid>
 
@@ -631,28 +444,28 @@ function Home() {
         <Box mb={8}>
           <Flex align="center" justify="space-between" mb={6}>
             <HStack spacing={3}>
-              <Icon as={FaFire} color="red.500" fontSize="xl" />
+              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
               <Heading
-                size="md"
                 color="gray.800"
-                fontWeight="bold"
-                fontFamily={"Bricolage Grotesque"}
+                fontSize="2xl"
+                fontFamily={"Bogle"}
+                fontWeight="600"
               >
-                Flash Deals
+                Flash deals package
               </Heading>
             </HStack>
             <Button
-              variant="outline"
+              bg="transparent"
               size="sm"
-              colorScheme="red"
-              borderColor="red.300"
-              color="red.600"
+              borderColor="none"
+              borderWidth={"0px"}
+              color="black"
               _hover={{
-                bg: "red.500",
-                color: "white",
-                borderColor: "red.500",
+                bg: "transparent",
+                color: "gray.400",
+                borderColor: "none",
               }}
-              fontFamily={"Bricolage Grotesque"}
+              fontFamily={"Bogle"}
               rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
               onClick={() => {
                 navigate("/flash-deals");
@@ -733,19 +546,21 @@ function Home() {
                   flashDeals.map((apiProduct, index) => {
                     const product = transformFlashDealData(apiProduct);
                     const productId = `flash-${index}-${product.id}`;
+
                     return (
                       <Card
                         key={productId}
-                        bg="white"
-                        borderRadius="12px"
+                        bg="transparent"
+                        borderRadius="0px"
                         overflow="hidden"
-                        shadow="md"
+                        shadow="none"
                         transition="all 0.3s ease"
                         cursor="pointer"
-                        border="0px"
+                        borderWidth="0px"
+                        borderColor="gray.400"
                         position="relative"
-                        minW={{ base: "150px", sm: "180px", md: "200px" }}
-                        maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                        minW={{ base: "200px", sm: "200px", md: "225px" }}
+                        maxW={{ base: "200px", sm: "200px", md: "225px" }}
                         flexShrink={0}
                         _before={{
                           content: '""',
@@ -771,6 +586,7 @@ function Home() {
                             w="full"
                             h={{ base: "150px", sm: "180px", md: "200px" }}
                             objectFit="cover"
+                            rounded="0px"
                             fallback={
                               <Box
                                 w="full"
@@ -791,62 +607,63 @@ function Home() {
                                     color="gray.500"
                                     textAlign="center"
                                   >
-                                    Deal Image
+                                    {product?.title}
                                   </Text>
                                 </VStack>
                               </Box>
                             }
                           />
 
+                          {product.isLimitedStock && (
+                            <Box
+                              position="absolute"
+                              top="0"
+                              left="0"
+                              right="0"
+                              bottom="0"
+                              bg="blackAlpha.600"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              borderRadius="12px"
+                              zIndex={2}
+                            >
+                              <VStack spacing={2}>
+                                <Text
+                                  color="white"
+                                  fontSize="xs"
+                                  textAlign="center"
+                                  fontWeight="medium"
+                                  bg="blackAlpha.700"
+                                  px={2}
+                                  py={1}
+                                  borderRadius="sm"
+                                  maxW="70%"
+                                >
+                                  Currently Unavailable (Out of stock)
+                                </Text>
+                              </VStack>
+                            </Box>
+                          )}
+
                           {/* Discount Badge - Top Left */}
-                          {product.discountPercentage > 0 && (
+                          {/* {product.discountPercentage > 0 && (
                             <Badge
                               position="absolute"
                               top="2"
                               left="2"
-                              bg="red.500"
+                              bg="red"
                               color="white"
                               fontSize="xs"
                               fontWeight="bold"
                               px="2"
                               py="1"
-                              borderRadius="md"
+                              borderRadius="2px"
                               textTransform="uppercase"
                             >
                               -{Math.round(product.discountPercentage)}% OFF
                             </Badge>
-                          )}
-
-                          {/* Deal Type Badge - Top Right Corner */}
-                          {(product.isMegaDeal ||
-                            product.isHotDeal ||
-                            product.isSpecialOffer) && (
-                            <Badge
-                              position="absolute"
-                              top="2"
-                              right="12"
-                              bg={
-                                product.isMegaDeal
-                                  ? "purple.500"
-                                  : product.isHotDeal
-                                  ? "red.600"
-                                  : "blue.500"
-                              }
-                              color="white"
-                              fontSize="2xs"
-                              fontWeight="bold"
-                              px="1"
-                              py="0.5"
-                              borderRadius="sm"
-                              textTransform="uppercase"
-                            >
-                              {product.isMegaDeal
-                                ? "MEGA"
-                                : product.isHotDeal
-                                ? "HOT"
-                                : "SPECIAL"}
-                            </Badge>
-                          )}
+                          )} */}
 
                           {/* Heart Icon */}
                           <IconButton
@@ -869,109 +686,95 @@ function Home() {
 
                         <CardBody p={3} position="relative" zIndex={1}>
                           <VStack align="start" spacing={2}>
-                            <Text
-                              fontSize="sm"
-                              color="gray.800"
-                              noOfLines={2}
-                              lineHeight="short"
-                              minH="40px"
-                              title={product.title}
-                              fontWeight="medium"
-                              as="a"
-                              href={`/product/${product.slug}`}
-                            >
-                              {product.title}
-                            </Text>
-
                             <VStack align="start" spacing={1} w="full">
                               {/* Pricing Section */}
-                              <HStack spacing={2} w="full" align="center">
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
                                 <Text
-                                  fontSize="lg"
+                                  fontSize={{ base: "lg", sm: "xl" }}
                                   fontWeight="bold"
-                                  color="red.600"
+                                  color="navy"
+                                  fontFamily="Bogle"
                                 >
-                                  €{product.price.toFixed(2)}
+                                  $ {product.price.toFixed(2)}
                                 </Text>
 
                                 {product.originalPrice &&
                                   product.originalPrice > product.price && (
-                                    <Text
-                                      fontSize="sm"
-                                      color="gray.500"
-                                      textDecoration="line-through"
-                                    >
-                                      €{product.originalPrice.toFixed(2)}
-                                    </Text>
+                                    <>
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.500"
+                                        textDecoration="line-through"
+                                        fontFamily="Bogle"
+                                      >
+                                        $ {product.originalPrice.toFixed(2)}
+                                      </Text>
+
+                                      {/* Responsive discount badge */}
+                                      <Badge
+                                        bg="red.600"
+                                        fontFamily="Bogle"
+                                        color="white"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="bold"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.originalPrice -
+                                            product.price) /
+                                            product.originalPrice) *
+                                            100
+                                        )}
+                                        % OFF
+                                      </Badge>
+                                    </>
                                   )}
                               </HStack>
 
-                              {/* Savings Display */}
-                              {product.savingsAmount > 0 && (
-                                <HStack spacing={1}>
-                                  <Icon
-                                    as={FaTags}
-                                    color="green.500"
-                                    fontSize="xs"
-                                  />
-                                  <Text
-                                    fontSize="xs"
-                                    color="green.600"
-                                    fontWeight="semibold"
-                                  >
-                                    Save €{product.savingsAmount.toFixed(2)}
-                                  </Text>
-                                </HStack>
-                              )}
+                              <Text
+                                fontSize="sm"
+                                color="black"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Fira Sans"
+                              >
+                                {product.title}
+                              </Text>
 
-                              {/* Company name */}
-                              {product.company && (
-                                <Text
-                                  fontSize="xs"
-                                  color="gray.500"
-                                  noOfLines={1}
-                                >
-                                  by{" "}
-                                  {product.company.business_name ||
-                                    product.company.market_name}
-                                </Text>
-                              )}
-
-                              {/* Category */}
-                              {product.category && (
-                                <Text
-                                  fontSize="xs"
-                                  color="blue.500"
-                                  noOfLines={1}
-                                >
-                                  {product.category.name}
-                                </Text>
-                              )}
-
-                              {/* Deal Features */}
-                              <HStack spacing={1} flexWrap="wrap">
-                                {product.badges?.free_shipping && (
-                                  <Badge
-                                    size="sm"
-                                    colorScheme="green"
-                                    variant="subtle"
-                                    fontSize="2xs"
-                                  >
-                                    Free Ship
-                                  </Badge>
-                                )}
-
-                                {product.dealType === "flash_sale" && (
-                                  <Badge
-                                    size="sm"
-                                    colorScheme="purple"
-                                    variant="subtle"
-                                    fontSize="2xs"
-                                  >
-                                    Flash Sale
-                                  </Badge>
-                                )}
-                              </HStack>
+                              <Button
+                                fontFamily="Bogle"
+                                size="sm"
+                                bg="transparent"
+                                color="gray.900"
+                                _hover={{
+                                  bg: "transparent",
+                                  borderWidth: "2px",
+                                }}
+                                _active={{ bg: "transparent" }}
+                                _focus={{ bg: "transparent" }}
+                                px={10}
+                                variant="outline"
+                                borderColor="navy"
+                                rounded="full"
+                                borderWidth="1px"
+                              >
+                                Add
+                              </Button>
                             </VStack>
                           </VStack>
                         </CardBody>
@@ -1035,32 +838,13 @@ function Home() {
         <Box mb={8}>
           <Flex align="center" justify="space-between" mb={6}>
             <Heading
-              size="md"
               color="gray.800"
+              fontSize="2xl"
               fontWeight="bold"
-              fontFamily={"Bricolage Grotesque"}
+              fontFamily={"Bogle"}
             >
               New arrivals
             </Heading>
-            {/* <Button
-              variant="outline"
-              size="sm"
-              colorScheme="gray"
-              borderColor="gray.300"
-              color="gray.600"
-              _hover={{
-                bg: "rgb(239,48,84)",
-                color: "white",
-                borderColor: "rgb(239,48,84)",
-              }}
-              fontFamily={"Bricolage Grotesque"}
-              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
-              onClick={() => {
-                // Navigate to all new arrivals page
-              }}
-            >
-              View All
-            </Button> */}
           </Flex>
 
           {/* Horizontal Scrollable Product Row */}
@@ -1137,22 +921,29 @@ function Home() {
                     return (
                       <Card
                         key={productId}
-                        bg="white"
-                        borderRadius="12px"
+                        bg="transparent"
+                        borderRadius="0px"
                         overflow="hidden"
-                        shadow="4xl"
-                        _hover={{
-                          shadow: "md",
-                          transform: "translateY(-2px)",
-                        }}
+                        shadow="none"
                         transition="all 0.2s"
                         cursor="pointer"
-                        border="1px"
-                        borderColor="gray.100"
-                        minW={{ base: "150px", sm: "180px", md: "200px" }}
-                        maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                        borderWidth="0px"
+                        borderColor="gray.400"
+                        minW={{ base: "200px", sm: "200px", md: "225px" }}
+                        maxW={{ base: "200px", sm: "200px", md: "225px" }}
                         flexShrink={0}
                         onClick={handleProductClick(product?.slug)}
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          opacity: 0.3,
+                          pointerEvents: "none",
+                          zIndex: 0,
+                        }}
                       >
                         <Box position="relative">
                           <Image
@@ -1188,43 +979,21 @@ function Home() {
                             }
                           />
 
-                          {/* Top Badge */}
-                          {product.tag && (
-                            <Badge
-                              position="absolute"
-                              top="2"
-                              left="2"
-                              bg={
-                                product.badges?.is_new
-                                  ? "green.500"
-                                  : "rgb(239,48,84)"
-                              }
-                              color="white"
-                              fontSize="xs"
-                              fontWeight="bold"
-                              px="2"
-                              py="1"
-                              borderRadius="md"
-                            >
-                              {product.tag}
-                            </Badge>
-                          )}
-
                           {/* Recently Added Indicator */}
                           {product.is_recently_added && (
                             <Badge
                               position="absolute"
                               top="2"
-                              right="12"
-                              bg="blue.500"
+                              left="2"
+                              bg="navy"
                               color="white"
                               fontSize="2xs"
                               fontWeight="bold"
-                              px="1"
+                              px="2"
                               py="0.5"
-                              borderRadius="sm"
+                              borderRadius="md"
                             >
-                              RECENT
+                              New
                             </Badge>
                           )}
 
@@ -1249,74 +1018,94 @@ function Home() {
 
                         <CardBody p={3}>
                           <VStack align="start" spacing={2}>
-                            <Text
-                              fontSize="sm"
-                              color="gray.800"
-                              noOfLines={2}
-                              lineHeight="short"
-                              minH="40px"
-                              title={product.title}
-                            >
-                              {product.title}
-                            </Text>
-
                             <VStack align="start" spacing={1} w="full">
-                              <HStack spacing={2} w="full" align="center">
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
                                 <Text
-                                  fontSize="lg"
+                                  fontSize={{ base: "lg", sm: "xl" }}
                                   fontWeight="bold"
-                                  color="rgb(239,48,84)"
+                                  color="navy"
+                                  fontFamily="Bogle"
                                 >
-                                  €{product.price.toFixed(2)}
+                                  $ {product.price.toFixed(2)}
                                 </Text>
 
                                 {product.originalPrice &&
                                   product.originalPrice > product.price && (
-                                    <Text
-                                      fontSize="sm"
-                                      color="gray.500"
-                                      textDecoration="line-through"
-                                    >
-                                      €{product.originalPrice.toFixed(2)}
-                                    </Text>
+                                    <>
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.500"
+                                        textDecoration="line-through"
+                                        fontFamily="Bogle"
+                                      >
+                                        $ {product.originalPrice.toFixed(2)}
+                                      </Text>
+
+                                      {/* Responsive discount badge */}
+                                      <Badge
+                                        bg="red.600"
+                                        fontFamily="Bogle"
+                                        color="white"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="bold"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.originalPrice -
+                                            product.price) /
+                                            product.originalPrice) *
+                                            100
+                                        )}
+                                        % OFF
+                                      </Badge>
+                                    </>
                                   )}
                               </HStack>
 
-                              {/* Company name */}
-                              {product.company && (
-                                <Text
-                                  fontSize="xs"
-                                  color="gray.500"
-                                  noOfLines={1}
-                                >
-                                  by{" "}
-                                  {product.company.business_name ||
-                                    product.company.market_name}
-                                </Text>
-                              )}
+                              <Text
+                                fontSize="sm"
+                                color="black"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Fira Sans"
+                              >
+                                {product.title}
+                              </Text>
 
-                              {/* Category */}
-                              {product.category && (
-                                <Text
-                                  fontSize="xs"
-                                  color="blue.500"
-                                  noOfLines={1}
-                                >
-                                  {product.category.name}
-                                </Text>
-                              )}
-
-                              {/* Free shipping badge */}
-                              {product.badges?.free_shipping && (
-                                <Badge
-                                  size="sm"
-                                  colorScheme="green"
-                                  variant="subtle"
-                                  fontSize="2xs"
-                                >
-                                  Free Shipping
-                                </Badge>
-                              )}
+                              <Button
+                                fontFamily="Bogle"
+                                size="sm"
+                                bg="transparent"
+                                color="gray.900"
+                                _hover={{
+                                  bg: "transparent",
+                                  borderWidth: "2px",
+                                }}
+                                _active={{ bg: "transparent" }}
+                                _focus={{ bg: "transparent" }}
+                                px={10}
+                                variant="outline"
+                                borderColor="navy"
+                                rounded="full"
+                                borderWidth="1px"
+                              >
+                                Add
+                              </Button>
                             </VStack>
                           </VStack>
                         </CardBody>
@@ -1382,33 +1171,14 @@ function Home() {
             <HStack spacing={3}>
               {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
               <Heading
-                size="md"
                 color="gray.800"
                 fontWeight="bold"
-                fontFamily={"Bricolage Grotesque"}
+                fontFamily={"Bogle"}
+                fontSize="2xl"
               >
-                Save on Furniture
+                Big Save on Furniture
               </Heading>
             </HStack>
-            {/* <Button
-              variant="outline"
-              size="sm"
-              colorScheme="red"
-              borderColor="red.300"
-              color="red.600"
-              _hover={{
-                bg: "red.500",
-                color: "white",
-                borderColor: "red.500",
-              }}
-              fontFamily={"Bricolage Grotesque"}
-              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
-              onClick={() => {
-                // Navigate to furniture flash deals page
-              }}
-            >
-              View All Furniture Deals
-            </Button> */}
           </Flex>
 
           {/* Horizontal Scrollable Flash Deals Row */}
@@ -1486,19 +1256,16 @@ function Home() {
                     return (
                       <Card
                         key={productId}
-                        bg="white"
-                        borderRadius="12px"
+                        bg="transparent"
+                        borderRadius="0px"
                         overflow="hidden"
-                        shadow="md"
-                        _hover={{
-                          shadow: "xl",
-                          transform: "translateY(-4px)",
-                        }}
-                        transition="all 0.3s ease"
+                        shadow="none"
+                        transition="all 0.2s"
                         cursor="pointer"
-                        position="relative"
-                        minW={{ base: "150px", sm: "180px", md: "200px" }}
-                        maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                        borderWidth="0px"
+                        borderColor="gray.400"
+                        minW={{ base: "200px", sm: "200px", md: "225px" }}
+                        maxW={{ base: "200px", sm: "200px", md: "225px" }}
                         flexShrink={0}
                         onClick={handleProductClick(product?.slug)}
                         _before={{
@@ -1524,7 +1291,7 @@ function Home() {
                               <Box
                                 w="full"
                                 h={{ base: "150px", sm: "180px", md: "200px" }}
-                                bg="brown.100"
+                                bg="gray.200"
                                 display="flex"
                                 alignItems="center"
                                 justifyContent="center"
@@ -1533,89 +1300,19 @@ function Home() {
                                   <Icon
                                     as={FaHome}
                                     fontSize="2xl"
-                                    color="brown.500"
+                                    color="gray.400"
                                   />
                                   <Text
                                     fontSize="xs"
-                                    color="brown.600"
+                                    color="gray.500"
                                     textAlign="center"
                                   >
-                                    Furniture Deal
+                                    No Image
                                   </Text>
                                 </VStack>
                               </Box>
                             }
                           />
-
-                          {/* Discount Badge - Top Left */}
-                          {product.discountPercentage > 0 && (
-                            <Badge
-                              position="absolute"
-                              top="2"
-                              left="2"
-                              bg="red.500"
-                              color="white"
-                              fontSize="xs"
-                              fontWeight="bold"
-                              px="2"
-                              py="1"
-                              borderRadius="md"
-                              textTransform="uppercase"
-                            >
-                              -{Math.round(product.discountPercentage)}% OFF
-                            </Badge>
-                          )}
-
-                          {/* Deal Type Badge - Top Right Corner */}
-                          {(product.isMegaDeal ||
-                            product.isHotDeal ||
-                            product.isSpecialOffer) && (
-                            <Badge
-                              position="absolute"
-                              top="2"
-                              right="12"
-                              bg={
-                                product.isMegaDeal
-                                  ? "purple.500"
-                                  : product.isHotDeal
-                                  ? "red.600"
-                                  : "blue.500"
-                              }
-                              color="white"
-                              fontSize="2xs"
-                              fontWeight="bold"
-                              px="1"
-                              py="0.5"
-                              borderRadius="sm"
-                              textTransform="uppercase"
-                            >
-                              {product.isMegaDeal
-                                ? "MEGA"
-                                : product.isHotDeal
-                                ? "HOT"
-                                : "SPECIAL"}
-                            </Badge>
-                          )}
-
-                          {/* Furniture Badge - Bottom Left */}
-                          <Badge
-                            position="absolute"
-                            bottom="2"
-                            left="2"
-                            bg="brown.500"
-                            color="white"
-                            fontSize="2xs"
-                            fontWeight="bold"
-                            px="2"
-                            py="1"
-                            borderRadius="full"
-                            display="flex"
-                            alignItems="center"
-                            gap={1}
-                          >
-                            <Icon as={FaHome} fontSize="2xs" />
-                            FURNITURE
-                          </Badge>
 
                           {/* Heart Icon */}
                           <IconButton
@@ -1636,120 +1333,96 @@ function Home() {
                           />
                         </Box>
 
-                        <CardBody p={3} position="relative" zIndex={1}>
+                        <CardBody p={3}>
                           <VStack align="start" spacing={2}>
-                            <Text
-                              fontSize="sm"
-                              color="gray.800"
-                              noOfLines={2}
-                              lineHeight="short"
-                              minH="40px"
-                              title={product.title}
-                              fontWeight="medium"
-                            >
-                              {product.title}
-                            </Text>
-
                             <VStack align="start" spacing={1} w="full">
-                              {/* Pricing Section */}
-                              <HStack spacing={2} w="full" align="center">
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
                                 <Text
-                                  fontSize="lg"
+                                  fontSize={{ base: "lg", sm: "xl" }}
                                   fontWeight="bold"
-                                  color="red.600"
+                                  color="navy"
+                                  fontFamily="Bogle"
                                 >
-                                  €{product.price.toFixed(2)}
+                                  $ {product.price.toFixed(2)}
                                 </Text>
 
                                 {product.originalPrice &&
                                   product.originalPrice > product.price && (
-                                    <Text
-                                      fontSize="sm"
-                                      color="gray.500"
-                                      textDecoration="line-through"
-                                    >
-                                      €{product.originalPrice.toFixed(2)}
-                                    </Text>
+                                    <>
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.500"
+                                        textDecoration="line-through"
+                                        fontFamily="Bogle"
+                                      >
+                                        $ {product.originalPrice.toFixed(2)}
+                                      </Text>
+
+                                      {/* Responsive discount badge */}
+                                      <Badge
+                                        bg="red.600"
+                                        fontFamily="Bogle"
+                                        color="white"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="bold"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.originalPrice -
+                                            product.price) /
+                                            product.originalPrice) *
+                                            100
+                                        )}
+                                        % OFF
+                                      </Badge>
+                                    </>
                                   )}
                               </HStack>
 
-                              {/* Savings Display */}
-                              {product.savingsAmount > 0 && (
-                                <HStack spacing={1}>
-                                  <Icon
-                                    as={FaTags}
-                                    color="green.500"
-                                    fontSize="xs"
-                                  />
-                                  <Text
-                                    fontSize="xs"
-                                    color="green.600"
-                                    fontWeight="semibold"
-                                  >
-                                    Save €{product.savingsAmount.toFixed(2)}
-                                  </Text>
-                                </HStack>
-                              )}
+                              <Text
+                                fontSize="sm"
+                                color="black"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Fira Sans"
+                              >
+                                {product.title}
+                              </Text>
 
-                              {/* Company name */}
-                              {product.company && (
-                                <Text
-                                  fontSize="xs"
-                                  color="gray.500"
-                                  noOfLines={1}
-                                >
-                                  by{" "}
-                                  {product.company.business_name ||
-                                    product.company.market_name}
-                                </Text>
-                              )}
-
-                              {/* Category - Should show furniture category */}
-                              {product.category && (
-                                <Text
-                                  fontSize="xs"
-                                  color="brown.500"
-                                  noOfLines={1}
-                                  fontWeight="semibold"
-                                >
-                                  {product.category.name}
-                                </Text>
-                              )}
-
-                              {/* Deal Features */}
-                              <HStack spacing={1} flexWrap="wrap">
-                                {product.badges?.free_shipping && (
-                                  <Badge
-                                    size="sm"
-                                    colorScheme="green"
-                                    variant="subtle"
-                                    fontSize="2xs"
-                                  >
-                                    Free Ship
-                                  </Badge>
-                                )}
-
-                                {product.dealType === "flash_sale" && (
-                                  <Badge
-                                    size="sm"
-                                    colorScheme="purple"
-                                    variant="subtle"
-                                    fontSize="2xs"
-                                  >
-                                    Flash Sale
-                                  </Badge>
-                                )}
-
-                                {/* Furniture specific badge */}
-                                <Badge
-                                  size="sm"
-                                  colorScheme="brown"
-                                  variant="subtle"
-                                  fontSize="2xs"
-                                >
-                                  Furniture
-                                </Badge>
-                              </HStack>
+                              <Button
+                                fontFamily="Bogle"
+                                size="sm"
+                                bg="transparent"
+                                color="gray.900"
+                                _hover={{
+                                  bg: "transparent",
+                                  borderWidth: "2px",
+                                }}
+                                _active={{ bg: "transparent" }}
+                                _focus={{ bg: "transparent" }}
+                                px={10}
+                                variant="outline"
+                                borderColor="navy"
+                                rounded="full"
+                                borderWidth="1px"
+                              >
+                                Add
+                              </Button>
                             </VStack>
                           </VStack>
                         </CardBody>
@@ -1809,14 +1482,10 @@ function Home() {
           </Box>
         </Box>
 
-        {/* Best Selling in Furniture */}
-
-        {/* Trending products */}
-
-        {/* Best Selling in Furniture */}
+        {/* Categories showing */}
 
         {/* Promotions Cards */}
-        <Box mb={8}>
+        {/* <Box mb={8}>
           <Grid
             templateColumns={{
               base: "1fr",
@@ -1826,7 +1495,6 @@ function Home() {
             gap={4}
             mb={8}
           >
-            {/* HBCU Pride Box */}
             <GridItem colSpan={{ base: 1, lg: 1 }}>
               <Box
                 position="relative"
@@ -1841,7 +1509,6 @@ function Home() {
                 backgroundPosition="center"
                 backgroundRepeat="no-repeat"
               >
-                {/* Overlay for better text readability */}
                 <Box
                   position="absolute"
                   top="0"
@@ -1893,7 +1560,6 @@ function Home() {
               </Box>
             </GridItem>
 
-            {/* Accessibility Box */}
             <GridItem colSpan={{ base: 1, lg: 1 }}>
               <Box
                 position="relative"
@@ -1908,7 +1574,6 @@ function Home() {
                 backgroundPosition="center"
                 backgroundRepeat="no-repeat"
               >
-                {/* Overlay */}
                 <Box
                   position="absolute"
                   top="0"
@@ -1962,10 +1627,8 @@ function Home() {
               </Box>
             </GridItem>
 
-            {/* Summer Music Box */}
             <GridItem colSpan={{ base: 1, lg: 1 }}>
               <VStack spacing={4} h="300px">
-                {/* Adaptive School Essentials */}
                 <Box
                   position="relative"
                   h="140px"
@@ -1980,7 +1643,6 @@ function Home() {
                   backgroundPosition="center"
                   backgroundRepeat="no-repeat"
                 >
-                  {/* Overlay */}
                   <Box
                     position="absolute"
                     top="0"
@@ -2023,7 +1685,6 @@ function Home() {
                   </Box>
                 </Box>
 
-                {/* Summer's Hottest Hits */}
                 <Box
                   position="relative"
                   h="140px"
@@ -2038,7 +1699,6 @@ function Home() {
                   backgroundPosition="center"
                   backgroundRepeat="no-repeat"
                 >
-                  {/* Overlay */}
                   <Box
                     position="absolute"
                     top="0"
@@ -2092,7 +1752,6 @@ function Home() {
               </VStack>
             </GridItem>
 
-            {/* Black & Unlimited Summer Box */}
             <GridItem colSpan={{ base: 1, lg: 1 }}>
               <Box
                 position="relative"
@@ -2107,7 +1766,6 @@ function Home() {
                 backgroundPosition="center"
                 backgroundRepeat="no-repeat"
               >
-                {/* Overlay */}
                 <Box
                   position="absolute"
                   top="0"
@@ -2177,7 +1835,7 @@ function Home() {
               </Box>
             </GridItem>
           </Grid>
-        </Box>
+        </Box> */}
 
         {/* Explore All */}
         <Box mb={8}>
@@ -2186,7 +1844,7 @@ function Home() {
               size="md"
               color="gray.800"
               fontWeight="bold"
-              fontFamily={"Bricolage Grotesque"}
+              fontFamily={"Bogle"}
             >
               Explore All Products
             </Heading>
@@ -2204,6 +1862,7 @@ function Home() {
           />
         </Box>
       </Container>
+
       <Footer />
     </Box>
   );

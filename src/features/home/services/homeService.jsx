@@ -843,4 +843,93 @@ export const homeService = {
       updated_at: product.updated_at,
     };
   },
+
+  // calculations
+  calculateProductPricing: async (productId, config) => {
+  try {
+    const response = await productAxiosInstance.post(
+      `/${productId}/calculate-pricing`,
+      config
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+},
+
+getProductPricingConfig: async (productId) => {
+  try {
+    const response = await productAxiosInstance.get(
+      `/${productId}/pricing-config`
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+},
+
+// Helper method to format pricing calculation request
+formatPricingRequest: (dimensions, selectedOptions, quantity, taxRate) => {
+  return {
+    dimensions: dimensions || {},
+    selectedOptions: selectedOptions || [],
+    quantity: quantity || 1,
+    taxRate: taxRate
+  };
+},
+
+// Helper method to validate dimensions based on product constraints
+validateDimensions: (dimensions, constraints) => {
+  const errors = [];
+  
+  if (!constraints) return { valid: true, errors: [] };
+
+  Object.entries(dimensions).forEach(([key, value]) => {
+    if (value && constraints[key]) {
+      const constraint = constraints[key];
+      if (constraint.min && value < constraint.min) {
+        errors.push(`${key} must be at least ${constraint.min}${constraint.unit}`);
+      }
+      if (constraint.max && value > constraint.max) {
+        errors.push(`${key} cannot exceed ${constraint.max}${constraint.unit}`);
+      }
+    }
+  });
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+},
+
+// Helper method to format selected options for API
+formatSelectedOptionsForAPI: (selectedCustomOptions) => {
+  return Object.entries(selectedCustomOptions).map(([optionId, valueData]) => ({
+    optionId,
+    valueId: valueData.valueId
+  }));
+},
+
+// Method to get required dimensions based on product type
+getRequiredDimensionsForProduct: (product) => {
+  if (!product?.is_dimensional_pricing) {
+    return [];
+  }
+
+  const calculationType = product.dimensional_calculation_type;
+  
+  switch (calculationType) {
+    case 'm2':
+      return ['width', 'height'];
+    case 'm3':
+      return ['width', 'height', 'depth'];
+    case 'linear-meter':
+      return ['width', 'height'];
+    case 'meter':
+      return ['length'];
+    default:
+      return [];
+  }
+},
+
 };
