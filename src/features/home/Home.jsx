@@ -79,6 +79,8 @@ import BabySalePromo from '../../assets/baby-3.png';
 import FournitureSalePromo from '../../assets/fourniture-2.png';
 import FourniturePromoSlide from '../../assets/fourniture-g.png';
 import GaragePromoSlide from '../../assets/garage.png';
+import JasquaMobile from '../../assets/jasqua-mobile.png';
+import GarageSliderMobile from '../../assets/garage-slider-mobile.png';
 import { homeService } from "./services/homeService";
 import Footer from "../../shared-customer/components/Footer";
 import MobileCategoryNavigation from "../../shared-customer/components/MobileCategoryNavigation";
@@ -98,6 +100,19 @@ function Home() {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const [topDoorsProducts, setTopDoorsProducts] = useState([]);
+  const [topDoorsLoading, setTopDoorsLoading] = useState(false);
+  const [topFetresLoading, setTopFetresLoading] = useState(false);
+  const [topFetresProducts, setTopFetresProducts] = useState([]);
+  const [topAutoMotoProducts, setTopAutoMotoProducts] = useState([]);
+  const [topAutoMotoLoading, setTopAutoMotoLoading] = useState(false);
+  const [topBabyProducts, setTopBabyProducts] = useState([]);
+  const [topBabyLoading, setTopBabyLoading] = useState(false);
+
+  const carouselImage = useBreakpointValue({
+    base: GarageSliderMobile, // mobile image
+    lg: GaragePromoSlide, // desktop image
+  });
 
   // Promotional carousel data
   const promoSlides = [
@@ -107,11 +122,12 @@ function Home() {
       subtitle: "",
       buttonText: "",
       bgGradient: "transparent",
-      image: GaragePromoSlide,
+      image: carouselImage,
       textColor: "transparent",
       subtitleColor: "transparent",
       buttonBg: "transparent",
       buttonHoverBg: "transparent",
+      link: '/category/automoto'
     },
    
   ];
@@ -127,6 +143,10 @@ function Home() {
     fetchNewArrivals();
     fetchFlashDeals();
     fetchFurnitureFlashDeals();
+    fetchTopDoorsProducts();
+    fetchTopWindowssProducts();
+    fetchTopAutoMotoProducts();
+    fetchTopBabyProducts();
 
     // Auto-slide banner every 4 seconds
     const interval = setInterval(() => {
@@ -255,6 +275,76 @@ function Home() {
     };
   };
 
+  // FETCH BY CATEGORY TOP PRODUCTS
+
+  const fetchTopDoorsProducts = async () => {
+    try {
+      setTopDoorsLoading(true);
+      const response = await homeService.getTopProductsByCategorySlug("portes", {
+        limit: 20,
+      });
+
+      const products = response.data || [];
+
+      setTopDoorsProducts(products);
+    } catch (error) {
+      setTopDoorsProducts([]);
+    } finally {
+      setTopDoorsLoading(false);
+    }
+  };
+
+  const fetchTopWindowssProducts = async () => {
+    try {
+      setTopFetresLoading(true);
+      const response = await homeService.getTopProductsByCategorySlug("fentres", {
+        limit: 20,
+      });
+
+      const products = response.data || [];
+
+      setTopFetresProducts(products);
+    } catch (error) {
+      setTopFetresProducts([]);
+    } finally {
+      setTopFetresLoading(false);
+    }
+  };
+
+  const fetchTopAutoMotoProducts = async () => {
+    try {
+      setTopAutoMotoLoading(true);
+      const response = await homeService.getTopProductsByCategorySlug("automoto", {
+        limit: 20,
+      });
+
+      const products = response.data || [];
+
+      setTopAutoMotoProducts(products);
+    } catch (error) {
+      setTopAutoMotoProducts([]);
+    } finally {
+      setTopAutoMotoLoading(false);
+    }
+  };
+
+  const fetchTopBabyProducts = async () => {
+    try {
+      setTopBabyLoading(true);
+      const response = await homeService.getTopProductsByCategorySlug("enfants-bb", {
+        limit: 20,
+      });
+
+      const products = response.data || [];
+
+      setTopBabyProducts(products);
+    } catch (error) {
+      setTopBabyProducts([]);
+    } finally {
+      setTopBabyLoading(false);
+    }
+  };
+
   return (
     <Box minH="100vh" bg="#fff">
       {/* Header matching Wish design but with AS Solutions branding */}
@@ -281,8 +371,18 @@ function Home() {
             display="flex"
             flexDirection="column"
             justifyContent="space-between"
+            as="a"
+            href="/flash-deals"
           >
-            <Image src={FlashSalePromo} h="full" w="full" objectFit="fill" />
+            <Image
+              src={useBreakpointValue({
+                base: JasquaMobile,
+                lg: FlashSalePromo,
+              })}
+              h="full"
+              w="full"
+              objectFit="fill"
+            />
           </GridItem>
 
           {/* Center Column - Carousel */}
@@ -306,6 +406,8 @@ function Home() {
                 justifyContent="space-between"
                 p={0}
                 transition="all 0.5s ease-in-out"
+                as="a"
+                href={promoSlides[currentPromoSlide].link}
               >
                 <Image
                   src={promoSlides[currentPromoSlide].image}
@@ -399,6 +501,8 @@ function Home() {
             p={0}
             position="relative"
             overflow="hidden"
+            as="a"
+            href="/category/enfants-bb"
           >
             <Image src={BabySalePromo} h="full" w="full" objectFit="fill" />
           </GridItem>
@@ -411,6 +515,9 @@ function Home() {
             p={0}
             position="relative"
             overflow="hidden"
+            display={{ base: "none", md: "block" }}
+            as="a"
+            href="/category/mobilier"
           >
             <Image
               src={FournitureSalePromo}
@@ -430,6 +537,8 @@ function Home() {
             overflow="hidden"
             border="2px"
             borderColor="gray.200"
+            as="a"
+            href="/category/mobilier"
           >
             <Image
               src={FourniturePromoSlide}
@@ -451,7 +560,7 @@ function Home() {
                 fontFamily={"Bogle"}
                 fontWeight="600"
               >
-                Flash deals package
+                Forfait offres flash
               </Heading>
             </HStack>
             <Button
@@ -471,7 +580,7 @@ function Home() {
                 navigate("/flash-deals");
               }}
             >
-              View All Deals
+              Voir tout
             </Button>
           </Flex>
 
@@ -640,7 +749,8 @@ function Home() {
                                   borderRadius="sm"
                                   maxW="70%"
                                 >
-                                  Currently Unavailable (Out of stock)
+                                  Actuellement indisponible (Rupture de stock)
+
                                 </Text>
                               </VStack>
                             </Box>
@@ -773,7 +883,7 @@ function Home() {
                                 rounded="full"
                                 borderWidth="1px"
                               >
-                                Add
+                                Ajouter
                               </Button>
                             </VStack>
                           </VStack>
@@ -811,10 +921,10 @@ function Home() {
                           fontWeight="medium"
                           color="gray.600"
                         >
-                          No flash deals available
+                          Aucune offre flash disponible
                         </Text>
                         <Text fontSize="sm" color="gray.400">
-                          Check back soon for amazing deals!
+                          Revenez bientôt pour des offres incroyables !
                         </Text>
                       </VStack>
                       {/* <Button
@@ -843,7 +953,7 @@ function Home() {
               fontWeight="bold"
               fontFamily={"Bogle"}
             >
-              New arrivals
+              Nouveaux arrivages
             </Heading>
           </Flex>
 
@@ -993,7 +1103,7 @@ function Home() {
                               py="0.5"
                               borderRadius="md"
                             >
-                              New
+                              Nouveau
                             </Badge>
                           )}
 
@@ -1104,7 +1214,7 @@ function Home() {
                                 rounded="full"
                                 borderWidth="1px"
                               >
-                                Add
+                                Ajouter
                               </Button>
                             </VStack>
                           </VStack>
@@ -1142,10 +1252,10 @@ function Home() {
                           fontWeight="medium"
                           color="gray.600"
                         >
-                          No new arrivals yet
+                          Aucun nouvel arrivage pour le moment
                         </Text>
                         <Text fontSize="sm" color="gray.400">
-                          Check back soon for the latest products!
+                          Revenez bientôt pour les derniers produits !
                         </Text>
                       </VStack>
                       {/* <Button
@@ -1176,7 +1286,7 @@ function Home() {
                 fontFamily={"Bogle"}
                 fontSize="2xl"
               >
-                Big Save on Furniture
+                Offres flash de meubles
               </Heading>
             </HStack>
           </Flex>
@@ -1307,7 +1417,7 @@ function Home() {
                                     color="gray.500"
                                     textAlign="center"
                                   >
-                                    No Image
+                                    Aucune image
                                   </Text>
                                 </VStack>
                               </Box>
@@ -1421,7 +1531,7 @@ function Home() {
                                 rounded="full"
                                 borderWidth="1px"
                               >
-                                Add
+                                Ajouter
                               </Button>
                             </VStack>
                           </VStack>
@@ -1459,10 +1569,10 @@ function Home() {
                           fontWeight="medium"
                           color="gray.600"
                         >
-                          No furniture deals available
+                          Aucune offre de meubles disponible
                         </Text>
                         <Text fontSize="sm" color="gray.400">
-                          Check back soon for amazing furniture deals!
+                          Revenez bientôt pour des offres de meubles incroyables !
                         </Text>
                       </VStack>
                       {/* <Button
@@ -1482,7 +1592,1266 @@ function Home() {
           </Box>
         </Box>
 
-        {/* Categories showing */}
+        {/* Categories TOP Products */}
+        {/* Portes */}
+        <Box mb={8}>
+          <Flex align="center" justify="space-between" mb={6}>
+            <HStack spacing={3}>
+              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
+              <Heading
+                color="gray.800"
+                fontSize="2xl"
+                fontFamily={"Bogle"}
+                fontWeight="600"
+              >
+                Portes
+              </Heading>
+            </HStack>
+            <Button
+              bg="transparent"
+              size="sm"
+              borderColor="none"
+              borderWidth={"0px"}
+              color="black"
+              _hover={{
+                bg: "transparent",
+                color: "gray.400",
+                borderColor: "none",
+              }}
+              fontFamily={"Bogle"}
+              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
+              onClick={() => {
+                navigate("/category/portes");
+              }}
+            >
+              Voir tout
+            </Button>
+          </Flex>
+          <Box
+            position="relative"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: "40px",
+              background:
+                "linear-gradient(to left, rgba(249,250,251,0.9), transparent)",
+              zIndex: 1,
+              pointerEvents: "none",
+              display: { base: "block", md: "none" },
+            }}
+          >
+            <Box
+              overflowX="auto"
+              overflowY="hidden"
+              pb={2}
+              css={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+                scrollBehavior: "smooth",
+              }}
+            >
+              <HStack
+                spacing={4}
+                align="stretch"
+                minW="max-content"
+                px={{ base: 2, md: 0 }}
+              >
+                {topDoorsLoading ? (
+                  [...Array(6)].map((_, index) => (
+                    <Card
+                      key={`top-doors-skeleton-${index}`}
+                      bg="white"
+                      borderRadius="12px"
+                      overflow="hidden"
+                      shadow="sm"
+                      minW={{ base: "150px", sm: "180px", md: "200px" }}
+                      maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                      flexShrink={0}
+                    >
+                      <Skeleton
+                        h={{ base: "150px", sm: "180px", md: "200px" }}
+                        w="full"
+                      />
+                      <CardBody p={3}>
+                        <VStack align="start" spacing={2}>
+                          <SkeletonText noOfLines={2} spacing={2} w="full" />
+                          <Skeleton h="6" w="20" />
+                          <SkeletonText noOfLines={1} w="60%" />
+                        </VStack>
+                      </CardBody>
+                    </Card>
+                  ))
+                ) : topDoorsProducts && topDoorsProducts?.length > 0 ? (
+                  topDoorsProducts?.map((product, index) => {
+                    const productId = `top-doors-${index}-${product?.id}`;
+                    return (
+                      <Card
+                        key={productId}
+                        bg="transparent"
+                        borderRadius="0px"
+                        overflow="hidden"
+                        shadow="none"
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        borderWidth="0px"
+                        borderColor="gray.400"
+                        minW={{ base: "200px", sm: "200px", md: "225px" }}
+                        maxW={{ base: "200px", sm: "200px", md: "225px" }}
+                        flexShrink={0}
+                        onClick={handleProductClick(product.slug)}
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          opacity: 0.3,
+                          pointerEvents: "none",
+                          zIndex: 0,
+                        }}
+                      >
+                        <Box position="relative">
+                          <Image
+                            src={
+                              product.main_image_url ||
+                              (product.images?.[0]?.url ?? "")
+                            }
+                            alt={product.title}
+                            w="full"
+                            h={{ base: "150px", sm: "180px", md: "200px" }}
+                            objectFit="cover"
+                            fallback={
+                              <Box
+                                w="full"
+                                h={{ base: "150px", sm: "180px", md: "200px" }}
+                                bg="gray.200"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                              >
+                                <VStack spacing={2}>
+                                  <Icon
+                                    as={FaBox}
+                                    fontSize="2xl"
+                                    color="gray.400"
+                                  />
+                                  <Text
+                                    fontSize="xs"
+                                    color="gray.500"
+                                    textAlign="center"
+                                  >
+                                    Aucune image
+                                  </Text>
+                                </VStack>
+                              </Box>
+                            }
+                          />
+                          <IconButton
+                            position="absolute"
+                            top="2"
+                            right="2"
+                            size="sm"
+                            icon={<FaHeart />}
+                            bg="white"
+                            color="gray.400"
+                            _hover={{ color: "red.500", bg: "red.50" }}
+                            borderRadius="full"
+                            aria-label="Add to wishlist"
+                            shadow="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          />
+                        </Box>
+                        <CardBody p={3}>
+                          <VStack align="start" spacing={2}>
+                            <VStack align="start" spacing={1} w="full">
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
+                                <Text
+                                  fontSize={{ base: "lg", sm: "xl" }}
+                                  fontWeight="bold"
+                                  color="navy"
+                                  fontFamily="Bogle"
+                                >
+                                  ${" "}
+                                  {product.final_price_gross ??
+                                    product.regular_price_gross ??
+                                    0}
+                                </Text>
+                                {product.regular_price_gross &&
+                                  product.regular_price_gross >
+                                    product.final_price_gross && (
+                                    <>
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.500"
+                                        textDecoration="line-through"
+                                        fontFamily="Bogle"
+                                      >
+                                        $ {product.regular_price_gross}
+                                      </Text>
+                                      <Badge
+                                        bg="red.600"
+                                        fontFamily="Bogle"
+                                        color="white"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="bold"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.regular_price_gross -
+                                            product.final_price_gross) /
+                                            product.regular_price_gross) *
+                                            100
+                                        )}
+                                        % OFF
+                                      </Badge>
+                                    </>
+                                  )}
+                              </HStack>
+                              <Text
+                                fontSize="sm"
+                                color="black"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Fira Sans"
+                              >
+                                {product.title}
+                              </Text>
+                              <Button
+                                fontFamily="Bogle"
+                                size="sm"
+                                bg="transparent"
+                                color="gray.900"
+                                _hover={{
+                                  bg: "transparent",
+                                  borderWidth: "2px",
+                                }}
+                                _active={{ bg: "transparent" }}
+                                _focus={{ bg: "transparent" }}
+                                px={10}
+                                variant="outline"
+                                borderColor="navy"
+                                rounded="full"
+                                borderWidth="1px"
+                              >
+                                Ajouter
+                              </Button>
+                            </VStack>
+                          </VStack>
+                        </CardBody>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <Box
+                    minW="full"
+                    p={8}
+                    textAlign="center"
+                    color="gray.500"
+                    bg="transparent"
+                    borderRadius="12px"
+                    border="0px"
+                    borderColor="gray.200"
+                  >
+                    <VStack spacing={4}>
+                      <Box
+                        w="16"
+                        h="16"
+                        bg="gray.100"
+                        borderRadius="full"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Icon as={FaBox} boxSize="8" color="gray.300" />
+                      </Box>
+                      <VStack spacing={2}>
+                        <Text
+                          fontSize="lg"
+                          fontWeight="medium"
+                          color="gray.600"
+                        >
+                          Aucune offre de meubles disponible
+                        </Text>
+                        <Text fontSize="sm" color="gray.400">
+                          Revenez bientôt pour des offres de meubles incroyables !
+                        </Text>
+                      </VStack>
+                    </VStack>
+                  </Box>
+                )}
+              </HStack>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Fenetres */}
+        <Box mb={8}>
+          <Flex align="center" justify="space-between" mb={6}>
+            <HStack spacing={3}>
+              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
+              <Heading
+                color="gray.800"
+                fontSize="2xl"
+                fontFamily={"Bogle"}
+                fontWeight="600"
+              >
+                Fenetres
+              </Heading>
+            </HStack>
+            <Button
+              bg="transparent"
+              size="sm"
+              borderColor="none"
+              borderWidth={"0px"}
+              color="black"
+              _hover={{
+                bg: "transparent",
+                color: "gray.400",
+                borderColor: "none",
+              }}
+              fontFamily={"Bogle"}
+              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
+              onClick={() => {
+                navigate("/category/fentres");
+              }}
+            >
+              Voir tout
+            </Button>
+          </Flex>
+          <Box
+            position="relative"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: "40px",
+              background:
+                "linear-gradient(to left, rgba(249,250,251,0.9), transparent)",
+              zIndex: 1,
+              pointerEvents: "none",
+              display: { base: "block", md: "none" },
+            }}
+          >
+            <Box
+              overflowX="auto"
+              overflowY="hidden"
+              pb={2}
+              css={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+                scrollBehavior: "smooth",
+              }}
+            >
+              <HStack
+                spacing={4}
+                align="stretch"
+                minW="max-content"
+                px={{ base: 2, md: 0 }}
+              >
+                {topFetresLoading ? (
+                  [...Array(6)].map((_, index) => (
+                    <Card
+                      key={`top-fetres-skeleton-${index}`}
+                      bg="white"
+                      borderRadius="12px"
+                      overflow="hidden"
+                      shadow="sm"
+                      minW={{ base: "150px", sm: "180px", md: "200px" }}
+                      maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                      flexShrink={0}
+                    >
+                      <Skeleton
+                        h={{ base: "150px", sm: "180px", md: "200px" }}
+                        w="full"
+                      />
+                      <CardBody p={3}>
+                        <VStack align="start" spacing={2}>
+                          <SkeletonText noOfLines={2} spacing={2} w="full" />
+                          <Skeleton h="6" w="20" />
+                          <SkeletonText noOfLines={1} w="60%" />
+                        </VStack>
+                      </CardBody>
+                    </Card>
+                  ))
+                ) : topFetresProducts && topFetresProducts?.length > 0 ? (
+                  topFetresProducts?.map((product, index) => {
+                    const productId = `top-fetres-${index}-${product?.id}`;
+                    return (
+                      <Card
+                        key={productId}
+                        bg="transparent"
+                        borderRadius="0px"
+                        overflow="hidden"
+                        shadow="none"
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        borderWidth="0px"
+                        borderColor="gray.400"
+                        minW={{ base: "200px", sm: "200px", md: "225px" }}
+                        maxW={{ base: "200px", sm: "200px", md: "225px" }}
+                        flexShrink={0}
+                        onClick={handleProductClick(product.slug)}
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          opacity: 0.3,
+                          pointerEvents: "none",
+                          zIndex: 0,
+                        }}
+                      >
+                        <Box position="relative">
+                          <Image
+                            src={
+                              product.main_image_url ||
+                              (product.images?.[0]?.url ?? "")
+                            }
+                            alt={product.title}
+                            w="full"
+                            h={{ base: "150px", sm: "180px", md: "200px" }}
+                            objectFit="cover"
+                            fallback={
+                              <Box
+                                w="full"
+                                h={{ base: "150px", sm: "180px", md: "200px" }}
+                                bg="gray.200"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                              >
+                                <VStack spacing={2}>
+                                  <Icon
+                                    as={FaBox}
+                                    fontSize="2xl"
+                                    color="gray.400"
+                                  />
+                                  <Text
+                                    fontSize="xs"
+                                    color="gray.500"
+                                    textAlign="center"
+                                  >
+                                    Aucune image
+                                  </Text>
+                                </VStack>
+                              </Box>
+                            }
+                          />
+                          <IconButton
+                            position="absolute"
+                            top="2"
+                            right="2"
+                            size="sm"
+                            icon={<FaHeart />}
+                            bg="white"
+                            color="gray.400"
+                            _hover={{ color: "red.500", bg: "red.50" }}
+                            borderRadius="full"
+                            aria-label="Add to wishlist"
+                            shadow="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          />
+                        </Box>
+                        <CardBody p={3}>
+                          <VStack align="start" spacing={2}>
+                            <VStack align="start" spacing={1} w="full">
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
+                                <Text
+                                  fontSize={{ base: "lg", sm: "xl" }}
+                                  fontWeight="bold"
+                                  color="navy"
+                                  fontFamily="Bogle"
+                                >
+                                  ${" "}
+                                  {product.final_price_gross ??
+                                    product.regular_price_gross ??
+                                    0}
+                                </Text>
+                                {product.regular_price_gross &&
+                                  product.regular_price_gross >
+                                    product.final_price_gross && (
+                                    <>
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.500"
+                                        textDecoration="line-through"
+                                        fontFamily="Bogle"
+                                      >
+                                        $ {product.regular_price_gross}
+                                      </Text>
+                                      <Badge
+                                        bg="red.600"
+                                        fontFamily="Bogle"
+                                        color="white"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="bold"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.regular_price_gross -
+                                            product.final_price_gross) /
+                                            product.regular_price_gross) *
+                                            100
+                                        )}
+                                        % OFF
+                                      </Badge>
+                                    </>
+                                  )}
+                              </HStack>
+                              <Text
+                                fontSize="sm"
+                                color="black"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Fira Sans"
+                              >
+                                {product.title}
+                              </Text>
+                              <Button
+                                fontFamily="Bogle"
+                                size="sm"
+                                bg="transparent"
+                                color="gray.900"
+                                _hover={{
+                                  bg: "transparent",
+                                  borderWidth: "2px",
+                                }}
+                                _active={{ bg: "transparent" }}
+                                _focus={{ bg: "transparent" }}
+                                px={10}
+                                variant="outline"
+                                borderColor="navy"
+                                rounded="full"
+                                borderWidth="1px"
+                              >
+                                Ajouter
+                              </Button>
+                            </VStack>
+                          </VStack>
+                        </CardBody>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <Box
+                    minW="full"
+                    p={8}
+                    textAlign="center"
+                    color="gray.500"
+                    bg="transparent"
+                    borderRadius="12px"
+                    border="0px"
+                    borderColor="gray.200"
+                  >
+                    <VStack spacing={4}>
+                      <Box
+                        w="16"
+                        h="16"
+                        bg="gray.100"
+                        borderRadius="full"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Icon as={FaBox} boxSize="8" color="gray.300" />
+                      </Box>
+                      <VStack spacing={2}>
+                        <Text
+                          fontSize="lg"
+                          fontWeight="medium"
+                          color="gray.600"
+                        >
+                          Aucune offre de meubles disponible
+                        </Text>
+                        <Text fontSize="sm" color="gray.400">
+                          Revenez bientôt pour des offres de meubles incroyables !
+                        </Text>
+                      </VStack>
+                    </VStack>
+                  </Box>
+                )}
+              </HStack>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Auto moto */}
+        <Box mb={8}>
+          <Flex align="center" justify="space-between" mb={6}>
+            <HStack spacing={3}>
+              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
+              <Heading
+                color="gray.800"
+                fontSize="2xl"
+                fontFamily={"Bogle"}
+                fontWeight="600"
+              >
+                Auto moto
+              </Heading>
+            </HStack>
+            <Button
+              bg="transparent"
+              size="sm"
+              borderColor="none"
+              borderWidth={"0px"}
+              color="black"
+              _hover={{
+                bg: "transparent",
+                color: "gray.400",
+                borderColor: "none",
+              }}
+              fontFamily={"Bogle"}
+              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
+              onClick={() => {
+                navigate("/category/automoto");
+              }}
+            >
+              Voir tout
+            </Button>
+          </Flex>
+          <Box
+            position="relative"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: "40px",
+              background:
+                "linear-gradient(to left, rgba(249,250,251,0.9), transparent)",
+              zIndex: 1,
+              pointerEvents: "none",
+              display: { base: "block", md: "none" },
+            }}
+          >
+            <Box
+              overflowX="auto"
+              overflowY="hidden"
+              pb={2}
+              css={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+                scrollBehavior: "smooth",
+              }}
+            >
+              <HStack
+                spacing={4}
+                align="stretch"
+                minW="max-content"
+                px={{ base: 2, md: 0 }}
+              >
+                {topAutoMotoLoading ? (
+                  [...Array(6)].map((_, index) => (
+                    <Card
+                      key={`top-auto-moto-skeleton-${index}`}
+                      bg="white"
+                      borderRadius="12px"
+                      overflow="hidden"
+                      shadow="sm"
+                      minW={{ base: "150px", sm: "180px", md: "200px" }}
+                      maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                      flexShrink={0}
+                    >
+                      <Skeleton
+                        h={{ base: "150px", sm: "180px", md: "200px" }}
+                        w="full"
+                      />
+                      <CardBody p={3}>
+                        <VStack align="start" spacing={2}>
+                          <SkeletonText noOfLines={2} spacing={2} w="full" />
+                          <Skeleton h="6" w="20" />
+                          <SkeletonText noOfLines={1} w="60%" />
+                        </VStack>
+                      </CardBody>
+                    </Card>
+                  ))
+                ) : topAutoMotoProducts && topAutoMotoProducts?.length > 0 ? (
+                  topAutoMotoProducts?.map((product, index) => {
+                    const productId = `top-auto-moto-${index}-${product?.id}`;
+                    return (
+                      <Card
+                        key={productId}
+                        bg="transparent"
+                        borderRadius="0px"
+                        overflow="hidden"
+                        shadow="none"
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        borderWidth="0px"
+                        borderColor="gray.400"
+                        minW={{ base: "200px", sm: "200px", md: "225px" }}
+                        maxW={{ base: "200px", sm: "200px", md: "225px" }}
+                        flexShrink={0}
+                        onClick={handleProductClick(product.slug)}
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          opacity: 0.3,
+                          pointerEvents: "none",
+                          zIndex: 0,
+                        }}
+                      >
+                        <Box position="relative">
+                          <Image
+                            src={
+                              product.main_image_url ||
+                              (product.images?.[0]?.url ?? "")
+                            }
+                            alt={product.title}
+                            w="full"
+                            h={{ base: "150px", sm: "180px", md: "200px" }}
+                            objectFit="cover"
+                            fallback={
+                              <Box
+                                w="full"
+                                h={{ base: "150px", sm: "180px", md: "200px" }}
+                                bg="gray.200"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                              >
+                                <VStack spacing={2}>
+                                  <Icon
+                                    as={FaBox}
+                                    fontSize="2xl"
+                                    color="gray.400"
+                                  />
+                                  <Text
+                                    fontSize="xs"
+                                    color="gray.500"
+                                    textAlign="center"
+                                  >
+                                    Aucune image
+                                  </Text>
+                                </VStack>
+                              </Box>
+                            }
+                          />
+                          <IconButton
+                            position="absolute"
+                            top="2"
+                            right="2"
+                            size="sm"
+                            icon={<FaHeart />}
+                            bg="white"
+                            color="gray.400"
+                            _hover={{ color: "red.500", bg: "red.50" }}
+                            borderRadius="full"
+                            aria-label="Add to wishlist"
+                            shadow="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          />
+                        </Box>
+                        <CardBody p={3}>
+                          <VStack align="start" spacing={2}>
+                            <VStack align="start" spacing={1} w="full">
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
+                                <Text
+                                  fontSize={{ base: "lg", sm: "xl" }}
+                                  fontWeight="bold"
+                                  color="navy"
+                                  fontFamily="Bogle"
+                                >
+                                  ${" "}
+                                  {product.final_price_gross ??
+                                    product.regular_price_gross ??
+                                    0}
+                                </Text>
+                                {product.regular_price_gross &&
+                                  product.regular_price_gross >
+                                    product.final_price_gross && (
+                                    <>
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.500"
+                                        textDecoration="line-through"
+                                        fontFamily="Bogle"
+                                      >
+                                        $ {product.regular_price_gross}
+                                      </Text>
+                                      <Badge
+                                        bg="red.600"
+                                        fontFamily="Bogle"
+                                        color="white"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="bold"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.regular_price_gross -
+                                            product.final_price_gross) /
+                                            product.regular_price_gross) *
+                                            100
+                                        )}
+                                        % OFF
+                                      </Badge>
+                                    </>
+                                  )}
+                              </HStack>
+                              <Text
+                                fontSize="sm"
+                                color="black"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Fira Sans"
+                              >
+                                {product.title}
+                              </Text>
+                              <Button
+                                fontFamily="Bogle"
+                                size="sm"
+                                bg="transparent"
+                                color="gray.900"
+                                _hover={{
+                                  bg: "transparent",
+                                  borderWidth: "2px",
+                                }}
+                                _active={{ bg: "transparent" }}
+                                _focus={{ bg: "transparent" }}
+                                px={10}
+                                variant="outline"
+                                borderColor="navy"
+                                rounded="full"
+                                borderWidth="1px"
+                              >
+                                Ajouter
+                              </Button>
+                            </VStack>
+                          </VStack>
+                        </CardBody>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <Box
+                    minW="full"
+                    p={8}
+                    textAlign="center"
+                    color="gray.500"
+                    bg="transparent"
+                    borderRadius="12px"
+                    border="0px"
+                    borderColor="gray.200"
+                  >
+                    <VStack spacing={4}>
+                      <Box
+                        w="16"
+                        h="16"
+                        bg="gray.100"
+                        borderRadius="full"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Icon as={FaBox} boxSize="8" color="gray.300" />
+                      </Box>
+                      <VStack spacing={2}>
+                        <Text
+                          fontSize="lg"
+                          fontWeight="medium"
+                          color="gray.600"
+                        >
+                          Aucune offre de moto haut de gamme trouvée
+                        </Text>
+                        <Text fontSize="sm" color="gray.400">
+                          Revenez bientôt pour des offres de moto incroyables !
+                        </Text>
+                      </VStack>
+                    </VStack>
+                  </Box>
+                )}
+              </HStack>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Baby */}
+        <Box mb={8}>
+          <Flex align="center" justify="space-between" mb={6}>
+            <HStack spacing={3}>
+              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
+              <Heading
+                color="gray.800"
+                fontSize="2xl"
+                fontFamily={"Bogle"}
+                fontWeight="600"
+              >
+                Bébé
+              </Heading>
+            </HStack>
+            <Button
+              bg="transparent"
+              size="sm"
+              borderColor="none"
+              borderWidth={"0px"}
+              color="black"
+              _hover={{
+                bg: "transparent",
+                color: "gray.400",
+                borderColor: "none",
+              }}
+              fontFamily={"Bogle"}
+              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
+              onClick={() => {
+                navigate("/category/enfants-bb");
+              }}
+            >
+              Voir tout
+            </Button>
+          </Flex>
+          <Box
+            position="relative"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: "40px",
+              background:
+                "linear-gradient(to left, rgba(249,250,251,0.9), transparent)",
+              zIndex: 1,
+              pointerEvents: "none",
+              display: { base: "block", md: "none" },
+            }}
+          >
+            <Box
+              overflowX="auto"
+              overflowY="hidden"
+              pb={2}
+              css={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+                scrollBehavior: "smooth",
+              }}
+            >
+              <HStack
+                spacing={4}
+                align="stretch"
+                minW="max-content"
+                px={{ base: 2, md: 0 }}
+              >
+                {topBabyLoading ? (
+                  [...Array(6)].map((_, index) => (
+                    <Card
+                      key={`top-baby-skeleton-${index}`}
+                      bg="white"
+                      borderRadius="12px"
+                      overflow="hidden"
+                      shadow="sm"
+                      minW={{ base: "150px", sm: "180px", md: "200px" }}
+                      maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                      flexShrink={0}
+                    >
+                      <Skeleton
+                        h={{ base: "150px", sm: "180px", md: "200px" }}
+                        w="full"
+                      />
+                      <CardBody p={3}>
+                        <VStack align="start" spacing={2}>
+                          <SkeletonText noOfLines={2} spacing={2} w="full" />
+                          <Skeleton h="6" w="20" />
+                          <SkeletonText noOfLines={1} w="60%" />
+                        </VStack>
+                      </CardBody>
+                    </Card>
+                  ))
+                ) : topBabyProducts && topBabyProducts?.length > 0 ? (
+                  topBabyProducts?.map((product, index) => {
+                    const productId = `top-baby-${index}-${product?.id}`;
+                    return (
+                      <Card
+                        key={productId}
+                        bg="transparent"
+                        borderRadius="0px"
+                        overflow="hidden"
+                        shadow="none"
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        borderWidth="0px"
+                        borderColor="gray.400"
+                        minW={{ base: "200px", sm: "200px", md: "225px" }}
+                        maxW={{ base: "200px", sm: "200px", md: "225px" }}
+                        flexShrink={0}
+                        onClick={handleProductClick(product.slug)}
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          opacity: 0.3,
+                          pointerEvents: "none",
+                          zIndex: 0,
+                        }}
+                      >
+                        <Box position="relative">
+                          <Image
+                            src={
+                              product.main_image_url ||
+                              (product.images?.[0]?.url ?? "")
+                            }
+                            alt={product.title}
+                            w="full"
+                            h={{ base: "150px", sm: "180px", md: "200px" }}
+                            objectFit="cover"
+                            fallback={
+                              <Box
+                                w="full"
+                                h={{ base: "150px", sm: "180px", md: "200px" }}
+                                bg="gray.200"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                              >
+                                <VStack spacing={2}>
+                                  <Icon
+                                    as={FaBox}
+                                    fontSize="2xl"
+                                    color="gray.400"
+                                  />
+                                  <Text
+                                    fontSize="xs"
+                                    color="gray.500"
+                                    textAlign="center"
+                                  >
+                                    No Image
+                                  </Text>
+                                </VStack>
+                              </Box>
+                            }
+                          />
+                          <IconButton
+                            position="absolute"
+                            top="2"
+                            right="2"
+                            size="sm"
+                            icon={<FaHeart />}
+                            bg="white"
+                            color="gray.400"
+                            _hover={{ color: "red.500", bg: "red.50" }}
+                            borderRadius="full"
+                            aria-label="Add to wishlist"
+                            shadow="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          />
+                        </Box>
+                        <CardBody p={3}>
+                          <VStack align="start" spacing={2}>
+                            <VStack align="start" spacing={1} w="full">
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
+                                <Text
+                                  fontSize={{ base: "lg", sm: "xl" }}
+                                  fontWeight="bold"
+                                  color="navy"
+                                  fontFamily="Bogle"
+                                >
+                                  ${" "}
+                                  {product.final_price_gross ??
+                                    product.regular_price_gross ??
+                                    0}
+                                </Text>
+                                {product.regular_price_gross &&
+                                  product.regular_price_gross >
+                                    product.final_price_gross && (
+                                    <>
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.500"
+                                        textDecoration="line-through"
+                                        fontFamily="Bogle"
+                                      >
+                                        $ {product.regular_price_gross}
+                                      </Text>
+                                      <Badge
+                                        bg="red.600"
+                                        fontFamily="Bogle"
+                                        color="white"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="bold"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.regular_price_gross -
+                                            product.final_price_gross) /
+                                            product.regular_price_gross) *
+                                            100
+                                        )}
+                                        % OFF
+                                      </Badge>
+                                    </>
+                                  )}
+                              </HStack>
+                              <Text
+                                fontSize="sm"
+                                color="black"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Fira Sans"
+                              >
+                                {product.title}
+                              </Text>
+                              <Button
+                                fontFamily="Bogle"
+                                size="sm"
+                                bg="transparent"
+                                color="gray.900"
+                                _hover={{
+                                  bg: "transparent",
+                                  borderWidth: "2px",
+                                }}
+                                _active={{ bg: "transparent" }}
+                                _focus={{ bg: "transparent" }}
+                                px={10}
+                                variant="outline"
+                                borderColor="navy"
+                                rounded="full"
+                                borderWidth="1px"
+                              >
+                                Ajouter
+                              </Button>
+                            </VStack>
+                          </VStack>
+                        </CardBody>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <Box
+                    minW="full"
+                    p={8}
+                    textAlign="center"
+                    color="gray.500"
+                    bg="transparent"
+                    borderRadius="12px"
+                    border="0px"
+                    borderColor="gray.200"
+                  >
+                    <VStack spacing={4}>
+                      <Box
+                        w="16"
+                        h="16"
+                        bg="gray.100"
+                        borderRadius="full"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        <Icon as={FaBox} boxSize="8" color="gray.300" />
+                      </Box>
+                      <VStack spacing={2}>
+                        <Text
+                          fontSize="lg"
+                          fontWeight="medium"
+                          color="gray.600"
+                        >
+                          Aucune offre de moto haut de gamme trouvée
+                        </Text>
+                        <Text fontSize="sm" color="gray.400">
+                          Revenez bientôt pour des offres de moto incroyables !
+                        </Text>
+                      </VStack>
+                    </VStack>
+                  </Box>
+                )}
+              </HStack>
+            </Box>
+          </Box>
+        </Box>
 
         {/* Promotions Cards */}
         {/* <Box mb={8}>
@@ -1846,10 +3215,10 @@ function Home() {
               fontWeight="bold"
               fontFamily={"Bogle"}
             >
-              Explore All Products
+              Explorer tous les produits
             </Heading>
             <Text fontSize="sm" color="gray.600">
-              Discover our entire collection
+              Découvrez notre collection complète de produits
             </Text>
           </VStack>
 

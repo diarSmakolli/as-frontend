@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -97,8 +97,7 @@ import Loader from "../../commons/Loader";
 import { formatWithTimezone, formatOptions } from "../../commons/formatOptions";
 import { usePreferences } from "../administration/authContext/preferencesProvider";
 import { customToastContainerStyle } from "../../commons/toastStyles";
-import { Link as RouterLink } from "react-router-dom";
-import { Link } from "@chakra-ui/react";
+import { debounce } from "lodash";
 
 const MotionBox = motion.create(Box);
 const MotionCard = motion.create(Card);
@@ -110,7 +109,7 @@ const ProductsPage = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [viewMode, setViewMode] = useState("table"); // 'table' or 'grid'
+  const [viewMode, setViewMode] = useState("table");
   const [filters, setFilters] = useState({
     search: "",
     category_id: "",
@@ -135,6 +134,8 @@ const ProductsPage = () => {
     draft: 0,
   });
   const [duplicating, setDuplicating] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Color mode values
   const bgColor = useColorModeValue("gray.50", "gray.900");
@@ -153,6 +154,52 @@ const ProductsPage = () => {
     transition: { duration: 0.3 },
   };
 
+  const isInitialMount = useRef(true);
+
+  // const fetchProducts = useCallback(
+  //   async (resetPage = false) => {
+  //     setLoading(true);
+  //     try {
+  //       const params = {
+  //         ...filters,
+  //         page: resetPage ? 1 : filters.page,
+  //       };
+
+  //       const response = await productService.getAllProducts(params);
+
+  //       if (response.data?.status === "success") {
+  //         setProducts(response.data.data.products);
+  //         setPagination(response.data.data.pagination);
+
+  //         // Calculate stats
+  //         const allProducts = response.data.data.products;
+  //         setStats({
+  //           total: pagination?.total_items || allProducts.length,
+  //           active: allProducts.filter((p) => p.is_active).length,
+  //           published: allProducts.filter((p) => p.is_published).length,
+  //           draft: allProducts.filter((p) => !p.is_published).length,
+  //         });
+
+  //         if (resetPage) {
+  //           setFilters((prev) => ({ ...prev, page: 1 }));
+  //         }
+  //       }
+  //     } catch (error) {
+  //       handleApiError(error, toast);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   },
+  //   [filters, toast, pagination?.total_items]
+  // );
+
+  // debouncing
+
+  // v2
+
+  //v2
+
+  // v2
   const fetchProducts = useCallback(
     async (resetPage = false) => {
       setLoading(true);
@@ -171,7 +218,8 @@ const ProductsPage = () => {
           // Calculate stats
           const allProducts = response.data.data.products;
           setStats({
-            total: pagination?.total_items || allProducts.length,
+            total:
+              response.data.data.pagination?.total_items || allProducts.length,
             active: allProducts.filter((p) => p.is_active).length,
             published: allProducts.filter((p) => p.is_published).length,
             draft: allProducts.filter((p) => !p.is_published).length,
@@ -187,12 +235,57 @@ const ProductsPage = () => {
         setLoading(false);
       }
     },
-    [filters, toast, pagination?.total_items]
+    [
+      filters.category_id,
+      filters.is_published,
+      filters.is_active,
+      filters.page,
+      filters.limit,
+      viewMode,
+      toast,
+    ]
   );
 
+  const debouncedFetchProducts = useCallback(
+    debounce(async (searchValue) => {
+      setSearchLoading(true);
+      await fetchProducts(true);
+      setSearchLoading(false);
+    }, 500),
+    [fetchProducts]
+  );
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setFilters((prev) => ({
+      ...prev,
+      search: value,
+    }));
+    debouncedFetchProducts(value);
+  };
+
+  // useEffect(() => {
+  //   fetchProducts();
+  // }, [fetchProducts]);
+
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    if (isInitialMount.current) {
+      fetchProducts();
+      isInitialMount.current = false;
+    } else {
+      // Only run fetchProducts when non-search filters change
+      fetchProducts();
+    }
+    // eslint-disable-next-line
+  }, [
+    filters.category_id,
+    filters.is_published,
+    filters.is_active,
+    filters.page,
+    filters.limit,
+    viewMode,
+    // do NOT include filters.search here!
+  ]);
 
   const handleFilterChange = (name, value) => {
     setFilters((prev) => ({
@@ -221,8 +314,11 @@ const ProductsPage = () => {
   };
 
   const handleViewProduct = (productId) => {
-    // window open in _blank
-    window.open(`${window.location.origin}/products-console/${productId}`, "_blank", "noopener,noreferrer");
+    window.open(
+      `${window.location.origin}/products-console/${productId}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
   };
 
   const handleEditProduct = (productId) => {
@@ -283,6 +379,7 @@ const ProductsPage = () => {
         const shouldNavigate = window.confirm(
           "Would you like to view the duplicated product?"
         );
+
         if (shouldNavigate) {
           navigate(`/products-console/${response.data.data.new_product_id}`);
         }
@@ -647,8 +744,26 @@ const ProductsPage = () => {
 
   return (
     <Box minH="100vh" bg={bgColor}>
-      <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
-      <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
+      <Box display={{ base: "none", md: "block" }}>
+        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+      </Box>
+      {/* Mobile Sidebar: shown when menu is open */}
+      <Box
+        display={{ base: isSidebarOpen ? "block" : "none", md: "none" }}
+        position="fixed"
+        zIndex={999}
+      >
+        <SidebarContent
+          onSettingsOpen={() => setIsSettingsOpen(true)}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+      </Box>
+      {/* MobileNav: always visible, passes menu toggle */}
+      <MobileNav
+        onSettingsOpen={() => setIsSettingsOpen(true)}
+        onOpen={() => setIsSidebarOpen(true)}
+      />
+
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -831,12 +946,11 @@ const ProductsPage = () => {
                       <Box position="relative" flex={1}>
                         <Input
                           value={filters.search}
-                          onChange={(e) =>
-                            handleFilterChange("search", e.target.value)
-                          }
+                          onChange={handleSearchChange}
                           placeholder="Search products..."
                           size="sm"
                           pl={8}
+                          pr={searchLoading ? 8 : 0}
                           bg="gray.50"
                           border="1px"
                           borderColor="gray.200"
@@ -857,6 +971,16 @@ const ProductsPage = () => {
                           color="gray.400"
                           fontSize="sm"
                         />
+                        {searchLoading && (
+                          <Spinner
+                            size="xs"
+                            position="absolute"
+                            right={2}
+                            top="50%"
+                            transform="translateY(-50%)"
+                            color="blue.400"
+                          />
+                        )}
                       </Box>
                       <Button
                         onClick={applyFilters}
@@ -1061,7 +1185,7 @@ const ProductsPage = () => {
                         </Thead>
                         <Tbody>
                           {products.map((product, index) => (
-                            <>
+                            <React.Fragment key={product.id}>
                               <Tr
                                 key={product?.id}
                                 _hover={{ bg: "gray.50" }}
@@ -1070,10 +1194,10 @@ const ProductsPage = () => {
                                 transition="background-color 0.2s"
                               >
                                 <Td borderColor={borderColor} p={2}>
-                                    <AspectRatio ratio={1} w="40px" h="40px">
-                                      <Image
-                                        src={product.main_image_url}
-                                        alt={product.title}
+                                  <AspectRatio ratio={1} w="40px" h="40px">
+                                    <Image
+                                      src={product.main_image_url}
+                                      alt={product.title}
                                       borderRadius="md"
                                       objectFit="cover"
                                       fallback={
@@ -1275,7 +1399,7 @@ const ProductsPage = () => {
                                     )}
                                   </Text>
                                 </Td>
-                                
+
                                 <Td borderColor={borderColor} p={2}>
                                   <Menu>
                                     <MenuButton
@@ -1334,7 +1458,7 @@ const ProductsPage = () => {
                                   </Menu>
                                 </Td>
                               </Tr>
-                            </>
+                            </React.Fragment>
                           ))}
                         </Tbody>
                       </Table>

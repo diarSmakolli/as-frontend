@@ -70,7 +70,7 @@ import CustomOptionsForm from "../create-product/components/CustomOptionsForm";
 import ExistingImageManager from "./components/ExistingImageManager";
 import RichTextEditor from "../create-product/components/RichTextEditor";
 import { API_BASE_URL } from "../../../commons/api";
-import DimensionalPricingForm from '../create-product/components/DimensionalPricingForm';
+import DimensionalPricingForm from "../create-product/components/DimensionalPricingForm";
 
 const MotionBox = motion.create(Box);
 const MotionCard = motion.create(Card);
@@ -85,63 +85,16 @@ const EditProductPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Add this handler function with your other handlers
-const handleDimensionalPricingChange = (dimensionalData) => {
-  setFormData((prev) => ({
-    ...prev,
-    ...dimensionalData,
-  }));
-};
+  const handleDimensionalPricingChange = (dimensionalData) => {
+    setFormData((prev) => ({
+      ...prev,
+      ...dimensionalData,
+    }));
+  };
 
-  // Form data state
-  // const [formData, setFormData] = useState({
-  //   title: "",
-  //   description: "",
-  //   short_description: "",
-  //   sku: "",
-  //   barcode: "",
-  //   ean: "",
-  //   weight: "",
-  //   weight_unit: "kg",
-  //   measures_unit: "cm",
-  //   unit_type: "pcs",
-  //   width: "",
-  //   height: "",
-  //   length: "",
-  //   thickness: "",
-  //   depth: "",
-  //   lead_time: 5,
-  //   meta_title: "",
-  //   meta_description: "",
-  //   meta_keywords: "",
-  //   purchase_price_nett: "",
-  //   regular_price_nett: "",
-  //   is_discounted: false,
-  //   discount_percentage_nett: "",
-  //   final_price_nett: "",
-  //   tax_id: "",
-  //   supplier_id: "",
-  //   company_id: "",
-  //   is_active: true,
-  //   is_published: false,
-  //   is_available_on_stock: true,
-  //   shipping_free: false,
-  //   mark_as_top_seller: false,
-  //   mark_as_new: false,
-  //   mark_as_featured: false,
-  //   is_digital: false,
-  //   is_physical: true,
-  //   is_delivery_only: true,
-  //   is_special_offer: false,
-  //   custom_options: [],
-  //   existing_images: [],
-  //   new_images: [],
-  //   services: [],
-  //   categories: [],
-  //   custom_details: [],
-  // });
-  // Replace the existing formData state with this enhanced version
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -187,11 +140,8 @@ const handleDimensionalPricingChange = (dimensionalData) => {
     services: [],
     categories: [],
     custom_details: [],
-
     min_order_quantity: 1,
     max_order_quantity: 9999,
-    
-    // Enhanced: Add dimensional pricing fields
     is_dimensional_pricing: false,
     dimensional_calculation_type: null,
     base_price_per_m2: 0,
@@ -225,13 +175,11 @@ const handleDimensionalPricingChange = (dimensionalData) => {
     standard_length: 0,
   });
 
-  // Dropdown data
   const [taxes, setTaxes] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [categories, setCategories] = useState([]);
   const [errors, setErrors] = useState({});
 
-  // Color mode values
   const bgColor = useColorModeValue("gray.50", "gray.900");
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
@@ -248,7 +196,6 @@ const handleDimensionalPricingChange = (dimensionalData) => {
     transition: { duration: 0.3 },
   };
 
-  // Fetch dropdown data - FIXED TO USE CORRECT API ENDPOINTS
   const fetchDropdownData = useCallback(async () => {
     try {
       // Fetch all required data in parallel using correct endpoints
@@ -331,7 +278,6 @@ const handleDimensionalPricingChange = (dimensionalData) => {
     }
   }, [toast]);
 
-  // Fetch product details
   const fetchProductDetails = useCallback(async () => {
     if (!productId) {
       setLoading(false);
@@ -345,95 +291,121 @@ const handleDimensionalPricingChange = (dimensionalData) => {
         const product = response.data.data.product;
 
         setFormData({
-        title: product.title || "",
-        description: product.description || "",
-        short_description: product.short_description || "",
-        sku: product.sku || "",
-        barcode: product.barcode || "",
-        ean: product.ean || "",
-        weight: product.weight || "",
-        weight_unit: product.weight_unit || "kg",
-        measures_unit: product.measures_unit || "cm",
-        unit_type: product.unit_type || "pcs",
-        width: product.width || "",
-        height: product.height || "",
-        length: product.length || "",
-        thickness: product.thickness || "",
-        depth: product.depth || "",
-        lead_time: product.lead_time || 5,
-        meta_title: product.meta_title || "",
-        meta_description: product.meta_description || "",
-        meta_keywords: product.meta_keywords || "",
-        purchase_price_nett: product.purchase_price_nett || "",
-        regular_price_nett: product.regular_price_nett || "",
-        is_discounted: product.is_discounted || false,
-        discount_percentage_nett: product.discount_percentage_nett || "",
-        final_price_nett: product.final_price_nett || "",
-        tax_id: product.tax_id || "",
-        supplier_id: product.supplier_id || "",
-        company_id: product.company_id || "",
-        is_active: product.is_active !== undefined ? product.is_active : true,
-        is_published: product.is_published !== undefined ? product.is_published : false,
-        is_available_on_stock: product.is_available_on_stock !== undefined ? product.is_available_on_stock : true,
-        shipping_free: product.shipping_free !== undefined ? product.shipping_free : false,
-        mark_as_top_seller: product.mark_as_top_seller !== undefined ? product.mark_as_top_seller : false,
-        mark_as_new: product.mark_as_new !== undefined ? product.mark_as_new : false,
-        mark_as_featured: product.mark_as_featured !== undefined ? product.mark_as_featured : false,
-        is_digital: product.is_digital !== undefined ? product.is_digital : false,
-        is_physical: product.is_physical !== undefined ? product.is_physical : true,
-        is_delivery_only: product.is_delivery_only !== undefined ? product.is_delivery_only : true,
-        is_special_offer: product.is_special_offer !== undefined ? product.is_special_offer : false,
-        custom_options: Array.isArray(product.custom_options) ? product.custom_options : [],
-        existing_images: Array.isArray(product.images) ? product.images : [],
-        new_images: [],
-        services: Array.isArray(product.product_services) ? product.product_services : [],
-        categories: Array.isArray(product.categories) ? product.categories.map((cat) => cat.id) : [],
-        custom_details: Array.isArray(product.custom_details) ? product.custom_details : [],
-        
-        // Enhanced: Load dimensional pricing fields
-        is_dimensional_pricing: product.is_dimensional_pricing || false,
-        dimensional_calculation_type: product.dimensional_calculation_type || null,
-        base_price_per_m2: product.base_price_per_m2 || 0,
-        base_price_per_m3: product.base_price_per_m3 || 0,
-        base_price_per_linear_meter: product.base_price_per_linear_meter || 0,
-        base_price_per_meter: product.base_price_per_meter || 0,
-        premium_price_per_m2: product.premium_price_per_m2 || 0,
-        premium_price_per_m3: product.premium_price_per_m3 || 0,
-        premium_price_per_linear_meter: product.premium_price_per_linear_meter || 0,
-        premium_price_per_meter: product.premium_price_per_meter || 0,
-        min_width: product.min_width || 0,
-        max_width: product.max_width || 0,
-        min_height: product.min_height || 0,
-        max_height: product.max_height || 0,
-        min_depth: product.min_depth || 0,
-        max_depth: product.max_depth || 0,
-        premium_width_from: product.premium_width_from || 0,
-        premium_width_to: product.premium_width_to || 0,
-        premium_height_from: product.premium_height_from || 0,
-        premium_height_to: product.premium_height_to || 0,
-        premium_depth_from: product.premium_depth_from || 0,
-        premium_depth_to: product.premium_depth_to || 0,
-        
-        standard_width: product.standard_width || 0,
-        standard_height: product.standard_height || 0,
-        standard_depth: product.standard_depth || 0,
+          title: product.title || "",
+          description: product.description || "",
+          short_description: product.short_description || "",
+          sku: product.sku || "",
+          barcode: product.barcode || "",
+          ean: product.ean || "",
+          weight: product.weight || "",
+          weight_unit: product.weight_unit || "kg",
+          measures_unit: product.measures_unit || "cm",
+          unit_type: product.unit_type || "pcs",
+          width: product.width || "",
+          height: product.height || "",
+          length: product.length || "",
+          thickness: product.thickness || "",
+          depth: product.depth || "",
+          lead_time: product.lead_time || 5,
+          meta_title: product.meta_title || "",
+          meta_description: product.meta_description || "",
+          meta_keywords: product.meta_keywords || "",
+          purchase_price_nett: product.purchase_price_nett || "",
+          regular_price_nett: product.regular_price_nett || "",
+          is_discounted: product.is_discounted || false,
+          discount_percentage_nett: product.discount_percentage_nett || "",
+          final_price_nett: product.final_price_nett || "",
+          tax_id: product.tax_id || "",
+          supplier_id: product.supplier_id || "",
+          company_id: product.company_id || "",
+          is_active: product.is_active !== undefined ? product.is_active : true,
+          is_published:
+            product.is_published !== undefined ? product.is_published : false,
+          is_available_on_stock:
+            product.is_available_on_stock !== undefined
+              ? product.is_available_on_stock
+              : true,
+          shipping_free:
+            product.shipping_free !== undefined ? product.shipping_free : false,
+          mark_as_top_seller:
+            product.mark_as_top_seller !== undefined
+              ? product.mark_as_top_seller
+              : false,
+          mark_as_new:
+            product.mark_as_new !== undefined ? product.mark_as_new : false,
+          mark_as_featured:
+            product.mark_as_featured !== undefined
+              ? product.mark_as_featured
+              : false,
+          is_digital:
+            product.is_digital !== undefined ? product.is_digital : false,
+          is_physical:
+            product.is_physical !== undefined ? product.is_physical : true,
+          is_delivery_only:
+            product.is_delivery_only !== undefined
+              ? product.is_delivery_only
+              : true,
+          is_special_offer:
+            product.is_special_offer !== undefined
+              ? product.is_special_offer
+              : false,
+          custom_options: Array.isArray(product.custom_options)
+            ? product.custom_options
+            : [],
+          existing_images: Array.isArray(product.images) ? product.images : [],
+          new_images: [],
+          services: Array.isArray(product.product_services)
+            ? product.product_services
+            : [],
+          categories: Array.isArray(product.categories)
+            ? product.categories.map((cat) => cat.id)
+            : [],
+          custom_details: Array.isArray(product.custom_details)
+            ? product.custom_details
+            : [],
 
-        // NEWEST
-        min_order_quantity: product.min_order_quantity || 1,
-        max_order_quantity: product.max_order_quantity || 9999,
-        min_length: product.min_length || 0,
-        max_length: product.max_length || 0,
-        premium_length_from: product.premium_length_from || 0,
-        premium_length_to: product.premium_length_to || 0,
-        standard_length: product.standard_length || 0,
-      });
+          // Enhanced: Load dimensional pricing fields
+          is_dimensional_pricing: product.is_dimensional_pricing || false,
+          dimensional_calculation_type:
+            product.dimensional_calculation_type || null,
+          base_price_per_m2: product.base_price_per_m2 || 0,
+          base_price_per_m3: product.base_price_per_m3 || 0,
+          base_price_per_linear_meter: product.base_price_per_linear_meter || 0,
+          base_price_per_meter: product.base_price_per_meter || 0,
+          premium_price_per_m2: product.premium_price_per_m2 || 0,
+          premium_price_per_m3: product.premium_price_per_m3 || 0,
+          premium_price_per_linear_meter:
+            product.premium_price_per_linear_meter || 0,
+          premium_price_per_meter: product.premium_price_per_meter || 0,
+          min_width: product.min_width || 0,
+          max_width: product.max_width || 0,
+          min_height: product.min_height || 0,
+          max_height: product.max_height || 0,
+          min_depth: product.min_depth || 0,
+          max_depth: product.max_depth || 0,
+          premium_width_from: product.premium_width_from || 0,
+          premium_width_to: product.premium_width_to || 0,
+          premium_height_from: product.premium_height_from || 0,
+          premium_height_to: product.premium_height_to || 0,
+          premium_depth_from: product.premium_depth_from || 0,
+          premium_depth_to: product.premium_depth_to || 0,
+          standard_width: product.standard_width || 0,
+          standard_height: product.standard_height || 0,
+          standard_depth: product.standard_depth || 0,
+          min_order_quantity: product.min_order_quantity || 1,
+          max_order_quantity: product.max_order_quantity || 9999,
+          min_length: product.min_length || 0,
+          max_length: product.max_length || 0,
+          premium_length_from: product.premium_length_from || 0,
+          premium_length_to: product.premium_length_to || 0,
+          standard_length: product.standard_length || 0,
+        });
 
         setCurrentProduct(product);
       } else {
         throw new Error("Invalid response format");
       }
     } catch (error) {
-      console.error("Error fetching product details:", error);
       handleApiError(error, toast);
       navigate("/products-console");
     } finally {
@@ -441,7 +413,6 @@ const handleDimensionalPricingChange = (dimensionalData) => {
     }
   }, [productId, navigate, toast]);
 
-  // Initialize page data
   useEffect(() => {
     const initializePage = async () => {
       setLoading(true);
@@ -451,7 +422,6 @@ const handleDimensionalPricingChange = (dimensionalData) => {
         // Then fetch product details
         await fetchProductDetails();
       } catch (error) {
-        console.error("Error initializing page:", error);
         setLoading(false);
       }
     };
@@ -463,12 +433,134 @@ const handleDimensionalPricingChange = (dimensionalData) => {
     }
   }, [productId, fetchDropdownData, fetchProductDetails]);
 
-  // Form handlers
   const handleInputChange = (name, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+
+      // Special handling for dimensional pricing toggle
+      if (name === "is_dimensional_pricing") {
+        if (value === true) {
+          // When ENABLING dimensional pricing:
+          // 1. Reset regular price to 0 (it will be calculated automatically)
+          // 2. Ensure we have default values for dimensional fields
+          newData.regular_price_nett = 0;
+          newData.final_price_nett = 0;
+
+          // Set default calculation type if not set
+          if (!newData.dimensional_calculation_type) {
+            newData.dimensional_calculation_type = "m2";
+          }
+
+          // Ensure we have some default standard dimensions
+          if (!newData.standard_width || newData.standard_width === 0) {
+            newData.standard_width = 100; // 100cm default
+          }
+          if (!newData.standard_height || newData.standard_height === 0) {
+            newData.standard_height = 100; // 100cm default
+          }
+
+          // Set a default base price if none exists
+          if (!newData.base_price_per_m2 || newData.base_price_per_m2 === 0) {
+            newData.base_price_per_m2 = 50; // Default €50 per m²
+          }
+        } else {
+          // When DISABLING dimensional pricing:
+          // 1. Reset all dimensional fields to 0
+          // 2. Restore regular_price_nett to be manually editable
+          newData.dimensional_calculation_type = null;
+
+          // Reset all dimensional pricing fields to 0
+          newData.base_price_per_m2 = 0;
+          newData.base_price_per_m3 = 0;
+          newData.base_price_per_linear_meter = 0;
+          newData.base_price_per_meter = 0;
+          newData.premium_price_per_m2 = 0;
+          newData.premium_price_per_m3 = 0;
+          newData.premium_price_per_linear_meter = 0;
+          newData.premium_price_per_meter = 0;
+
+          // Reset dimension constraints
+          newData.min_width = 0;
+          newData.max_width = 0;
+          newData.min_height = 0;
+          newData.max_height = 0;
+          newData.min_depth = 0;
+          newData.max_depth = 0;
+          newData.min_length = 0;
+          newData.max_length = 0;
+
+          // Reset premium thresholds
+          newData.premium_width_from = 0;
+          newData.premium_width_to = 0;
+          newData.premium_height_from = 0;
+          newData.premium_height_to = 0;
+          newData.premium_depth_from = 0;
+          newData.premium_depth_to = 0;
+          newData.premium_length_from = 0;
+          newData.premium_length_to = 0;
+
+          // Reset standard dimensions
+          newData.standard_width = 0;
+          newData.standard_height = 0;
+          newData.standard_depth = 0;
+          newData.standard_length = 0;
+
+          // If regular_price_nett is 0 or empty, set a default value
+          if (!newData.regular_price_nett || newData.regular_price_nett === 0) {
+            newData.regular_price_nett = newData.purchase_price_nett
+              ? parseFloat(newData.purchase_price_nett) * 1.3 // 30% markup as default
+              : 100; // Default €100 if no purchase price
+          }
+
+          // Recalculate final price if there's a discount
+          if (newData.is_discounted && newData.discount_percentage_nett > 0) {
+            newData.final_price_nett =
+              newData.regular_price_nett *
+              (1 - newData.discount_percentage_nett / 100);
+          } else {
+            newData.final_price_nett = newData.regular_price_nett;
+          }
+        }
+      }
+
+      // Handle calculation type changes
+      if (
+        name === "dimensional_calculation_type" &&
+        newData.is_dimensional_pricing
+      ) {
+        // Reset base prices when calculation type changes
+        newData.base_price_per_m2 = 0;
+        newData.base_price_per_m3 = 0;
+        newData.base_price_per_linear_meter = 0;
+        newData.base_price_per_meter = 0;
+
+        // Set appropriate standard dimensions based on calculation type
+        switch (value) {
+          case "m2":
+            if (!newData.standard_width) newData.standard_width = 100;
+            if (!newData.standard_height) newData.standard_height = 100;
+            newData.base_price_per_m2 = 50; // Default price
+            break;
+          case "m3":
+            if (!newData.standard_width) newData.standard_width = 100;
+            if (!newData.standard_height) newData.standard_height = 100;
+            if (!newData.standard_depth) newData.standard_depth = 10;
+            newData.base_price_per_m3 = 500; // Default price
+            break;
+          case "linear-meter":
+            if (!newData.standard_width) newData.standard_width = 100;
+            if (!newData.standard_height) newData.standard_height = 5;
+            newData.base_price_per_linear_meter = 25; // Default price
+            break;
+          case "meter":
+            if (!newData.standard_length) newData.standard_length = 100;
+            newData.base_price_per_meter = 20; // Default price
+            break;
+        }
+      }
+
+      return newData;
+    });
 
     // Clear validation error
     if (errors[name]) {
@@ -557,6 +649,88 @@ const handleDimensionalPricingChange = (dimensionalData) => {
   };
 
   // Enhanced validation
+  // const validateForm = () => {
+  //   const newErrors = {};
+
+  //   if (!formData.title?.trim()) newErrors.title = "Title is required";
+  //   if (!formData.description?.trim())
+  //     newErrors.description = "Description is required";
+  //   if (!formData.weight) newErrors.weight = "Weight is required";
+  //   if (!formData.purchase_price_nett)
+  //     newErrors.purchase_price_nett = "Purchase price is required";
+  //   // if (!formData.regular_price_nett)
+  //   //   newErrors.regular_price_nett = "Regular price is required";
+
+  //   if (formData.min_order_quantity < 1) {
+  //     newErrors.min_order_quantity =
+  //       "Minimum order quantity must be at least 1";
+  //   }
+  //   if (formData.max_order_quantity < 1) {
+  //     newErrors.max_order_quantity =
+  //       "Maximum order quantity must be at least 1";
+  //   }
+  //   if (formData.min_order_quantity > formData.max_order_quantity) {
+  //     newErrors.max_order_quantity =
+  //       "Maximum order quantity must be greater than or equal to minimum order quantity";
+  //   }
+
+  //   if (!formData.tax_id) {
+  //     newErrors.tax_id = "Tax is required";
+  //     if (taxes.length === 0) {
+  //       newErrors.tax_id =
+  //         "No taxes available. Please create a tax rate first.";
+  //     }
+  //   }
+
+  //   if (formData.is_dimensional_pricing) {
+  //     if (!formData.dimensional_calculation_type) {
+  //       newErrors.dimensional_calculation_type =
+  //         "Calculation type is required when dimensional pricing is enabled";
+  //     }
+
+  //     const hasPricing =
+  //       formData.base_price_per_m2 > 0 ||
+  //       formData.base_price_per_m3 > 0 ||
+  //       formData.base_price_per_linear_meter > 0 ||
+  //       formData.base_price_per_meter > 0;
+
+  //     if (!hasPricing) {
+  //       newErrors.dimensional_pricing =
+  //         "At least one base price must be set for dimensional pricing";
+  //     }
+
+  //     // Check if at least one base price is set
+  //     // const hasPricing =
+  //     //   formData.base_price_per_m2 > 0 ||
+  //     //   formData.base_price_per_m3 > 0 ||
+  //     //   formData.base_price_per_linear_meter > 0 ||
+  //     //   formData.base_price_per_meter > 0;
+
+  //     // if (!hasPricing) {
+  //     //   newErrors.dimensional_pricing =
+  //     //     "At least one base price must be set for dimensional pricing";
+  //     // }
+
+  //     // Specific validation for m² calculations
+  //     // if (
+  //     //   formData.dimensional_calculation_type === "m2" &&
+  //     //   formData.base_price_per_m2 > 0
+  //     // ) {
+  //     //   if (!formData.standard_width || formData.standard_width <= 0) {
+  //     //     newErrors.standard_width =
+  //     //       "Standard width must be greater than 0 for m² calculations";
+  //     //   }
+  //     //   if (!formData.standard_height || formData.standard_height <= 0) {
+  //     //     newErrors.standard_height =
+  //     //       "Standard height must be greater than 0 for m² calculations";
+  //     //   }
+  //     // }
+  //   }
+
+  //   setErrors(newErrors);
+  //   return Object.keys(newErrors).length === 0;
+  // };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -566,8 +740,14 @@ const handleDimensionalPricingChange = (dimensionalData) => {
     if (!formData.weight) newErrors.weight = "Weight is required";
     if (!formData.purchase_price_nett)
       newErrors.purchase_price_nett = "Purchase price is required";
-    // if (!formData.regular_price_nett)
-    //   newErrors.regular_price_nett = "Regular price is required";
+
+    // Regular price validation based on dimensional pricing state
+    if (!formData.is_dimensional_pricing) {
+      if (!formData.regular_price_nett || formData.regular_price_nett <= 0) {
+        newErrors.regular_price_nett =
+          "Regular price is required when dimensional pricing is disabled";
+      }
+    }
 
     if (formData.min_order_quantity < 1) {
       newErrors.min_order_quantity =
@@ -590,49 +770,67 @@ const handleDimensionalPricingChange = (dimensionalData) => {
       }
     }
 
+    // Enhanced dimensional pricing validation
     if (formData.is_dimensional_pricing) {
       if (!formData.dimensional_calculation_type) {
         newErrors.dimensional_calculation_type =
           "Calculation type is required when dimensional pricing is enabled";
       }
 
-      const hasPricing =
-        formData.base_price_per_m2 > 0 ||
-        formData.base_price_per_m3 > 0 ||
-        formData.base_price_per_linear_meter > 0 ||
-        formData.base_price_per_meter > 0;
+      // Validate that at least one base price is set based on calculation type
+      const calculationType = formData.dimensional_calculation_type;
+      let hasValidPricing = false;
 
-      if (!hasPricing) {
-        newErrors.dimensional_pricing =
-          "At least one base price must be set for dimensional pricing";
+      switch (calculationType) {
+        case "m2":
+          if (formData.base_price_per_m2 > 0) hasValidPricing = true;
+          if (!formData.standard_width || formData.standard_width <= 0) {
+            newErrors.standard_width =
+              "Standard width is required for m² calculations";
+          }
+          if (!formData.standard_height || formData.standard_height <= 0) {
+            newErrors.standard_height =
+              "Standard height is required for m² calculations";
+          }
+          break;
+        case "m3":
+          if (formData.base_price_per_m3 > 0) hasValidPricing = true;
+          if (!formData.standard_width || formData.standard_width <= 0) {
+            newErrors.standard_width =
+              "Standard width is required for m³ calculations";
+          }
+          if (!formData.standard_height || formData.standard_height <= 0) {
+            newErrors.standard_height =
+              "Standard height is required for m³ calculations";
+          }
+          if (!formData.standard_depth || formData.standard_depth <= 0) {
+            newErrors.standard_depth =
+              "Standard depth is required for m³ calculations";
+          }
+          break;
+        case "linear-meter":
+          if (formData.base_price_per_linear_meter > 0) hasValidPricing = true;
+          if (!formData.standard_width || formData.standard_width <= 0) {
+            newErrors.standard_width =
+              "Standard width is required for linear meter calculations";
+          }
+          if (!formData.standard_height || formData.standard_height <= 0) {
+            newErrors.standard_height =
+              "Standard height is required for linear meter calculations";
+          }
+          break;
+        case "meter":
+          if (formData.base_price_per_meter > 0) hasValidPricing = true;
+          if (!formData.standard_length || formData.standard_length <= 0) {
+            newErrors.standard_length =
+              "Standard length is required for meter calculations";
+          }
+          break;
       }
 
-      // Check if at least one base price is set
-      // const hasPricing =
-      //   formData.base_price_per_m2 > 0 ||
-      //   formData.base_price_per_m3 > 0 ||
-      //   formData.base_price_per_linear_meter > 0 ||
-      //   formData.base_price_per_meter > 0;
-
-      // if (!hasPricing) {
-      //   newErrors.dimensional_pricing =
-      //     "At least one base price must be set for dimensional pricing";
-      // }
-
-      // Specific validation for m² calculations
-      // if (
-      //   formData.dimensional_calculation_type === "m2" &&
-      //   formData.base_price_per_m2 > 0
-      // ) {
-      //   if (!formData.standard_width || formData.standard_width <= 0) {
-      //     newErrors.standard_width =
-      //       "Standard width must be greater than 0 for m² calculations";
-      //   }
-      //   if (!formData.standard_height || formData.standard_height <= 0) {
-      //     newErrors.standard_height =
-      //       "Standard height must be greater than 0 for m² calculations";
-      //   }
-      // }
+      if (!hasValidPricing) {
+        newErrors.dimensional_pricing = `Base price per ${calculationType} must be greater than 0`;
+      }
     }
 
     setErrors(newErrors);
@@ -640,197 +838,52 @@ const handleDimensionalPricingChange = (dimensionalData) => {
   };
 
   const isFormValid = () => {
-    return (
+    const basicValidation =
       formData.title?.trim() &&
       formData.description?.trim() &&
       formData.weight &&
       formData.purchase_price_nett &&
-      // formData.regular_price_nett &&
       formData.tax_id &&
-      taxes.length > 0
-    ); // Ensure taxes are loaded
+      taxes.length > 0;
+
+    if (!basicValidation) return false;
+
+    if (formData.is_dimensional_pricing) {
+      if (!formData.dimensional_calculation_type) return false;
+
+      const calculationType = formData.dimensional_calculation_type;
+      let hasValidPricing = false;
+      let hasValidDimensions = false;
+
+      switch (calculationType) {
+        case "m2":
+          hasValidPricing = formData.base_price_per_m2 > 0;
+          hasValidDimensions =
+            formData.standard_width > 0 && formData.standard_height > 0;
+          break;
+        case "m3":
+          hasValidPricing = formData.base_price_per_m3 > 0;
+          hasValidDimensions =
+            formData.standard_width > 0 &&
+            formData.standard_height > 0 &&
+            formData.standard_depth > 0;
+          break;
+        case "linear-meter":
+          hasValidPricing = formData.base_price_per_linear_meter > 0;
+          hasValidDimensions =
+            formData.standard_width > 0 && formData.standard_height > 0;
+          break;
+        case "meter":
+          hasValidPricing = formData.base_price_per_meter > 0;
+          hasValidDimensions = formData.standard_length > 0;
+          break;
+      }
+
+      return hasValidPricing && hasValidDimensions;
+    } else {
+      return formData.regular_price_nett && formData.regular_price_nett > 0;
+    }
   };
-
-  // // Submit handler
-  // const handleSubmit = async () => {
-  //   if (!validateForm()) {
-  //     toast({
-  //       title: "Validation Error",
-  //       description: "Please fill in all required fields correctly.",
-  //       status: "error",
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-  //     return;
-  //   }
-
-  //   setSubmitting(true);
-  //   try {
-  //     const formDataToSend = new FormData();
-
-  //     // Add all form fields
-  //     Object.keys(formData).forEach((key) => {
-  //       if (key === "new_images") {
-  //         formData.new_images.forEach((image) => {
-  //           formDataToSend.append("newImages", image);
-  //         });
-  //       } else if (
-  //         key === "services" ||
-  //         key === "categories" ||
-  //         key === "custom_details" ||
-  //         key === "existing_images"
-  //       ) {
-  //         // // Handle arrays as JSON strings
-  //         // formDataToSend.append(key, JSON.stringify(formData[key]));
-  //         formDataToSend.append(key, JSON.stringify(formData[key]));
-  //       } else if (key === "custom_options") {
-  //         // Clean custom_options: remove only image (File) and image_preview from option values, KEEP image_url
-  //         const cleanedCustomOptions = (formData.custom_options || []).map(
-  //           (option) => ({
-  //             ...option,
-  //             option_values: (option.option_values || []).map((val) => {
-  //               const { image, image_preview, image_url, ...rest } = val;
-  //               return rest;
-  //             }),
-  //           })
-  //         );
-  //         formDataToSend.append(
-  //           "custom_options",
-  //           JSON.stringify(cleanedCustomOptions)
-  //         );
-  //       } else if (
-  //         formData[key] !== null &&
-  //         formData[key] !== undefined &&
-  //         formData[key] !== ""
-  //       ) {
-  //         formDataToSend.append(key, formData[key]);
-  //       }
-  //     });
-
-  //     const response = await productService.updateProduct(
-  //       productId,
-  //       formDataToSend
-  //     );
-
-  //     toast({
-  //       title: "Success!",
-  //       description: response.data.message || "Product updated successfully!",
-  //       status: "success",
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-
-  //     navigate(`/products-console/${productId}`);
-  //   } catch (error) {
-  //     console.error("Error updating product:", error);
-  //     toast({
-  //       title: "Error",
-  //       description:
-  //         error.response?.data?.message ||
-  //         "Failed to update product. Please try again.",
-  //       status: "error",
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-  //   } finally {
-  //     setSubmitting(false);
-  //   }
-  // };
-
-  // In the handleSubmit function, change this:
-  // const handleSubmit = async () => {
-  //   if (!validateForm()) {
-  //     toast({
-  //       title: "Validation Error",
-  //       description: "Please fill in all required fields correctly.",
-  //       status: "error",
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-  //     return;
-  //   }
-
-  //   setSubmitting(true);
-  //   try {
-  //     const formDataToSend = new FormData();
-
-  //     // Add all form fields
-  //     Object.keys(formData).forEach((key) => {
-  //       if (key === "new_images") {
-  //         // FIXED: Append new images with correct field name expected by backend
-  //         formData.new_images.forEach((image) => {
-  //           formDataToSend.append("newImages", image); // Changed from "images" to "newImages"
-  //         });
-  //       } else if (
-  //         key === "services" ||
-  //         key === "categories" ||
-  //         key === "custom_details" ||
-  //         key === "existing_images"
-  //       ) {
-  //         formDataToSend.append(key, JSON.stringify(formData[key]));
-  //       } else if (key === "custom_options") {
-  //         // Clean custom_options: remove only image (File) and image_preview from option values, KEEP image_url
-  //         const cleanedCustomOptions = (formData.custom_options || []).map(
-  //           (option) => ({
-  //             ...option,
-  //             option_values: (option.option_values || []).map((val) => {
-  //               const { image, image_preview, ...rest } = val;
-  //               return rest;
-  //             }),
-  //           })
-  //         );
-  //         formDataToSend.append(
-  //           "custom_options",
-  //           JSON.stringify(cleanedCustomOptions)
-  //         );
-  //       } else if (
-  //         formData[key] !== null &&
-  //         formData[key] !== undefined &&
-  //         formData[key] !== ""
-  //       ) {
-  //         formDataToSend.append(key, formData[key]);
-  //       }
-  //     });
-
-  //     // Debug: Log FormData contents
-  //     console.log("FormData being sent:");
-  //     for (let [key, value] of formDataToSend.entries()) {
-  //       if (value instanceof File) {
-  //         console.log(key, `File: ${value.name} (${value.size} bytes)`);
-  //       } else {
-  //         console.log(key, value);
-  //       }
-  //     }
-
-  //     const response = await productService.updateProduct(
-  //       productId,
-  //       formDataToSend
-  //     );
-
-  //     toast({
-  //       title: "Success!",
-  //       description: response.data.message || "Product updated successfully!",
-  //       status: "success",
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-
-  //     navigate(`/products-console/${productId}`);
-  //   } catch (error) {
-  //     console.error("Error updating product:", error);
-  //     toast({
-  //       title: "Error",
-  //       description:
-  //         error.response?.data?.message ||
-  //         "Failed to update product. Please try again.",
-  //       status: "error",
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-  //   } finally {
-  //     setSubmitting(false);
-  //   }
-  // };
 
   const handleSubmit = async () => {
     if (!validateForm()) {
@@ -882,12 +935,6 @@ const handleDimensionalPricingChange = (dimensionalData) => {
             })
           );
 
-          // Debug log
-          console.log(
-            "Sending custom options with dimensional pricing:",
-            cleanedCustomOptions
-          );
-
           formDataToSend.append(
             "custom_options",
             JSON.stringify(cleanedCustomOptions)
@@ -900,16 +947,6 @@ const handleDimensionalPricingChange = (dimensionalData) => {
           formDataToSend.append(key, formData[key]);
         }
       });
-
-      // Debug: Log FormData contents
-      console.log("FormData being sent:");
-      for (let [key, value] of formDataToSend.entries()) {
-        if (value instanceof File) {
-          console.log(key, `File: ${value.name} (${value.size} bytes)`);
-        } else {
-          console.log(key, value);
-        }
-      }
 
       const response = await productService.updateProduct(
         productId,
@@ -926,16 +963,7 @@ const handleDimensionalPricingChange = (dimensionalData) => {
 
       navigate(`/products-console/${productId}`);
     } catch (error) {
-      console.error("Error updating product:", error);
-      toast({
-        title: "Error",
-        description:
-          error.response?.data?.message ||
-          "Failed to update product. Please try again.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      handleApiError(error);
     } finally {
       setSubmitting(false);
     }
@@ -986,8 +1014,26 @@ const handleDimensionalPricingChange = (dimensionalData) => {
 
   return (
     <Box minH="100vh" bg={bgColor}>
-      <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
-      <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
+      <Box display={{ base: "none", md: "block" }}>
+        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+      </Box>
+      {/* Mobile Sidebar: shown when menu is open */}
+      <Box
+        display={{ base: isSidebarOpen ? "block" : "none", md: "none" }}
+        position="fixed"
+        zIndex={999}
+      >
+        <SidebarContent
+          onSettingsOpen={() => setIsSettingsOpen(true)}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+      </Box>
+      {/* MobileNav: always visible, passes menu toggle */}
+      <MobileNav
+        onSettingsOpen={() => setIsSettingsOpen(true)}
+        onOpen={() => setIsSidebarOpen(true)}
+      />
+
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -997,7 +1043,13 @@ const handleDimensionalPricingChange = (dimensionalData) => {
         <Container maxW="8xl" px={{ base: 3, md: 6 }} py={6}>
           <MotionBox {...fadeIn}>
             {/* Breadcrumb */}
-            <HStack spacing={1} mb={4} fontSize="xs" color="gray.500">
+            <HStack
+              spacing={1}
+              mb={4}
+              fontSize="xs"
+              color="gray.500"
+              display={{ base: "none", md: "flex" }}
+            >
               <Icon as={FiHome} fontSize="xs" />
               <Text
                 cursor="pointer"
@@ -1027,12 +1079,63 @@ const handleDimensionalPricingChange = (dimensionalData) => {
                 Edit
               </Text>
             </HStack>
+            {/* Breadcrumb for mobile */}
+            <HStack
+              spacing={1}
+              mb={4}
+              fontSize="xs"
+              color="gray.500"
+              display={{ base: "flex", md: "none" }}
+            >
+              <Icon as={FiHome} fontSize="xs" />
+              <Text
+                cursor="pointer"
+                onClick={() => navigate("/")}
+                _hover={{ color: "blue.500" }}
+              >
+                Home
+              </Text>
+              <Text>•</Text>
+              <Text
+                cursor="pointer"
+                onClick={() => navigate("/products-console")}
+                _hover={{ color: "blue.500" }}
+              >
+                Products
+              </Text>
+              <Text>•</Text>
+              <Text
+                cursor="pointer"
+                onClick={() => navigate(`/products-console/${productId}`)}
+                _hover={{ color: "blue.500" }}
+              >
+                {currentProduct.title?.slice(0, 20) +
+                  (currentProduct.title?.length > 20 ? "..." : "")}
+              </Text>
+              <Text>•</Text>
+              <Text color="blue.500" fontWeight="600">
+                Edit
+              </Text>
+            </HStack>
 
             {/* Header */}
-            <Flex justify="space-between" align="center" mb={6}>
+            <Flex
+              justify="space-between"
+              align={{ base: "start", md: "center" }}
+              direction={{ base: "column", md: "row" }}
+              mb={6}
+              gap={{ base: 4, md: 0 }}
+            >
               <VStack align="start" spacing={1}>
                 <HStack spacing={2}>
-                  <Heading size="lg" color="gray.900" fontWeight="700">
+                  <Heading
+                    size="lg"
+                    color="gray.900"
+                    fontWeight="700"
+                    fontSize={{ base: "md", md: "lg" }}
+                    noOfLines={1}
+                    maxW={{ base: "90vw", md: "unset" }}
+                  >
                     Edit Product
                   </Heading>
                   <Badge
@@ -1042,21 +1145,31 @@ const handleDimensionalPricingChange = (dimensionalData) => {
                     px={2}
                     py={1}
                     borderRadius="md"
+                    maxW={{ base: "120px", md: "unset" }}
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                    whiteSpace="nowrap"
                   >
                     {currentProduct.sku}
                   </Badge>
                 </HStack>
-                <Text fontSize="sm" color="gray.600">
+                <Text
+                  fontSize={{ base: "xs", md: "sm" }}
+                  color="gray.600"
+                  noOfLines={2}
+                >
                   Update product information and settings
                 </Text>
               </VStack>
-              <HStack spacing={2}>
+              <HStack spacing={2} w={{ base: "100%", md: "auto" }}>
                 <Button
                   leftIcon={<FiArrowLeft />}
                   onClick={() => navigate(`/products-console/${productId}`)}
                   variant="outline"
                   colorScheme="gray"
                   size="sm"
+                  width={{ base: "50%", md: "auto" }}
+                  minW={0}
                 >
                   Cancel
                 </Button>
@@ -1068,6 +1181,8 @@ const handleDimensionalPricingChange = (dimensionalData) => {
                   isLoading={submitting}
                   loadingText="Updating..."
                   isDisabled={!isFormValid()}
+                  width={{ base: "50%", md: "auto" }}
+                  minW={0}
                 >
                   Update Product
                 </Button>
@@ -2340,7 +2455,6 @@ const handleDimensionalPricingChange = (dimensionalData) => {
                                 <NumberInputField bg="gray.50" />
                               </NumberInput>
                             </FormControl>
-
                           </SimpleGrid>
                         </Box>
                       </>

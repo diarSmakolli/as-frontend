@@ -1282,7 +1282,7 @@ const CustomerSearchPage = () => {
         </VStack>
 
         {/* Main Content */}
-        <Grid templateColumns={{ base: "1fr", lg: "300px 1fr" }} gap={6}>
+        <Grid templateColumns={{ base: "1fr", lg: "300px 1fr" }} gap={{base: 6, md: 6}}>
           {/* Desktop Filters */}
           <Box display={{ base: "none", lg: "block" }}>
             <FilterSidebar
@@ -1347,7 +1347,7 @@ const CustomerSearchPage = () => {
               <>
                 <SimpleGrid
                   columns={{ base: 2, md: 4 }}
-                  spacing={12}
+                  spacing={4}
                   mb={8}
                 >
                   {products.map((product) => (
@@ -1358,7 +1358,6 @@ const CustomerSearchPage = () => {
                   ))}
                 </SimpleGrid>
 
-                {/* Load More Button */}
                 {hasMore && (
                   <VStack spacing={4}>
                     <Button

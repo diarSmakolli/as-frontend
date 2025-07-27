@@ -78,6 +78,8 @@ export default function AdministrationsList() {
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] =
     useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
 
   const handleCreateAccountSuccess = () => {
     fetchUsers(currentPage);
@@ -355,8 +357,15 @@ export default function AdministrationsList() {
   return (
     <>
       <chakra.Box minH="100vh" bg={"rgb(241,241,241)"}>
-        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
-        <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
+        <chakra.Box display={{ base: "none", md: "block" }}>
+          <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+        </chakra.Box>
+        {/* Mobile Sidebar: shown when menu is open */}
+        <chakra.Box display={{ base: isSidebarOpen ? "block" : "none", md: "none" }} position="fixed" zIndex={999}>
+          <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} onClose={() => setIsSidebarOpen(false)} />
+        </chakra.Box>
+        {/* MobileNav: always visible, passes menu toggle */}
+        <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} onOpen={() => setIsSidebarOpen(true)} />
 
         <SettingsModal
           isOpen={isSettingsOpen}

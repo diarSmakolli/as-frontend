@@ -168,6 +168,7 @@ const CompanyDetails = () => {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [warehouses, setWarehouses] = useState([]);
   const [isLoadingWarehouses, setIsLoadingWarehouses] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const {
     isOpen: isEditModalOpen,
@@ -685,8 +686,25 @@ const CompanyDetails = () => {
 
   return (
     <Box minH="100vh" bg="rgb(241,241,241)">
-      <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
-      <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
+      <Box display={{ base: "none", md: "block" }}>
+        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+      </Box>
+      {/* Mobile Sidebar: shown when menu is open */}
+      <Box
+        display={{ base: isSidebarOpen ? "block" : "none", md: "none" }}
+        position="fixed"
+        zIndex={999}
+      >
+        <SidebarContent
+          onSettingsOpen={() => setIsSettingsOpen(true)}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+      </Box>
+      {/* MobileNav: always visible, passes menu toggle */}
+      <MobileNav
+        onSettingsOpen={() => setIsSettingsOpen(true)}
+        onOpen={() => setIsSidebarOpen(true)}
+      />
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}

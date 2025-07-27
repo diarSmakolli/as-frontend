@@ -102,8 +102,8 @@ const ProductCard = ({ product }) => {
       cursor="pointer"
       borderWidth="0px"
       borderColor="gray.400"
-      minW={{ base: "200px", sm: "200px", md: "225px" }}
-      maxW={{ base: "200px", sm: "200px", md: "225px" }}
+      // minW={{ base: "200px", sm: "200px", md: "225px" }}
+      // maxW={{ base: "200px", sm: "200px", md: "225px" }}
       flexShrink={0}
       _before={{
         content: '""',

@@ -59,7 +59,7 @@ import {
   FiInfo,
   FiGlobe,
   FiCheckCircle,
-  FiShoppingCart
+  FiShoppingCart,
 } from "react-icons/fi";
 import {
   productService,
@@ -97,50 +97,8 @@ const CreateProductPage = () => {
   const [categories, setCategories] = useState([]);
   const [errors, setErrors] = useState({});
   const [loadingData, setLoadingData] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // const [formData, setFormData] = useState({
-  //   title: "",
-  //   description: "",
-  //   short_description: "",
-  //   weight: "",
-  //   weight_unit: "kg",
-  //   measures_unit: "cm",
-  //   unit_type: "pcs",
-  //   width: "",
-  //   height: "",
-  //   depth: "",
-  //   thickness: "",
-  //   length: "",
-  //   lead_time: 5,
-  //   purchase_price_nett: "",
-  //   regular_price_nett: "",
-  //   discount_percentage_nett: 0,
-  //   tax_id: "",
-  //   company_id: "",
-  //   supplier_id: "",
-  //   meta_title: "",
-  //   meta_description: "",
-  //   meta_keywords: "",
-  //   is_published: false,
-  //   is_active: true,
-  //   mark_as_featured: false,
-  //   mark_as_new: false,
-  //   mark_as_top_seller: false,
-  //   shipping_free: false,
-  //   is_physical: true,
-  //   is_digital: false,
-  //   is_on_sale: false,
-  //   is_special_offer: false,
-  //   is_available_on_stock: false,
-  //   is_delivery_only: false,
-  //   images: [],
-  //   services: [],
-  //   categories: [],
-  //   custom_details: [],
-  //   custom_options: [],
-  // });
-
-  // v2.0
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -303,8 +261,6 @@ const CreateProductPage = () => {
       newErrors.weight = "Valid weight is required";
     if (!formData.purchase_price_nett || formData.purchase_price_nett <= 0)
       newErrors.purchase_price_nett = "Valid purchase price is required";
-    // if (!formData.regular_price_nett || formData.regular_price_nett <= 0)
-    //   newErrors.regular_price_nett = "Valid regular price is required";
 
     if (formData.min_order_quantity < 1) {
       newErrors.min_order_quantity =
@@ -318,7 +274,6 @@ const CreateProductPage = () => {
       newErrors.max_order_quantity =
         "Maximum order quantity must be greater than or equal to minimum order quantity";
     }
-    
 
     if (!formData.tax_id) newErrors.tax_id = "Tax selection is required";
     if (formData.images.length === 0)
@@ -400,7 +355,6 @@ const CreateProductPage = () => {
         navigate("/products-console");
       }
     } catch (error) {
-      console.error("Error creating product:", error);
       handleApiError(error, toast);
     } finally {
       setLoading(false);
@@ -413,8 +367,25 @@ const CreateProductPage = () => {
 
   return (
     <Box minH="100vh" bg="rgb(241,241,241)">
-      <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
-      <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
+      <Box display={{ base: "none", md: "block" }}>
+        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+      </Box>
+      {/* Mobile Sidebar: shown when menu is open */}
+      <Box
+        display={{ base: isSidebarOpen ? "block" : "none", md: "none" }}
+        position="fixed"
+        zIndex={999}
+      >
+        <SidebarContent
+          onSettingsOpen={() => setIsSettingsOpen(true)}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+      </Box>
+      {/* MobileNav: always visible, passes menu toggle */}
+      <MobileNav
+        onSettingsOpen={() => setIsSettingsOpen(true)}
+        onOpen={() => setIsSidebarOpen(true)}
+      />
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -441,16 +412,29 @@ const CreateProductPage = () => {
           </BreadcrumbItem>
         </Breadcrumb>
 
-        <Flex justify="space-between" align="center" mb={6}>
+        <Flex
+          justify="space-between"
+          align={{ base: "start", md: "center" }}
+          direction={{ base: "column", md: "row" }}
+          mb={6}
+          gap={{ base: 4, md: 0 }}
+        >
           <VStack align="start" spacing={1}>
-            <Heading size="lg" color="gray.900" fontWeight="600">
+            <Heading
+              size="lg"
+              color="gray.900"
+              fontWeight="600"
+              fontSize={{ base: "md", md: "lg" }}
+              noOfLines={1}
+              maxW={{ base: "90vw", md: "unset" }}
+            >
               Create New Product
             </Heading>
-            <Text color="gray.600" fontSize="md">
+            <Text color="gray.600" fontSize={{ base: "xs", md: "md" }}>
               Add a new product to your inventory with all necessary details
             </Text>
           </VStack>
-          <HStack spacing={3}>
+          <HStack spacing={3} w={{ base: "100%", md: "auto" }}>
             <Button
               leftIcon={<FiArrowLeft />}
               onClick={() => navigate("/products")}
@@ -458,6 +442,8 @@ const CreateProductPage = () => {
               color="gray.700"
               _hover={{ bg: "gray.200" }}
               size="md"
+              width={{ base: "50%", md: "auto" }}
+              minW={0}
             >
               Back to Products
             </Button>
@@ -470,6 +456,8 @@ const CreateProductPage = () => {
               color="white"
               _hover={{ bg: "blue.600" }}
               size="md"
+              width={{ base: "50%", md: "auto" }}
+              minW={0}
             >
               Create Product
             </Button>
@@ -1138,7 +1126,6 @@ const CreateProductPage = () => {
 
                     {formData.is_dimensional_pricing && (
                       <>
-                        {/* Calculation Type */}
                         <FormControl>
                           <FormLabel color="gray.700" fontWeight="500">
                             Calculation Type
@@ -1169,101 +1156,6 @@ const CreateProductPage = () => {
                           </FormHelperText>
                         </FormControl>
 
-                        {/* Base Pricing */}
-                        {/* <Box>
-                          <Text fontWeight="500" color="gray.700" mb={3}>
-                            Base Pricing
-                          </Text>
-                          <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
-                            <FormControl>
-                              <FormLabel fontSize="sm">Price per m²</FormLabel>
-                              <NumberInput
-                                value={formData.base_price_per_m2}
-                                onChange={(value) =>
-                                  handleInputChange(
-                                    "base_price_per_m2",
-                                    parseFloat(value) || 0
-                                  )
-                                }
-                                min={0}
-                                precision={2}
-                              >
-                                <NumberInputField bg="gray.50" />
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper />
-                                  <NumberDecrementStepper />
-                                </NumberInputStepper>
-                              </NumberInput>
-                            </FormControl>
-
-                            <FormControl>
-                              <FormLabel fontSize="sm">Price per m³</FormLabel>
-                              <NumberInput
-                                value={formData.base_price_per_m3}
-                                onChange={(value) =>
-                                  handleInputChange(
-                                    "base_price_per_m3",
-                                    parseFloat(value) || 0
-                                  )
-                                }
-                                min={0}
-                                precision={2}
-                              >
-                                <NumberInputField bg="gray.50" />
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper />
-                                  <NumberDecrementStepper />
-                                </NumberInputStepper>
-                              </NumberInput>
-                            </FormControl>
-
-                            <FormControl>
-                              <FormLabel fontSize="sm">
-                                Price per Linear Meter
-                              </FormLabel>
-                              <NumberInput
-                                value={formData.base_price_per_linear_meter}
-                                onChange={(value) =>
-                                  handleInputChange(
-                                    "base_price_per_linear_meter",
-                                    parseFloat(value) || 0
-                                  )
-                                }
-                                min={0}
-                                precision={2}
-                              >
-                                <NumberInputField bg="gray.50" />
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper />
-                                  <NumberDecrementStepper />
-                                </NumberInputStepper>
-                              </NumberInput>
-                            </FormControl>
-
-                            <FormControl>
-                              <FormLabel fontSize="sm">
-                                Price per Meter
-                              </FormLabel>
-                              <NumberInput
-                                value={formData.base_price_per_meter}
-                                onChange={(value) =>
-                                  handleInputChange(
-                                    "base_price_per_meter",
-                                    parseFloat(value) || 0
-                                  )
-                                }
-                                min={0}
-                                precision={2}
-                              >
-                                <NumberInputField bg="gray.50" />
-                                <NumberInputStepper>
-                                  <NumberIncrementStepper />
-                                  <NumberDecrementStepper />
-                                </NumberInputStepper>
-                              </NumberInput>
-                            </FormControl>
-                          </SimpleGrid>
-                        </Box> */}
                         <Box>
                           <Text fontWeight="500" color="gray.700" mb={3}>
                             Base Pricing *
@@ -1394,7 +1286,6 @@ const CreateProductPage = () => {
                           )}
                         </Box>
 
-                        {/* Premium Pricing */}
                         <Box>
                           <Text fontWeight="500" color="gray.700" mb={3}>
                             Premium Pricing (Optional)
@@ -1525,223 +1416,6 @@ const CreateProductPage = () => {
                             </Alert>
                           )}
                         </Box>
-
-                        {/* Premium Threesholds */}
-                        {/* <Box>
-                          <Text fontWeight="500" color="gray.700" mb={3}>
-                            Premium Pricing Thresholds (Optional)
-                          </Text>
-                          <Text fontSize="sm" color="gray.600" mb={4}>
-                            Define dimension ranges that trigger premium
-                            pricing. When customer dimensions fall within these
-                            ranges, premium pricing will be applied.
-                          </Text>
-
-                          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-                            <VStack align="stretch" spacing={4}>
-                              <VStack align="stretch" spacing={2}>
-                                <Text
-                                  fontSize="sm"
-                                  color="gray.600"
-                                  fontWeight="500"
-                                >
-                                  Width Premium Range ({formData.measures_unit})
-                                </Text>
-                                <HStack>
-                                  <NumberInput
-                                    value={formData.premium_width_from}
-                                    onChange={(value) =>
-                                      handleInputChange(
-                                        "premium_width_from",
-                                        parseFloat(value) || 0
-                                      )
-                                    }
-                                    min={0}
-                                    precision={2}
-                                    size="sm"
-                                  >
-                                    <NumberInputField
-                                      placeholder="From"
-                                      bg="gray.50"
-                                    />
-                                  </NumberInput>
-                                  <Text>to</Text>
-                                  <NumberInput
-                                    value={formData.premium_width_to}
-                                    onChange={(value) =>
-                                      handleInputChange(
-                                        "premium_width_to",
-                                        parseFloat(value) || 0
-                                      )
-                                    }
-                                    min={0}
-                                    precision={2}
-                                    size="sm"
-                                  >
-                                    <NumberInputField
-                                      placeholder="To"
-                                      bg="gray.50"
-                                    />
-                                  </NumberInput>
-                                </HStack>
-                              </VStack>
-
-                              <VStack align="stretch" spacing={2}>
-                                <Text
-                                  fontSize="sm"
-                                  color="gray.600"
-                                  fontWeight="500"
-                                >
-                                  Height Premium Range ({formData.measures_unit}
-                                  )
-                                </Text>
-                                <HStack>
-                                  <NumberInput
-                                    value={formData.premium_height_from}
-                                    onChange={(value) =>
-                                      handleInputChange(
-                                        "premium_height_from",
-                                        parseFloat(value) || 0
-                                      )
-                                    }
-                                    min={0}
-                                    precision={2}
-                                    size="sm"
-                                  >
-                                    <NumberInputField
-                                      placeholder="From"
-                                      bg="gray.50"
-                                    />
-                                  </NumberInput>
-                                  <Text>to</Text>
-                                  <NumberInput
-                                    value={formData.premium_height_to}
-                                    onChange={(value) =>
-                                      handleInputChange(
-                                        "premium_height_to",
-                                        parseFloat(value) || 0
-                                      )
-                                    }
-                                    min={0}
-                                    precision={2}
-                                    size="sm"
-                                  >
-                                    <NumberInputField
-                                      placeholder="To"
-                                      bg="gray.50"
-                                    />
-                                  </NumberInput>
-                                </HStack>
-                              </VStack>
-                            </VStack>
-
-                            <VStack align="stretch" spacing={4}>
-                              <VStack align="stretch" spacing={2}>
-                                <Text
-                                  fontSize="sm"
-                                  color="gray.600"
-                                  fontWeight="500"
-                                >
-                                  Depth Premium Range ({formData.measures_unit})
-                                </Text>
-                                <HStack>
-                                  <NumberInput
-                                    value={formData.premium_depth_from}
-                                    onChange={(value) =>
-                                      handleInputChange(
-                                        "premium_depth_from",
-                                        parseFloat(value) || 0
-                                      )
-                                    }
-                                    min={0}
-                                    precision={2}
-                                    size="sm"
-                                  >
-                                    <NumberInputField
-                                      placeholder="From"
-                                      bg="gray.50"
-                                    />
-                                  </NumberInput>
-                                  <Text>to</Text>
-                                  <NumberInput
-                                    value={formData.premium_depth_to}
-                                    onChange={(value) =>
-                                      handleInputChange(
-                                        "premium_depth_to",
-                                        parseFloat(value) || 0
-                                      )
-                                    }
-                                    min={0}
-                                    precision={2}
-                                    size="sm"
-                                  >
-                                    <NumberInputField
-                                      placeholder="To"
-                                      bg="gray.50"
-                                    />
-                                  </NumberInput>
-                                </HStack>
-                              </VStack>
-
-                              <VStack align="stretch" spacing={2}>
-                                <Text
-                                  fontSize="sm"
-                                  color="gray.600"
-                                  fontWeight="500"
-                                >
-                                  Length Premium Range ({formData.measures_unit}
-                                  )
-                                </Text>
-                                <HStack>
-                                  <NumberInput
-                                    value={formData.premium_length_from}
-                                    onChange={(value) =>
-                                      handleInputChange(
-                                        "premium_length_from",
-                                        parseFloat(value) || 0
-                                      )
-                                    }
-                                    min={0}
-                                    precision={2}
-                                    size="sm"
-                                  >
-                                    <NumberInputField
-                                      placeholder="From"
-                                      bg="gray.50"
-                                    />
-                                  </NumberInput>
-                                  <Text>to</Text>
-                                  <NumberInput
-                                    value={formData.premium_length_to}
-                                    onChange={(value) =>
-                                      handleInputChange(
-                                        "premium_length_to",
-                                        parseFloat(value) || 0
-                                      )
-                                    }
-                                    min={0}
-                                    precision={2}
-                                    size="sm"
-                                  >
-                                    <NumberInputField
-                                      placeholder="To"
-                                      bg="gray.50"
-                                    />
-                                  </NumberInput>
-                                </HStack>
-                              </VStack>
-                            </VStack>
-                          </SimpleGrid>
-
-                          <Alert status="info" mt={4} size="sm">
-                            <AlertIcon />
-                            <AlertDescription>
-                              Premium pricing will be applied when customer
-                              dimensions fall within these ranges. Leave empty
-                              to disable premium pricing for that dimension.
-                            </AlertDescription>
-                          </Alert>
-                        </Box> */}
 
                         <Box>
                           <Text fontWeight="500" color="gray.700" mb={3}>
@@ -2187,500 +1861,412 @@ const CreateProductPage = () => {
                           </Alert>
                         </Box>
 
-                        {/* Dimension Constraints */}
-                        {/* <Box>
+                        <Box>
                           <Text fontWeight="500" color="gray.700" mb={3}>
                             Dimension Constraints
                           </Text>
-                          <SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
-                            <VStack align="stretch" spacing={2}>
-                              <Text fontSize="sm" color="gray.600">
-                                Width Limits ({formData.measures_unit})
-                              </Text>
-                              <HStack>
-                                <NumberInput
-                                  value={formData.min_width}
-                                  onChange={(value) =>
-                                    handleInputChange(
-                                      "min_width",
-                                      parseFloat(value) || 0
-                                    )
-                                  }
-                                  min={0}
-                                  precision={2}
-                                  size="sm"
-                                >
-                                  <NumberInputField
-                                    placeholder="Min"
-                                    bg="gray.50"
-                                  />
-                                </NumberInput>
-                                <Text>to</Text>
-                                <NumberInput
-                                  value={formData.max_width}
-                                  onChange={(value) =>
-                                    handleInputChange(
-                                      "max_width",
-                                      parseFloat(value) || 0
-                                    )
-                                  }
-                                  min={0}
-                                  precision={2}
-                                  size="sm"
-                                >
-                                  <NumberInputField
-                                    placeholder="Max"
-                                    bg="gray.50"
-                                  />
-                                </NumberInput>
-                              </HStack>
-                            </VStack>
-
-                            <VStack align="stretch" spacing={2}>
-                              <Text fontSize="sm" color="gray.600">
-                                Height Limits ({formData.measures_unit})
-                              </Text>
-                              <HStack>
-                                <NumberInput
-                                  value={formData.min_height}
-                                  onChange={(value) =>
-                                    handleInputChange(
-                                      "min_height",
-                                      parseFloat(value) || 0
-                                    )
-                                  }
-                                  min={0}
-                                  precision={2}
-                                  size="sm"
-                                >
-                                  <NumberInputField
-                                    placeholder="Min"
-                                    bg="gray.50"
-                                  />
-                                </NumberInput>
-                                <Text>to</Text>
-                                <NumberInput
-                                  value={formData.max_height}
-                                  onChange={(value) =>
-                                    handleInputChange(
-                                      "max_height",
-                                      parseFloat(value) || 0
-                                    )
-                                  }
-                                  min={0}
-                                  precision={2}
-                                  size="sm"
-                                >
-                                  <NumberInputField
-                                    placeholder="Max"
-                                    bg="gray.50"
-                                  />
-                                </NumberInput>
-                              </HStack>
-                            </VStack>
-
-                            <VStack align="stretch" spacing={2}>
-                              <Text fontSize="sm" color="gray.600">
-                                Depth Limits ({formData.measures_unit})
-                              </Text>
-                              <HStack>
-                                <NumberInput
-                                  value={formData.min_depth}
-                                  onChange={(value) =>
-                                    handleInputChange(
-                                      "min_depth",
-                                      parseFloat(value) || 0
-                                    )
-                                  }
-                                  min={0}
-                                  precision={2}
-                                  size="sm"
-                                >
-                                  <NumberInputField
-                                    placeholder="Min"
-                                    bg="gray.50"
-                                  />
-                                </NumberInput>
-                                <Text>to</Text>
-                                <NumberInput
-                                  value={formData.max_depth}
-                                  onChange={(value) =>
-                                    handleInputChange(
-                                      "max_depth",
-                                      parseFloat(value) || 0
-                                    )
-                                  }
-                                  min={0}
-                                  precision={2}
-                                  size="sm"
-                                >
-                                  <NumberInputField
-                                    placeholder="Max"
-                                    bg="gray.50"
-                                  />
-                                </NumberInput>
-                              </HStack>
-                            </VStack>
-                          </SimpleGrid>
-                        </Box> */}
-
-                        <Box>
-  <Text fontWeight="500" color="gray.700" mb={3}>
-    Dimension Constraints
-  </Text>
-  <Text fontSize="sm" color="gray.600" mb={4}>
-    Set minimum and maximum dimension limits for customer orders based on your calculation type.
-  </Text>
-
-  {/* For m² calculation - show width and height */}
-  {formData.dimensional_calculation_type === "m2" && (
-    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-      <VStack align="stretch" spacing={2}>
-        <Text fontSize="sm" color="gray.600">
-          Width Limits ({formData.measures_unit})
-        </Text>
-        <HStack>
-          <NumberInput
-            value={formData.min_width}
-            onChange={(value) =>
-              handleInputChange("min_width", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Min" bg="gray.50" />
-          </NumberInput>
-          <Text>to</Text>
-          <NumberInput
-            value={formData.max_width}
-            onChange={(value) =>
-              handleInputChange("max_width", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Max" bg="gray.50" />
-          </NumberInput>
-        </HStack>
-      </VStack>
-
-      <VStack align="stretch" spacing={2}>
-        <Text fontSize="sm" color="gray.600">
-          Height Limits ({formData.measures_unit})
-        </Text>
-        <HStack>
-          <NumberInput
-            value={formData.min_height}
-            onChange={(value) =>
-              handleInputChange("min_height", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Min" bg="gray.50" />
-          </NumberInput>
-          <Text>to</Text>
-          <NumberInput
-            value={formData.max_height}
-            onChange={(value) =>
-              handleInputChange("max_height", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Max" bg="gray.50" />
-          </NumberInput>
-        </HStack>
-      </VStack>
-    </SimpleGrid>
-  )}
-
-  {/* For m³ calculation - show width, height, and depth */}
-  {formData.dimensional_calculation_type === "m3" && (
-    <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
-      <VStack align="stretch" spacing={2}>
-        <Text fontSize="sm" color="gray.600">
-          Width Limits ({formData.measures_unit})
-        </Text>
-        <HStack>
-          <NumberInput
-            value={formData.min_width}
-            onChange={(value) =>
-              handleInputChange("min_width", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Min" bg="gray.50" />
-          </NumberInput>
-          <Text>to</Text>
-          <NumberInput
-            value={formData.max_width}
-            onChange={(value) =>
-              handleInputChange("max_width", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Max" bg="gray.50" />
-          </NumberInput>
-        </HStack>
-      </VStack>
-
-      <VStack align="stretch" spacing={2}>
-        <Text fontSize="sm" color="gray.600">
-          Height Limits ({formData.measures_unit})
-        </Text>
-        <HStack>
-          <NumberInput
-            value={formData.min_height}
-            onChange={(value) =>
-              handleInputChange("min_height", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Min" bg="gray.50" />
-          </NumberInput>
-          <Text>to</Text>
-          <NumberInput
-            value={formData.max_height}
-            onChange={(value) =>
-              handleInputChange("max_height", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Max" bg="gray.50" />
-          </NumberInput>
-        </HStack>
-      </VStack>
-
-      <VStack align="stretch" spacing={2}>
-        <Text fontSize="sm" color="gray.600">
-          Depth Limits ({formData.measures_unit})
-        </Text>
-        <HStack>
-          <NumberInput
-            value={formData.min_depth}
-            onChange={(value) =>
-              handleInputChange("min_depth", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Min" bg="gray.50" />
-          </NumberInput>
-          <Text>to</Text>
-          <NumberInput
-            value={formData.max_depth}
-            onChange={(value) =>
-              handleInputChange("max_depth", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Max" bg="gray.50" />
-          </NumberInput>
-        </HStack>
-      </VStack>
-    </SimpleGrid>
-  )}
-
-  {/* For linear-meter calculation - show width and height */}
-  {formData.dimensional_calculation_type === "linear-meter" && (
-    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-      <VStack align="stretch" spacing={2}>
-        <Text fontSize="sm" color="gray.600">
-          Width Limits ({formData.measures_unit})
-        </Text>
-        <HStack>
-          <NumberInput
-            value={formData.min_width}
-            onChange={(value) =>
-              handleInputChange("min_width", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Min" bg="gray.50" />
-          </NumberInput>
-          <Text>to</Text>
-          <NumberInput
-            value={formData.max_width}
-            onChange={(value) =>
-              handleInputChange("max_width", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Max" bg="gray.50" />
-          </NumberInput>
-        </HStack>
-      </VStack>
-
-      <VStack align="stretch" spacing={2}>
-        <Text fontSize="sm" color="gray.600">
-          Height Limits ({formData.measures_unit})
-        </Text>
-        <HStack>
-          <NumberInput
-            value={formData.min_height}
-            onChange={(value) =>
-              handleInputChange("min_height", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Min" bg="gray.50" />
-          </NumberInput>
-          <Text>to</Text>
-          <NumberInput
-            value={formData.max_height}
-            onChange={(value) =>
-              handleInputChange("max_height", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Max" bg="gray.50" />
-          </NumberInput>
-        </HStack>
-      </VStack>
-    </SimpleGrid>
-  )}
-
-  {/* For meter calculation - show only length */}
-  {formData.dimensional_calculation_type === "meter" && (
-    <SimpleGrid columns={{ base: 1, md: 1 }} spacing={4}>
-      <VStack align="stretch" spacing={2}>
-        <Text fontSize="sm" color="gray.600">
-          Length Limits ({formData.measures_unit})
-        </Text>
-        <HStack>
-          <NumberInput
-            value={formData.min_length}
-            onChange={(value) =>
-              handleInputChange("min_length", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Min" bg="gray.50" />
-          </NumberInput>
-          <Text>to</Text>
-          <NumberInput
-            value={formData.max_length}
-            onChange={(value) =>
-              handleInputChange("max_length", parseFloat(value) || 0)
-            }
-            min={0}
-            precision={2}
-            size="sm"
-          >
-            <NumberInputField placeholder="Max" bg="gray.50" />
-          </NumberInput>
-        </HStack>
-      </VStack>
-    </SimpleGrid>
-  )}
-
-  {!formData.dimensional_calculation_type && (
-    <Alert status="info" size="sm">
-      <AlertIcon />
-      <AlertDescription>
-        Select a calculation type above to set dimension constraints for relevant dimensions.
-      </AlertDescription>
-    </Alert>
-  )}
-
-  <Alert status="info" mt={4} size="sm">
-    <AlertIcon />
-    <AlertDescription>
-      Set limits to prevent customers from ordering dimensions outside your production capabilities.
-    </AlertDescription>
-  </Alert>
-</Box>
-
-                        {/* Standard Dimensions */}
-                        {/* <Box>
-                          <Text fontWeight="500" color="gray.700" mb={3}>
-                            Standard Dimensions
+                          <Text fontSize="sm" color="gray.600" mb={4}>
+                            Set minimum and maximum dimension limits for
+                            customer orders based on your calculation type.
                           </Text>
-                          <SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
-                            <FormControl>
-                              <FormLabel fontSize="sm">
-                                Standard Width ({formData.measures_unit})
-                              </FormLabel>
-                              <NumberInput
-                                value={formData.standard_width}
-                                onChange={(value) =>
-                                  handleInputChange(
-                                    "standard_width",
-                                    parseFloat(value) || 0
-                                  )
-                                }
-                                min={0}
-                                precision={2}
-                              >
-                                <NumberInputField bg="gray.50" />
-                              </NumberInput>
-                            </FormControl>
 
-                            <FormControl>
-                              <FormLabel fontSize="sm">
-                                Standard Height ({formData.measures_unit})
-                              </FormLabel>
-                              <NumberInput
-                                value={formData.standard_height}
-                                onChange={(value) =>
-                                  handleInputChange(
-                                    "standard_height",
-                                    parseFloat(value) || 0
-                                  )
-                                }
-                                min={0}
-                                precision={2}
-                              >
-                                <NumberInputField bg="gray.50" />
-                              </NumberInput>
-                            </FormControl>
+                          {/* For m² calculation - show width and height */}
+                          {formData.dimensional_calculation_type === "m2" && (
+                            <SimpleGrid
+                              columns={{ base: 1, md: 2 }}
+                              spacing={4}
+                            >
+                              <VStack align="stretch" spacing={2}>
+                                <Text fontSize="sm" color="gray.600">
+                                  Width Limits ({formData.measures_unit})
+                                </Text>
+                                <HStack>
+                                  <NumberInput
+                                    value={formData.min_width}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "min_width",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Min"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                  <Text>to</Text>
+                                  <NumberInput
+                                    value={formData.max_width}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "max_width",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Max"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                </HStack>
+                              </VStack>
 
-                            <FormControl>
-                              <FormLabel fontSize="sm">
-                                Standard Depth ({formData.measures_unit})
-                              </FormLabel>
-                              <NumberInput
-                                value={formData.standard_depth}
-                                onChange={(value) =>
-                                  handleInputChange(
-                                    "standard_depth",
-                                    parseFloat(value) || 0
-                                  )
-                                }
-                                min={0}
-                                precision={2}
-                              >
-                                <NumberInputField bg="gray.50" />
-                              </NumberInput>
-                            </FormControl>
-                          </SimpleGrid>
-                        </Box> */}
+                              <VStack align="stretch" spacing={2}>
+                                <Text fontSize="sm" color="gray.600">
+                                  Height Limits ({formData.measures_unit})
+                                </Text>
+                                <HStack>
+                                  <NumberInput
+                                    value={formData.min_height}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "min_height",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Min"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                  <Text>to</Text>
+                                  <NumberInput
+                                    value={formData.max_height}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "max_height",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Max"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                </HStack>
+                              </VStack>
+                            </SimpleGrid>
+                          )}
+
+                          {/* For m³ calculation - show width, height, and depth */}
+                          {formData.dimensional_calculation_type === "m3" && (
+                            <SimpleGrid
+                              columns={{ base: 1, md: 3 }}
+                              spacing={4}
+                            >
+                              <VStack align="stretch" spacing={2}>
+                                <Text fontSize="sm" color="gray.600">
+                                  Width Limits ({formData.measures_unit})
+                                </Text>
+                                <HStack>
+                                  <NumberInput
+                                    value={formData.min_width}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "min_width",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Min"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                  <Text>to</Text>
+                                  <NumberInput
+                                    value={formData.max_width}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "max_width",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Max"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                </HStack>
+                              </VStack>
+
+                              <VStack align="stretch" spacing={2}>
+                                <Text fontSize="sm" color="gray.600">
+                                  Height Limits ({formData.measures_unit})
+                                </Text>
+                                <HStack>
+                                  <NumberInput
+                                    value={formData.min_height}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "min_height",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Min"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                  <Text>to</Text>
+                                  <NumberInput
+                                    value={formData.max_height}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "max_height",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Max"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                </HStack>
+                              </VStack>
+
+                              <VStack align="stretch" spacing={2}>
+                                <Text fontSize="sm" color="gray.600">
+                                  Depth Limits ({formData.measures_unit})
+                                </Text>
+                                <HStack>
+                                  <NumberInput
+                                    value={formData.min_depth}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "min_depth",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Min"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                  <Text>to</Text>
+                                  <NumberInput
+                                    value={formData.max_depth}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "max_depth",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Max"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                </HStack>
+                              </VStack>
+                            </SimpleGrid>
+                          )}
+
+                          {/* For linear-meter calculation - show width and height */}
+                          {formData.dimensional_calculation_type ===
+                            "linear-meter" && (
+                            <SimpleGrid
+                              columns={{ base: 1, md: 2 }}
+                              spacing={4}
+                            >
+                              <VStack align="stretch" spacing={2}>
+                                <Text fontSize="sm" color="gray.600">
+                                  Width Limits ({formData.measures_unit})
+                                </Text>
+                                <HStack>
+                                  <NumberInput
+                                    value={formData.min_width}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "min_width",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Min"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                  <Text>to</Text>
+                                  <NumberInput
+                                    value={formData.max_width}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "max_width",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Max"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                </HStack>
+                              </VStack>
+
+                              <VStack align="stretch" spacing={2}>
+                                <Text fontSize="sm" color="gray.600">
+                                  Height Limits ({formData.measures_unit})
+                                </Text>
+                                <HStack>
+                                  <NumberInput
+                                    value={formData.min_height}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "min_height",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Min"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                  <Text>to</Text>
+                                  <NumberInput
+                                    value={formData.max_height}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "max_height",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Max"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                </HStack>
+                              </VStack>
+                            </SimpleGrid>
+                          )}
+
+                          {/* For meter calculation - show only length */}
+                          {formData.dimensional_calculation_type ===
+                            "meter" && (
+                            <SimpleGrid
+                              columns={{ base: 1, md: 1 }}
+                              spacing={4}
+                            >
+                              <VStack align="stretch" spacing={2}>
+                                <Text fontSize="sm" color="gray.600">
+                                  Length Limits ({formData.measures_unit})
+                                </Text>
+                                <HStack>
+                                  <NumberInput
+                                    value={formData.min_length}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "min_length",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Min"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                  <Text>to</Text>
+                                  <NumberInput
+                                    value={formData.max_length}
+                                    onChange={(value) =>
+                                      handleInputChange(
+                                        "max_length",
+                                        parseFloat(value) || 0
+                                      )
+                                    }
+                                    min={0}
+                                    precision={2}
+                                    size="sm"
+                                  >
+                                    <NumberInputField
+                                      placeholder="Max"
+                                      bg="gray.50"
+                                    />
+                                  </NumberInput>
+                                </HStack>
+                              </VStack>
+                            </SimpleGrid>
+                          )}
+
+                          {!formData.dimensional_calculation_type && (
+                            <Alert status="info" size="sm">
+                              <AlertIcon />
+                              <AlertDescription>
+                                Select a calculation type above to set dimension
+                                constraints for relevant dimensions.
+                              </AlertDescription>
+                            </Alert>
+                          )}
+
+                          <Alert status="info" mt={4} size="sm">
+                            <AlertIcon />
+                            <AlertDescription>
+                              Set limits to prevent customers from ordering
+                              dimensions outside your production capabilities.
+                            </AlertDescription>
+                          </Alert>
+                        </Box>
+
                         <Box>
                           <Text fontWeight="500" color="gray.700" mb={3}>
                             Standard Dimensions (Required for Price Calculation)
@@ -2893,7 +2479,6 @@ const CreateProductPage = () => {
                             </Alert>
                           )}
                         </Box>
-                        
                       </>
                     )}
                   </VStack>

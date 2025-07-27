@@ -932,4 +932,18 @@ getRequiredDimensionsForProduct: (product) => {
   }
 },
 
+getTopProductsByCategorySlug: async (categorySlug, params = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+    if (params.limit) queryParams.append("limit", params.limit);
+
+    const response = await productAxiosInstance.get(
+      `/category-slug/${categorySlug}/top-products?${queryParams.toString()}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+},
+
 };

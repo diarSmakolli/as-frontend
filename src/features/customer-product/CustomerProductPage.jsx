@@ -1585,7 +1585,12 @@ function CustomerProductPage() {
                                   >
                                     Personnaliser les dimensions
                                   </Text>
-                                  <Text fontSize="sm" color="gray.600" mb={4} fontFamily="Bogle">
+                                  <Text
+                                    fontSize="sm"
+                                    color="gray.600"
+                                    mb={4}
+                                    fontFamily="Bogle"
+                                  >
                                     Type de calcul:{" "}
                                     {
                                       pricingConfig?.dimensional_calculation_type
@@ -3775,12 +3780,7 @@ function CustomerProductPage() {
 
           {/* At a glance */}
           {product?.custom_details.length >= 1 && (
-            <Text
-              fontSize={"md"}
-              fontWeight={"bold"}
-              fontFamily="Bogle"
-              mt={5}
-            >
+            <Text fontSize={"md"} fontWeight={"bold"} fontFamily="Bogle" mt={5}>
               At a glance
             </Text>
           )}
