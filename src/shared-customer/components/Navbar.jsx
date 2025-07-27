@@ -882,7 +882,7 @@ function Navbar() {
         <HStack spacing={2} justify="center">
           <Icon as={FaShippingFast} color="white" fontSize="sm" />
           <Text fontSize="xs" color="white" textAlign="center">
-            Buy at As Solutions for exclusive offers!
+            Achetez chez As Solutions pour des offres exclusives !
           </Text>
         </HStack>
       </Box>
@@ -1107,7 +1107,7 @@ function Navbar() {
           <HStack spacing={2} justify="center">
             <Icon as={FaShippingFast} color="white" fontSize="sm" />
             <Text fontSize="xs" color="white" textAlign="center">
-              Buy at As Solutions for exclusive offers!
+              Achetez chez As Solutions pour des offres exclusives!
             </Text>
           </HStack>
         </Box>
@@ -1265,7 +1265,17 @@ function Navbar() {
           </VStack>
 
           {/* Chat */}
-          <VStack spacing={1} flex={1} py={2} cursor="pointer">
+          <VStack
+            spacing={1}
+            flex={1}
+            py={2}
+            cursor="pointer"
+            onClick={() => {
+              if (window.fcWidget) {
+                window.fcWidget.open();
+              }
+            }}
+          >
             <Icon as={FaComments} fontSize="lg" color="gray.600" />
             <Text fontSize="xs" color="gray.600" textAlign="center">
               Chat
@@ -1403,7 +1413,7 @@ function Navbar() {
               Trending
             </Button> */}
 
-            <Button
+            {/* <Button
               leftIcon={<Icon as={FaStar} color="yellow.500" />}
               variant="ghost"
               color="gray.700"
@@ -1416,7 +1426,7 @@ function Navbar() {
               rounded="full"
             >
               Nouveautés
-            </Button>
+            </Button> */}
 
             <Button
               leftIcon={<Icon as={FaTags} color="purple.500" />}
@@ -1429,6 +1439,8 @@ function Navbar() {
               flexShrink={0}
               minW="auto"
               rounded="full"
+              as='a'
+              href="/flash-deals"
             >
               Centre des offres
             </Button>
@@ -1771,26 +1783,6 @@ function Navbar() {
                 px={2}
               >
                 {/* <Button
-                  leftIcon={<Icon as={FaFire} color="red.500" />}
-                  variant="ghost"
-                  color="gray.700"
-                  _hover={{ color: "red.600", bg: "red.50" }}
-                  _active={{ color: "red.600", bg: "red.100" }}
-                  fontWeight="medium"
-                  fontSize="sm"
-                  px={4}
-                  py={2}
-                  h="auto"
-                  flexShrink={0}
-                  minW="auto"
-                  rounded="full"
-                  whiteSpace="nowrap"
-                  fontFamily="Bricolage Grotesque"
-                >
-                  Trending
-                </Button> */}
-
-                <Button
                   leftIcon={<Icon as={FaStar} color="yellow.500" />}
                   variant="ghost"
                   color="gray.700"
@@ -1808,7 +1800,7 @@ function Navbar() {
                   fontFamily="Bogle"
                 >
                   Nouveautés
-                </Button>
+                </Button> */}
 
                 <Button
                   leftIcon={<Icon as={FaTags} color="purple.500" />}
@@ -1826,6 +1818,8 @@ function Navbar() {
                   rounded="full"
                   whiteSpace="nowrap"
                   fontFamily="Bogle"
+                  as='a'
+                  href='/flash-deals'
                 >
                   Centre des offres
                 </Button>
