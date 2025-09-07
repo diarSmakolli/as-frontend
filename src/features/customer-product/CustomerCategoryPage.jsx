@@ -143,7 +143,7 @@ const FilterSidebar = React.memo(
                 {includeOutOfStock && (
                   <WrapItem>
                     <Tag size="sm" colorScheme="orange" variant="solid">
-                      <TagLabel>Inclure les ruptures de stock</TagLabel>
+                      <TagLabel>Inclure les ruptures de stock</TagLabel>""
                       <TagCloseButton
                         onClick={() => setIncludeOutOfStock(false)}
                       />
