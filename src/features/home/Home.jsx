@@ -480,7 +480,7 @@ function Home() {
       timestamp: new Date(),
       created_at: new Date(),
     };
-  };
+  }
 
   // Intersection Observer hook for impressions (BATCHED)
   function useImpressionObserver(products, section, transformFn) {
@@ -1111,15 +1111,15 @@ function Home() {
                                     <>
                                       {/* Responsive discount badge */}
                                       <Badge
-                                        bg="rgba(0, 76, 255, 0.29)"
+                                        bg="rgba(255, 0, 0, 1)"
                                         fontFamily="Airbnb Cereal VF"
-                                        color="blue"
-                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        color="gray.200"
+                                        border="1px solid rgba(33, 1, 1, 0.43)"
                                         fontSize={{ base: "xs", sm: "sm" }}
                                         fontWeight="500"
                                         px={{ base: "1", sm: "2" }}
                                         py="0"
-                                        borderRadius="md"
+                                        borderRadius="lg"
                                         textTransform="uppercase"
                                         flexShrink={0}
                                       >
@@ -1386,15 +1386,15 @@ function Home() {
                                     <>
                                       {/* Responsive discount badge */}
                                       <Badge
-                                        bg="rgba(0, 76, 255, 0.29)"
+                                        bg="rgba(255, 0, 0, 1)"
                                         fontFamily="Airbnb Cereal VF"
-                                        color="blue"
-                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        color="gray.200"
+                                        border="1px solid rgba(33, 1, 1, 0.43)"
                                         fontSize={{ base: "xs", sm: "sm" }}
                                         fontWeight="500"
                                         px={{ base: "1", sm: "2" }}
                                         py="0"
-                                        borderRadius="md"
+                                        borderRadius="lg"
                                         textTransform="uppercase"
                                         flexShrink={0}
                                       >
@@ -1666,15 +1666,15 @@ function Home() {
                                     <>
                                       {/* Responsive discount badge */}
                                       <Badge
-                                        bg="rgba(0, 76, 255, 0.29)"
+                                        bg="rgba(255, 0, 0, 1)"
                                         fontFamily="Airbnb Cereal VF"
-                                        color="blue"
-                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        color="gray.200"
+                                        border="1px solid rgba(33, 1, 1, 0.43)"
                                         fontSize={{ base: "xs", sm: "sm" }}
                                         fontWeight="500"
                                         px={{ base: "1", sm: "2" }}
                                         py="0"
-                                        borderRadius="md"
+                                        borderRadius="lg"
                                         textTransform="uppercase"
                                         flexShrink={0}
                                       >
@@ -1927,14 +1927,15 @@ function Home() {
                                     product.final_price_gross && (
                                     <>
                                       <Badge
-                                        bg="rgba(0, 0, 0, 1)"
+                                        bg="rgba(255, 0, 0, 1)"
                                         fontFamily="Airbnb Cereal VF"
-                                        color="white"
+                                        color="gray.200"
+                                        border="1px solid rgba(33, 1, 1, 0.43)"
                                         fontSize={{ base: "xs", sm: "sm" }}
                                         fontWeight="500"
                                         px={{ base: "1", sm: "2" }}
                                         py="0"
-                                        borderRadius="full"
+                                        borderRadius="lg"
                                         textTransform="uppercase"
                                         flexShrink={0}
                                       >
@@ -2186,15 +2187,15 @@ function Home() {
                                     product.final_price_gross && (
                                     <>
                                       <Badge
-                                        bg="rgba(0, 76, 255, 0.29)"
+                                        bg="rgba(255, 0, 0, 1)"
                                         fontFamily="Airbnb Cereal VF"
-                                        color="blue"
-                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        color="gray.200"
+                                        border="1px solid rgba(33, 1, 1, 0.43)"
                                         fontSize={{ base: "xs", sm: "sm" }}
                                         fontWeight="500"
                                         px={{ base: "1", sm: "2" }}
                                         py="0"
-                                        borderRadius="md"
+                                        borderRadius="lg"
                                         textTransform="uppercase"
                                         flexShrink={0}
                                       >
@@ -2445,15 +2446,15 @@ function Home() {
                                     product.final_price_gross && (
                                     <>
                                       <Badge
-                                        bg="rgba(0, 76, 255, 0.29)"
+                                        bg="rgba(255, 0, 0, 1)"
                                         fontFamily="Airbnb Cereal VF"
-                                        color="blue"
-                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        color="gray.200"
+                                        border="1px solid rgba(33, 1, 1, 0.43)"
                                         fontSize={{ base: "xs", sm: "sm" }}
                                         fontWeight="500"
                                         px={{ base: "1", sm: "2" }}
                                         py="0"
-                                        borderRadius="md"
+                                        borderRadius="lg"
                                         textTransform="uppercase"
                                         flexShrink={0}
                                       >
@@ -2704,15 +2705,15 @@ function Home() {
                                     product.final_price_gross && (
                                     <>
                                       <Badge
-                                        bg="rgba(0, 76, 255, 0.29)"
+                                        bg="rgba(255, 0, 0, 1)"
                                         fontFamily="Airbnb Cereal VF"
-                                        color="blue"
-                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        color="gray.200"
+                                        border="1px solid rgba(33, 1, 1, 0.43)"
                                         fontSize={{ base: "xs", sm: "sm" }}
                                         fontWeight="500"
                                         px={{ base: "1", sm: "2" }}
                                         py="0"
-                                        borderRadius="md"
+                                        borderRadius="lg"
                                         textTransform="uppercase"
                                         flexShrink={0}
                                       >
@@ -2963,15 +2964,15 @@ function Home() {
                                     product.final_price_gross && (
                                     <>
                                       <Badge
-                                        bg="rgba(0, 76, 255, 0.29)"
+                                        bg="rgba(255, 0, 0, 1)"
                                         fontFamily="Airbnb Cereal VF"
-                                        color="blue"
-                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        color="gray.200"
+                                        border="1px solid rgba(33, 1, 1, 0.43)"
                                         fontSize={{ base: "xs", sm: "sm" }}
                                         fontWeight="500"
                                         px={{ base: "1", sm: "2" }}
                                         py="0"
-                                        borderRadius="md"
+                                        borderRadius="lg"
                                         textTransform="uppercase"
                                         flexShrink={0}
                                       >
@@ -3222,15 +3223,15 @@ function Home() {
                                     product.final_price_gross && (
                                     <>
                                       <Badge
-                                        bg="rgba(0, 76, 255, 0.29)"
+                                        bg="rgba(255, 0, 0, 1)"
                                         fontFamily="Airbnb Cereal VF"
-                                        color="blue"
-                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        color="gray.200"
+                                        border="1px solid rgba(33, 1, 1, 0.43)"
                                         fontSize={{ base: "xs", sm: "sm" }}
                                         fontWeight="500"
                                         px={{ base: "1", sm: "2" }}
                                         py="0"
-                                        borderRadius="md"
+                                        borderRadius="lg"
                                         textTransform="uppercase"
                                         flexShrink={0}
                                       >
@@ -3275,7 +3276,6 @@ function Home() {
     </Box>
   );
 }
-
 
 function ProductImage({
   src,

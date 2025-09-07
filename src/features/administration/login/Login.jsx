@@ -4,7 +4,9 @@ import axios from "axios";
 import { BiError, BiCheck } from "react-icons/bi";
 import Loader from "../../../commons/Loader";
 
-const baseUrlApi = "http://localhost:8086";
+// const baseUrlApi = "http://localhost:8086";
+const baseUrlApi = "https://api.assolutionsfournitures.fr";
+
 const fontName = "Inter";
 
 export default function Login() {

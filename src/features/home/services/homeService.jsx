@@ -936,10 +936,9 @@ export const homeService = {
     try {
       const response = await basketAxiosInstance.get("/active", {
         params: {
-        country: country,
-        postalCode: postalCode,
-      },
-
+          country: country,
+          postalCode: postalCode,
+        },
       });
       return response.data;
     } catch (error) {

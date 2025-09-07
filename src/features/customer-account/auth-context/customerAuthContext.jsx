@@ -4,6 +4,7 @@ import { useToast } from '@chakra-ui/react';
 import { customToastContainerStyle } from '../../../commons/toastStyles';
 
 const baseUrlApi = "https://api.assolutionsfournitures.fr";
+// const baseUrlApi = "http://localhost:8086";
 const CustomerAuthContext = createContext();
 
 export const CustomerAuthProvider = ({ children }) => {
