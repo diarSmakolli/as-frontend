@@ -17,8 +17,6 @@ import {
   InputGroup,
   InputLeftElement,
   useDisclosure,
-  Card,
-  CardBody,
   Skeleton,
   SkeletonText,
   useBreakpointValue,
@@ -27,18 +25,23 @@ import {
   PopoverContent,
   PopoverBody,
   Portal,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  Grid,
-  GridItem,
+  Divider,
+  PopoverArrow,
+  PopoverCloseButton,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  Avatar,
+  Switch,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
 import {
-  FaStar,
   FaShippingFast,
   FaShieldAlt,
-  FaChevronLeft,
   FaChevronRight,
   FaSearch,
   FaHeart,
@@ -48,7 +51,6 @@ import {
   FaChevronDown,
   FaChevronRight as FaChevronRightIcon,
   FaTags,
-  FaClock,
   FaFire,
   FaBell,
   FaPercent,
@@ -65,20 +67,27 @@ import {
   FaDumbbell,
   FaMusic,
   FaPalette,
-  FaHandsHelping,
-  FaBoxTissue,
   FaComments,
   FaUser,
-  FaChevronUp,
-  FaTimes,
+  FaHeadset,
+  FaRegHeart,
+  FaTrash
 } from "react-icons/fa";
+import { RiHome5Line } from "react-icons/ri";
+import { BsCollection } from "react-icons/bs";
+import { IoChatbubbleEllipsesOutline, IoCartOutline } from "react-icons/io5";
+import { CiTrash } from "react-icons/ci";
+import { MdManageAccounts } from "react-icons/md";
+import { VscAccount } from "react-icons/vsc";
 import { useNavigate } from "react-router-dom";
 import MobileCategoryNavigation from "./MobileCategoryNavigation";
 import { homeService } from "../../features/home/services/homeService";
-import Logo from "../../assets/logo-as.png";
+import Logo from "../../assets/logo-v2.png";
 import { Link } from "react-router-dom";
+import { useCustomerAuth } from "../../features/customer-account/auth-context/customerAuthContext";
 
 function Navbar() {
+  const { customer, logout } = useCustomerAuth();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState(new Set());
@@ -89,6 +98,11 @@ function Navbar() {
   const [categoryHoverTimeout, setCategoryHoverTimeout] = useState(null);
   const [hoveredMoreCategory, setHoveredMoreCategory] = useState(null);
   const [hoveredNestedPath, setHoveredNestedPath] = useState(null);
+  const [cartCount, setCartCount] = useState(0);
+  const [cartPopoverOpen, setCartPopoverOpen] = useState(false);
+  const [cartLoading, setCartLoading] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
+  const [cartTotal, setCartTotal] = useState(0);
   const {
     isOpen: isCategoryOpen,
     onOpen: onCategoryOpen,
@@ -99,6 +113,11 @@ function Navbar() {
     onOpen: onMobileCategoryOpen,
     onClose: onMobileCategoryClose,
   } = useDisclosure();
+  const {
+    isOpen: isMobileAccountOpen,
+    onOpen: onMobileAccountOpen,
+    onClose: onMobileAccountClose,
+  } = useDisclosure();
 
   const navigate = useNavigate();
 
@@ -108,6 +127,13 @@ function Navbar() {
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    fetchCartCount();
+    if (cartPopoverOpen) {
+      fetchCartItems();
+    }
+  }, [cartPopoverOpen]);
 
   const fetchCategories = async () => {
     try {
@@ -298,7 +324,7 @@ function Navbar() {
                       {expandedCategories.has(category.id) &&
                         category.children && (
                           <Box
-                            bg="gray.50"
+                            bg="white"
                             borderBottom="1px"
                             borderColor="gray.100"
                           >
@@ -351,7 +377,7 @@ function Navbar() {
       <Box
         w="auto"
         maxW={{ base: "95vw", lg: "1200px" }}
-        bg="gray.100"
+        bg="white"
         rounded="2xl"
         overflow="hidden"
       >
@@ -413,11 +439,11 @@ function Navbar() {
                           borderRadius="none"
                           borderColor="gray.200"
                           bg={isActive ? "white" : "transparent"}
-                          color={isActive ? "rgb(239,48,84)" : "gray.700"}
+                          color={isActive ? "#0053e2" : "gray.700"}
                           fontWeight={isActive ? "semibold" : "normal"}
                           _hover={{
                             bg: "white",
-                            color: "rgb(239,48,84)",
+                            color: "#0053e2",
                             transform: "translateX(2px)",
                           }}
                           transition="all 0.2s ease"
@@ -441,10 +467,10 @@ function Navbar() {
                                 <Image
                                   src={category.image_url}
                                   alt={category.name}
-                                  w="full"
-                                  h="full"
-                                  objectFit="cover"
-                                  borderRadius="sm"
+                                  w="100%"
+                                  h="100%"
+                                  objectFit="fill"
+                                  borderRadius="xl"
                                 />
                               ) : (
                                 <Icon
@@ -474,7 +500,7 @@ function Navbar() {
                               top="0"
                               bottom="0"
                               w="3px"
-                              bg="rgb(239,48,84)"
+                              bg="#0053e2"
                               borderRadius="0 2px 2px 0"
                             />
                           )}
@@ -485,11 +511,12 @@ function Navbar() {
             </Box>
           </Box>
 
+
           {/* Right Content Panel */}
           {expandedCategories.size > 0 && (
             <Box
               flex="1"
-              h="500px"
+              h="100%"
               minW={{ base: "0", lg: "600px" }}
               maxW="900px"
               bg="white"
@@ -568,7 +595,7 @@ function Navbar() {
                                       color: "rgb(239,48,84)",
                                       bg: "transparent",
                                     }}
-                                    fontFamily={"Bricolage Grotesque"}
+                                    fontFamily="Bogle"
                                     onClick={() => {
                                       navigateToCategory(subCategory.slug);
                                     }}
@@ -623,7 +650,7 @@ function Navbar() {
                                               bg: "rgba(239,48,84,0.05)",
                                             }}
                                             borderRadius="md"
-                                            fontFamily={"Bricolage Grotesque"}
+                                            fontFamily="Bogle"
                                             onClick={() => {
                                               navigateToCategory(child.slug);
                                             }}
@@ -675,7 +702,7 @@ function Navbar() {
                             size="md"
                             color="gray.800"
                             mb={4}
-                            fontFamily="Bricolage Grotesque"
+                            fontFamily="Bogle"
                           >
                             Popular in {expandedCategory.name}
                           </Heading>
@@ -859,12 +886,12 @@ function Navbar() {
     const trimmedSearchTerm = searchTerm.trim();
 
     if (trimmedSearchTerm.length === 0) {
-      setSearchError("Please enter a search term");
+      setSearchError("Veuillez saisir un terme de recherche.");
       return;
     }
 
     if (trimmedSearchTerm.length < 4) {
-      setSearchError("Search term must be at least 4 characters long");
+      setSearchError("Le terme de recherche doit comporter au moins 4 caractères");
       return;
     }
 
@@ -876,20 +903,93 @@ function Navbar() {
     navigate(`/category/${slug}`);
   };
 
+  // CART STARTS
+  const fetchCartCount = async () => {
+    try {
+      const res = await homeService.getCartItemCount();
+      setCartCount(res.count || 0);
+    } catch {
+      setCartCount(0);
+    }
+  };
+
+  const fetchCartItems = async () => {
+    setCartLoading(true);
+    try {
+      const res = await homeService.getActiveCart();
+      setCartItems(res.items || []);
+      setCartTotal(res.total || 0);
+    } catch {
+      setCartItems([]);
+      setCartTotal(0);
+    }
+    setCartLoading(false);
+  };
+
+  // Remove item from cart and refresh cart state
+  const handleRemoveCartItem = async (cart_item_id) => {
+    try {
+      await homeService.removeFromCart(cart_item_id);
+      fetchCartItems();
+      fetchCartCount();
+    } catch (error) {
+    }
+  };
+
+  // Update quantity of a cart item
+  const handleUpdateCartItemQuantity = async (cart_item_id, newQuantity) => {
+    if (newQuantity < 1) return;
+    try {
+      await homeService.updateCartItemQuantity(cart_item_id, newQuantity);
+      fetchCartItems();
+      fetchCartCount();
+    } catch (error) {
+    }
+  };
+  // CART END
+
   return (
     <>
-      <Box bg="gray.800" py={2} px={4} display={{ base: "none", md: "block" }}>
-        <HStack spacing={2} justify="center">
-          <Icon as={FaShippingFast} color="white" fontSize="sm" />
-          <Text fontSize="xs" color="white" textAlign="center">
-            Buy at As Solutions for exclusive offers!
-          </Text>
-        </HStack>
+      {/* Top Banner */}
+      <Box bg="black" py={2} px={4} display={{ base: "none", md: "block" }}>
+        <Container maxW="8xl">
+          <HStack spacing={6} justify="center" align="center">
+            <HStack spacing={2}>
+              <Icon as={FaShippingFast} color="white" fontSize="sm" />
+              <Text fontSize="xs" color="white" fontWeight="medium">
+                Livraison gratuite pour les commandes de plus de 100€
+              </Text>
+            </HStack>
+            <Divider
+              orientation="vertical"
+              h="4"
+              borderColor="whiteAlpha.400"
+            />
+            <HStack spacing={2}>
+              <Icon as={FaShieldAlt} color="white" fontSize="sm" />
+              <Text fontSize="xs" color="white" fontWeight="medium">
+                Garantie de remboursement de 30 jours
+              </Text>
+            </HStack>
+            <Divider
+              orientation="vertical"
+              h="4"
+              borderColor="whiteAlpha.400"
+            />
+            <HStack spacing={2}>
+              <Icon as={FaHeadset} color="white" fontSize="sm" />
+              <Text fontSize="xs" color="white" fontWeight="medium">
+                Assistance client 24h/24 et 7j/7
+              </Text>
+            </HStack>
+          </HStack>
+        </Container>
       </Box>
 
+      {/* Main Header */}
       <Box
-        bg="white"
-        shadow="sm"
+        bg="#0053e2"
+        shadow="none"
         position="sticky"
         top="0"
         zIndex="1000"
@@ -897,7 +997,7 @@ function Navbar() {
       >
         <Container maxW="8xl">
           <Box display={{ base: "none", md: "block" }}>
-            <Flex align="center" justify="space-between" py={3}>
+            <Flex align="center" justify="space-between" py={4}>
               <Box
                 flexShrink={0}
                 mr={6}
@@ -905,96 +1005,464 @@ function Navbar() {
                 href="/"
                 _hover={{ cursor: "pointer" }}
               >
-                <Image
-                  src={Logo}
-                  alt="AS Solutions Logo"
-                  height="40px"
-                  width="auto"
-                  objectFit="contain"
-                />
+                <Flex align="center">
+                  <Image
+                    src={Logo}
+                    alt="AS Solutions Logo"
+                    height="30.9px"
+                    width="auto"
+                    objectFit="contain"
+                  />
+                  <Text
+                    ml={2}
+                    mt={0}
+                    fontWeight="bold"
+                    fontSize="26.5px"
+                    color="white"
+                    fontFamily="Bogle"
+                    lineHeight={"0.7"}
+                    letterSpacing={"1.1px"}
+                  >
+                    | AS SOLUTIONS
+                  </Text>
+                </Flex>
               </Box>
 
               <Box flex="1" maxW="2xl">
                 <form onSubmit={validateAndSearch}>
                   <InputGroup size="lg">
-                    <InputLeftElement>
+                    {/* <InputLeftElement>
                       <Icon as={FaSearch} color="gray.400" />
-                    </InputLeftElement>
+                    </InputLeftElement> */}
                     <Input
-                      placeholder="Que voulez-vous trouver ?"
+                      placeholder="Recherchez tout ce que vous voulez."
                       value={searchTerm}
                       onChange={handleSearchChange}
-                      borderRadius="full"
+                      rounded="full"
                       border="1px"
-                      px={2}
-                      borderColor={searchError ? "red.300" : "gray.300"}
+                      borderColor={searchError ? "red.300" : "gray.200"}
                       focusBorderColor={
-                        searchError ? "red.500" : "rgb(239,48,84)"
+                        searchError ? "red.500" : "rgba(48, 99, 239, 1)"
                       }
-                      bg="white"
+                      bg="#ffffff"
+                      px={6}
+                      py={"20px"}
+                      height="52px"
                       _placeholder={{ color: "gray.500" }}
                       fontSize="md"
                       _focus={{
-                        borderColor: searchError ? "red.500" : "rgb(239,48,84)",
+                        borderColor: searchError
+                          ? "red.500"
+                          : "rgba(48, 99, 239, 1)",
                         shadow: searchError
                           ? "0 0 0 1px red.500"
-                          : "0 0 0 1px rgb(239,48,84)",
+                          : "0 0 0 1px rgba(48, 99, 239, 1)",
                       }}
                     />
                   </InputGroup>
+
                   {searchError && (
-                    <Text fontSize="xs" color="red.500" mt={1} ml={4}>
+                    <Text
+                      fontSize="sm"
+                      color="white"
+                      mt={2}
+                      ml={0}
+                      fontFamily="rewemato"
+                    >
                       {searchError}
                     </Text>
                   )}
                 </form>
               </Box>
 
-              <HStack spacing={4} flexShrink={0} ml={6}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  color="gray.600"
-                  _hover={{ color: "rgb(239,48,84)" }}
+              <HStack spacing={6} flexShrink={0} ml={6}>
+                {/* Wishlist */}
+                <HStack spacing={0} align="center">
+                  <IconButton
+                    icon={<FaRegHeart />}
+                    color="gray.100"
+                    _hover={{ bg: "transparent" }}
+                    _focus={{ bg: "transparent" }}
+                    _active={{ bg: "transparent" }}
+                    bg="transparent"
+                    aria-label="Wishlist"
+                    as="a"
+                    href={customer ? "/account/wishlist" : "/account/signin"}
+                  />
+                  <Text
+                    color="gray.100"
+                    fontSize="sm"
+                    fontWeight="bold"
+                    fontFamily="Airbnb Cereal VF"
+                    as="a"
+                    href={customer ? "/account/wishlist" : "/account/signin"}
+                  >
+                    Ma liste de souhaits
+                  </Text>
+                </HStack>
+
+                {/* Sign In */}
+                {/* <HStack spacing={0} align="center">
+                  <IconButton
+                    icon={<VscAccount />}
+                    color="gray.100"
+                    _hover={{ bg: "transparent" }}
+                    _focus={{ bg: "transparent" }}
+                    _active={{ bg: "transparent" }}
+                    bg="transparent"
+                    aria-label="Sign In"
+                  />
+                  <Text
+                    color="gray.100"
+                    fontSize="sm"
+                    fontWeight="bold"
+                    fontFamily="Airbnb Cereal VF"
+                  >
+                    Account
+                  </Text>
+                </HStack> */}
+
+                <Popover placement="bottom-end">
+                  <PopoverTrigger>
+                    <HStack spacing={0} align="center" cursor="pointer">
+                      <IconButton
+                        icon={<VscAccount />}
+                        color="gray.100"
+                        _hover={{ bg: "transparent" }}
+                        _focus={{ bg: "transparent" }}
+                        _active={{ bg: "transparent" }}
+                        bg="transparent"
+                        aria-label="Account"
+                      />
+                      <Text
+                        color="gray.100"
+                        fontSize="sm"
+                        fontWeight="bold"
+                        fontFamily="Airbnb Cereal VF"
+                      >
+                        Account
+                      </Text>
+                    </HStack>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    w="220px"
+                    rounded="xl"
+                    mt={2}
+                    borderWidth={"0px"}
+                  >
+                    <PopoverArrow />
+                    <PopoverCloseButton />
+                    <PopoverBody>
+                      {customer ? (
+                        <VStack align="stretch" spacing={2}>
+                          <Text
+                            fontWeight="bold"
+                            fontSize="md"
+                            fontFamily={"Airbnb Cereal VF"}
+                          >
+                            Hello, {customer.first_name || customer.email}
+                          </Text>
+                          <Button
+                            bg="transparent"
+                            color="black"
+                            rounded="2xl"
+                            size="sm"
+                            onClick={() => navigate("/account/profile")}
+                            fontFamily={"Airbnb Cereal VF"}
+                            justifyContent={"flex-start"}
+                          >
+                            Profil personnel
+                          </Button>
+                          <Button
+                            bg="transparent"
+                            color="black"
+                            rounded="2xl"
+                            fontFamily={"Airbnb Cereal VF"}
+                            size="sm"
+                            onClick={() => navigate("/account/profile")}
+                            justifyContent={"flex-start"}
+                          >
+                            Mes commandes
+                          </Button>
+                          <Button
+                            bg="transparent"
+                            color="black"
+                            rounded="2xl"
+                            fontFamily={"Airbnb Cereal VF"}
+                            size="sm"
+                            onClick={() => navigate("/account/wishlist")}
+                            justifyContent={"flex-start"}
+                          >
+                            Ma liste de souhaits
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={logout}
+                            fontFamily={"Airbnb Cereal VF"}
+                            colorScheme="red"
+                            rounded="xl"
+                          >
+                            Déconnexion
+                          </Button>
+                        </VStack>
+                      ) : (
+                        <VStack align="stretch" spacing={2}>
+                          <Button
+                            size="sm"
+                            onClick={() => navigate("/account/signin")}
+                            bg="#0053e2"
+                            _hover={{ bg: "#0053e2" }}
+                            color="white"
+                            rounded="2xl"
+                            fontFamily={"Airbnb Cereal VF"}
+                          >
+                            Se connecter
+                          </Button>
+                          <Button
+                            bg="transparent"
+                            color="black"
+                            rounded="2xl"
+                            fontFamily={"Airbnb Cereal VF"}
+                            size="sm"
+                            onClick={() => navigate("/account/register")}
+                            justifyContent={"flex-start"}
+                          >
+                            Mes commandes
+                          </Button>
+                          <Button
+                            bg="transparent"
+                            color="black"
+                            rounded="2xl"
+                            fontFamily={"Airbnb Cereal VF"}
+                            size="sm"
+                            onClick={() => navigate("/account/register")}
+                            justifyContent={"flex-start"}
+                          >
+                            Ma liste de souhaits
+                          </Button>
+                        </VStack>
+                      )}
+                    </PopoverBody>
+                  </PopoverContent>
+                </Popover>
+
+                {/* Cart */}
+                {/* <HStack spacing={0} align="flex-start" position="relative">
+                  <VStack spacing={0} align="stretch" p={0}>
+                    <Box position="relative">
+                      <IconButton
+                        icon={<IoCartOutline />}
+                        color="gray.100"
+                        _hover={{ bg: "transparent" }}
+                        _focus={{ bg: "transparent" }}
+                        _active={{ bg: "transparent" }}
+                        bg="transparent"
+                        aria-label="Cart"
+                      />
+                      <Badge
+                        p={0}
+                        position="absolute"
+                        top="0"
+                        right="-0.5"
+                        bg="rgb(255, 0, 0)"
+                        color="white"
+                        borderRadius="full"
+                        fontSize="xs"
+                        minW="16px"
+                        h="16px"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        0
+                      </Badge>
+                    </Box>
+                  </VStack>
+                </HStack> */}
+
+                <Popover
+                  isOpen={cartPopoverOpen}
+                  onOpen={() => setCartPopoverOpen(true)}
+                  onClose={() => setCartPopoverOpen(false)}
+                  placement="bottom-end"
+                  closeOnBlur={true}
                 >
-                  Log in
-                </Button>
-                <IconButton
-                  icon={<FaBell />}
-                  variant="ghost"
-                  color="gray.600"
-                  _hover={{ color: "rgb(239,48,84)" }}
-                  aria-label="Notifications"
-                />
-                <IconButton
-                  icon={<FaHeart />}
-                  variant="ghost"
-                  color="gray.600"
-                  _hover={{ color: "red.500" }}
-                  aria-label="Wishlist"
-                />
-                <IconButton
-                  icon={<FaShoppingCart />}
-                  variant="ghost"
-                  color="gray.600"
-                  _hover={{ color: "rgb(239,48,84)" }}
-                  aria-label="Cart"
-                />
-                <Button
-                  bg="rgb(239,48,84)"
-                  color="white"
-                  size="sm"
-                  _hover={{ bg: "rgb(219,28,64)" }}
-                  borderRadius="8px"
-                  px={4}
-                  fontFamily={"Bricolage Grotesque"}
-                >
-                  Get the app
-                </Button>
+                  <PopoverTrigger>
+                    <Box position="relative" cursor="pointer">
+                      <IconButton
+                        icon={<IoCartOutline />}
+                        color="gray.100"
+                        _hover={{ bg: "transparent" }}
+                        _focus={{ bg: "transparent" }}
+                        _active={{ bg: "transparent" }}
+                        bg="transparent"
+                        aria-label="Cart"
+                        onClick={() => setCartPopoverOpen((open) => !open)}
+                      />
+                      <Badge
+                        p={0}
+                        position="absolute"
+                        top="0"
+                        right="-0.5"
+                        bg="rgb(255, 0, 0)"
+                        color="white"
+                        borderRadius="full"
+                        fontSize="xs"
+                        minW="16px"
+                        h="16px"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                      >
+                        {cartCount}
+                      </Badge>
+                    </Box>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    w="340px"
+                    maxW="95vw"
+                    p={0}
+                    borderRadius="xl"
+                    shadow="xl"
+                  >
+                    <PopoverArrow />
+                    <PopoverCloseButton />
+                    <PopoverBody p={0}>
+                      <Box p={4} pb={2}>
+                        <Text fontWeight="600" fontSize="md">
+                          {cartItems.length} produit(s)
+                        </Text>
+                      </Box>
+                      <Divider />
+                      <VStack
+                        align="stretch"
+                        spacing={0}
+                        maxH="320px"
+                        overflowY="auto"
+                      >
+                        {cartLoading ? (
+                          Array.from({ length: 2 }).map((_, i) => (
+                            <Box key={i} p={4}>
+                              <Skeleton h="40px" w="full" borderRadius="md" />
+                            </Box>
+                          ))
+                        ) : cartItems.length === 0 ? (
+                          <Box p={4} textAlign="center" color="gray.500">
+                            Le panier est vide.
+                          </Box>
+                        ) : (
+                          cartItems.map((item) => (
+                            <HStack
+                              key={item.id}
+                              align="flex-start"
+                              spacing={3}
+                              p={3}
+                              borderBottom="1px solid #f1f1f1"
+                            >
+                              <Image
+                                src={item.product_snapshot?.main_image_url}
+                                alt={item.product_snapshot?.title}
+                                boxSize="48px"
+                                objectFit="cover"
+                                borderRadius="md"
+                                fallbackSrc="https://via.placeholder.com/48"
+                              />
+                              <Box flex="1" minW={0}>
+                                <Text
+                                  fontWeight="semibold"
+                                  fontSize="sm"
+                                  noOfLines={1}
+                                >
+                                  {item.product_snapshot?.title}
+                                </Text>
+                                <Text fontSize="xs" color="gray.500">
+                                  Prix unitaire:{" "}
+                                  <b>
+                                    {Number(item.unit_price).toLocaleString(
+                                      "sq-AL",
+                                      {
+                                        style: "currency",
+                                        currency: "EUR",
+                                        minimumFractionDigits: 2,
+                                      }
+                                    )}
+                                  </b>
+                                </Text>
+                                {/* <HStack spacing={2} mt={1}>
+                                  <Text fontSize="xs">x {item.quantity}</Text>
+                                </HStack> */}
+                                <HStack spacing={2} mt={1}>
+                                  <IconButton
+                                    icon={<span>-</span>}
+                                    aria-label="Decrease"
+                                    size="xs"
+                                    variant="outline"
+                                    onClick={() =>
+                                      handleUpdateCartItemQuantity(
+                                        item.id,
+                                        item.quantity - 1
+                                      )
+                                    }
+                                    isDisabled={item.quantity <= 1}
+                                  />
+                                  <Text fontSize="xs">{item.quantity}</Text>
+                                  <IconButton
+                                    icon={<span>+</span>}
+                                    aria-label="Increase"
+                                    size="xs"
+                                    variant="outline"
+                                    onClick={() =>
+                                      handleUpdateCartItemQuantity(
+                                        item.id,
+                                        item.quantity + 1
+                                      )
+                                    }
+                                  />
+                                </HStack>
+                              </Box>
+                              <IconButton
+                                icon={<CiTrash size="19.5px" />}
+                                aria-label="Remove"
+                                size="sm"
+                                colorScheme="black"
+                                variant="ghost"
+                                onClick={() => handleRemoveCartItem(item.id)}
+                              />
+                            </HStack>
+                          ))
+                        )}
+                      </VStack>
+                      <Divider />
+                      <Box p={4}>
+                        <Button
+                          w="full"
+                          size="sm"
+                          fontWeight="600"
+                          fontFamily="Airbnb Cereal VF"
+                          borderRadius="10px"
+                          onClick={() => {
+                            setCartPopoverOpen(false);
+                            navigate("/cart");
+                          }}
+                          isDisabled={cartItems.length === 0}
+                        >
+                          Aller au panier (
+                          {cartTotal.toLocaleString("sq-AL", {
+                            style: "currency",
+                            currency: "EUR",
+                            minimumFractionDigits: 2,
+                          })}
+                          )
+                        </Button>
+                      </Box>
+                    </PopoverBody>
+                  </PopoverContent>
+                </Popover>
               </HStack>
             </Flex>
           </Box>
 
+          {/* Mobile Header - Like reference design */}
           <Box display={{ base: "block", md: "none" }}>
             <Flex align="center" justify="space-between" py={3} px={2}>
               <Box
@@ -1022,14 +1490,16 @@ function Navbar() {
                   _hover={{ color: "rgb(239,48,84)" }}
                   aria-label="Notifications"
                 />
-                <IconButton
-                  icon={<FaHeart />}
-                  variant="ghost"
-                  size="sm"
-                  color="gray.600"
-                  _hover={{ color: "red.500" }}
-                  aria-label="Wishlist"
-                />
+                <Link to="/account/wishlist">
+                  <IconButton
+                    icon={<FaHeart />}
+                    variant="ghost"
+                    size="sm"
+                    color="gray.600"
+                    _hover={{ color: "red.500" }}
+                    aria-label="Wishlist"
+                  />
+                </Link>
                 <IconButton
                   icon={<FaShoppingCart />}
                   variant="ghost"
@@ -1070,24 +1540,12 @@ function Navbar() {
               <Button
                 variant="ghost"
                 size="sm"
-                color="gray.600"
+                color="gray.100"
                 _hover={{ color: "rgb(239,48,84)" }}
                 fontSize="sm"
-                fontFamily={"Bricolage Grotesque"}
+                fontFamily="Bogle"
               >
-                Log in
-              </Button>
-              <Button
-                bg="rgb(239,48,84)"
-                color="white"
-                size="sm"
-                _hover={{ bg: "rgb(219,28,64)" }}
-                borderRadius="full"
-                px={4}
-                fontSize="xs"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Get the app
+                Se connecter
               </Button>
             </HStack>
           </Box>
@@ -1096,84 +1554,108 @@ function Navbar() {
 
       {/* Mobile area Header */}
       <Box
-        bg="white"
-        shadow="sm"
+        bg="#0053e2"
+        shadow="none"
         position="sticky"
         top="0"
         zIndex="1000"
         display={{ base: "block", md: "none" }}
       >
-        <Box bg="gray.800" py={2} px={4}>
-          <HStack spacing={2} justify="center">
-            <Icon as={FaShippingFast} color="white" fontSize="sm" />
-            <Text fontSize="xs" color="white" textAlign="center">
-              Buy at As Solutions for exclusive offers!
-            </Text>
-          </HStack>
+        {/* Banner */}
+        <Box bg="black" py={2} px={4} display={{ base: "block", md: "none" }}>
+          <Container maxW="8xl">
+            <HStack spacing={6} justify="center" align="center">
+              <HStack spacing={2}>
+                <Icon as={FaShippingFast} color="white" fontSize="sm" />
+                <Text fontSize="xs" color="white" fontWeight="medium">
+                  Livraison gratuite pour les commandes de plus de 100€
+                </Text>
+              </HStack>
+            </HStack>
+          </Container>
         </Box>
-        <Container maxW="8xl">
-          {/* Mobile Header - Like reference design */}
-          <Box display={{ base: "block", md: "none" }}>
-            {/* Top bar with delivery info */}
 
+        <Container maxW="8xl">
+          <Box display={{ base: "block", md: "none" }}>
             {/* Main header row */}
             <Flex align="center" justify="space-between" py={3} px={4}>
               {/* Logo */}
-              <Box flexShrink={0} mr={6}>
-                <Link to="/">
+              <Box
+                flexShrink={0}
+                mr={6}
+                as="a"
+                href="/"
+                _hover={{ cursor: "pointer" }}
+              >
+                <Flex align="center">
                   <Image
                     src={Logo}
                     alt="AS Solutions Logo"
-                    height="40px"
+                    height="30.9px"
                     width="auto"
                     objectFit="contain"
                   />
-                </Link>
+                  <Text
+                    ml={2}
+                    mt={0}
+                    fontWeight="bold"
+                    fontSize="26.5px"
+                    color="white"
+                    fontFamily="Bogle"
+                    lineHeight={"0.7"}
+                    letterSpacing={"1.1px"}
+                  >
+                    | AS SOLUTIONS
+                  </Text>
+                </Flex>
               </Box>
 
               {/* Right side - Wishlist icon */}
-              <IconButton
-                icon={<FaHeart />}
-                variant="ghost"
-                size="md"
-                color="gray.600"
-                _hover={{ color: "red.500" }}
-                aria-label="Wishlist"
-                borderRadius="full"
-              />
+              <Link to="/account/wishlist">
+                <IconButton
+                  icon={<FaRegHeart />}
+                  variant="ghost"
+                  size="md"
+                  color="gray.100"
+                  _hover={{ color: "red.500" }}
+                  aria-label="Wishlist"
+                  borderRadius="full"
+                />
+              </Link>
             </Flex>
 
             {/* Search Bar - Full width like reference */}
-            <Box flex="1" maxW="2xl" mb={2}>
+            <Box flex="1" maxW="2xl" mb={0} p={2}>
               <form onSubmit={validateAndSearch}>
                 <InputGroup size="lg">
-                  <InputLeftElement>
-                    <Icon as={FaSearch} color="gray.400" />
-                  </InputLeftElement>
                   <Input
-                    placeholder="Que voulez-vous trouver?"
+                    placeholder="Recherchez tout ce que vous voulez."
                     value={searchTerm}
                     onChange={handleSearchChange}
-                    borderRadius="full"
+                    rounded="full"
                     border="1px"
-                    px={2}
-                    borderColor={searchError ? "red.300" : "gray.300"}
+                    borderColor={searchError ? "red.300" : "gray.200"}
                     focusBorderColor={
-                      searchError ? "red.500" : "rgb(239,48,84)"
+                      searchError ? "red.500" : "rgba(48, 99, 239, 1)"
                     }
-                    bg="white"
+                    bg="#ffffff"
+                    px={6}
+                    py={"20px"}
+                    height="52px"
                     _placeholder={{ color: "gray.500" }}
                     fontSize="md"
                     _focus={{
-                      borderColor: searchError ? "red.500" : "rgb(239,48,84)",
+                      borderColor: searchError
+                        ? "red.500"
+                        : "rgba(48, 99, 239, 1)",
                       shadow: searchError
                         ? "0 0 0 1px red.500"
-                        : "0 0 0 1px rgb(239,48,84)",
+                        : "0 0 0 1px rgba(48, 99, 239, 1)",
                     }}
                   />
                 </InputGroup>
                 {searchError && (
-                  <Text fontSize="xs" color="red.500" mt={1} ml={4}>
+                  <Text fontSize="xs" color="white" mt={1} ml={4}>
                     {searchError}
                   </Text>
                 )}
@@ -1190,7 +1672,7 @@ function Navbar() {
         bottom="0"
         left="0"
         right="0"
-        bg="white"
+        bg="#fff"
         borderTop="1px"
         borderColor="gray.200"
         shadow="lg"
@@ -1200,12 +1682,14 @@ function Navbar() {
         <HStack spacing={0} justify="space-around" py={2} px={1}>
           {/* Home */}
           <VStack spacing={1} flex={1} py={2} cursor="pointer">
-            <Icon as={FaHome} fontSize="lg" color="rgb(239,48,84)" />
+            <Icon as={RiHome5Line} fontSize="lg" color="black" />
             <Text
               fontSize="xs"
-              color="rgb(239,48,84)"
+              color="black"
               fontWeight="semibold"
               textAlign="center"
+              as="a"
+              href="/"
             >
               Maison
             </Text>
@@ -1219,8 +1703,8 @@ function Navbar() {
             py={2}
             onClick={onMobileCategoryOpen}
           >
-            <Icon as={FaBars} fontSize="lg" color="gray.600" />
-            <Text fontSize="xs" color="gray.600" textAlign="center">
+            <Icon as={BsCollection} fontSize="lg" color="black" />
+            <Text fontSize="xs" color="black" textAlign="center">
               Collections
             </Text>
           </VStack>
@@ -1233,6 +1717,7 @@ function Navbar() {
           />
 
           {/* Cart */}
+          <Link to={customer ? '/cart' : '/account/signin'}>
           <VStack
             spacing={1}
             flex={1}
@@ -1241,12 +1726,12 @@ function Navbar() {
             position="relative"
           >
             <Box position="relative">
-              <Icon as={FaShoppingCart} fontSize="lg" color="gray.600" />
+              <Icon as={FaShoppingCart} fontSize="lg" color="black" />
               <Badge
                 position="absolute"
                 top="-1"
                 right="-1"
-                bg="rgb(239,48,84)"
+                bg="rgb(255, 0, 0)"
                 color="white"
                 borderRadius="full"
                 fontSize="2xs"
@@ -1256,38 +1741,333 @@ function Navbar() {
                 alignItems="center"
                 justifyContent="center"
               >
-                0
+                {cartCount || 0}
               </Badge>
             </Box>
-            <Text fontSize="xs" color="gray.600" textAlign="center">
+            <Text fontSize="xs" color="black" textAlign="center">
               Panier
             </Text>
           </VStack>
+          </Link>
 
           {/* Chat */}
-          <VStack spacing={1} flex={1} py={2} cursor="pointer">
-            <Icon as={FaComments} fontSize="lg" color="gray.600" />
-            <Text fontSize="xs" color="gray.600" textAlign="center">
+          <VStack
+            spacing={1}
+            flex={1}
+            py={2}
+            cursor="pointer"
+            onClick={() => {
+              if (window.fcWidget) {
+                window.fcWidget.open();
+              }
+            }}
+          >
+            <Icon
+              as={IoChatbubbleEllipsesOutline}
+              fontSize="lg"
+              color="black"
+            />
+            <Text fontSize="xs" color="black" textAlign="center">
               Chat
             </Text>
           </VStack>
 
           {/* Account */}
-          <VStack spacing={1} flex={1} py={2} cursor="pointer">
-            <Icon as={FaUser} fontSize="lg" color="gray.600" />
-            <Text fontSize="xs" color="gray.600" textAlign="center">
-              Compte
+          <VStack 
+            spacing={1} 
+            flex={1} 
+            py={2} 
+            cursor="pointer"
+            onClick={onMobileAccountOpen}
+          >
+            <Icon as={MdManageAccounts} fontSize="lg" color="black" />
+            <Text fontSize="xs" color="black" textAlign="center">
+              { customer ? customer.first_name : "Compte" }
             </Text>
           </VStack>
         </HStack>
       </Box>
 
+      {/* Mobile Account Modal */}
+      <Modal 
+        isOpen={isMobileAccountOpen} 
+        onClose={onMobileAccountClose}
+        size="full"
+        motionPreset="slideInBottom"
+      >
+        <ModalOverlay bg="blackAlpha.300" />
+        <ModalContent bg="gray.50" m={0} borderRadius={0}>
+          <ModalHeader 
+            bg="white" 
+            borderBottom="1px" 
+            borderColor="gray.200"
+            px={6}
+            py={4}
+          >
+            <HStack justify="space-between" align="center">
+              <Text fontSize="lg" fontWeight="600" color="gray.800">
+                Mon Compte
+              </Text>
+              <ModalCloseButton position="relative" top="0" right="0" />
+            </HStack>
+          </ModalHeader>
+          
+          <ModalBody p={0}>
+            {customer ? (
+              // Logged in user view
+              <VStack spacing={0} align="stretch">
+                {/* User Profile Section */}
+                <Box bg="white" p={6} borderBottom="1px" borderColor="gray.200">
+                  <HStack spacing={4}>
+                    <Avatar 
+                      size="lg" 
+                      name={`${customer.first_name} ${customer.last_name}`}
+                      src={customer.profile_picture_url}
+                      bg="blue.500"
+                    />
+                    <VStack align="start" spacing={1}>
+                      <Text fontSize="lg" fontWeight="600" color="gray.800">
+                        {customer.first_name} {customer.last_name}
+                      </Text>
+                      <Text fontSize="sm" color="gray.500">
+                        {customer.email}
+                      </Text>
+                      {customer.phone && (
+                        <Text fontSize="sm" color="gray.500">
+                          {customer.phone}
+                        </Text>
+                      )}
+                    </VStack>
+                  </HStack>
+                </Box>
+
+                {/* Menu Items */}
+                <VStack spacing={0} align="stretch">
+                  {/* Profile */}
+                  <Button
+                    variant="ghost"
+                    justifyContent="flex-start"
+                    h="60px"
+                    px={6}
+                    bg="white"
+                    borderBottom="1px"
+                    borderColor="gray.100"
+                    borderRadius={0}
+                    leftIcon={<Icon as={FaUser} color="gray.600" />}
+                    onClick={() => {
+                      onMobileAccountClose();
+                      navigate("/account/profile");
+                    }}
+                    _hover={{ bg: "gray.50" }}
+                  >
+                    <HStack justify="space-between" w="full">
+                      <Text fontSize="md" color="gray.700">Profil personnel</Text>
+                      <Icon as={FaChevronRight} color="gray.400" fontSize="sm" />
+                    </HStack>
+                  </Button>
+
+                  {/* Orders */}
+                  <Button
+                    variant="ghost"
+                    justifyContent="flex-start"
+                    h="60px"
+                    px={6}
+                    bg="white"
+                    borderBottom="1px"
+                    borderColor="gray.100"
+                    borderRadius={0}
+                    leftIcon={<Icon as={FaBox} color="gray.600" />}
+                    onClick={() => {
+                      onMobileAccountClose();
+                      navigate("/account/profile");
+                    }}
+                    _hover={{ bg: "gray.50" }}
+                  >
+                    <HStack justify="space-between" w="full">
+                      <Text fontSize="md" color="gray.700">Mes commandes</Text>
+                      <Icon as={FaChevronRight} color="gray.400" fontSize="sm" />
+                    </HStack>
+                  </Button>
+
+                  {/* Wishlist */}
+                  <Button
+                    variant="ghost"
+                    justifyContent="flex-start"
+                    h="60px"
+                    px={6}
+                    bg="white"
+                    borderBottom="1px"
+                    borderColor="gray.100"
+                    borderRadius={0}
+                    leftIcon={<Icon as={FaHeart} color="gray.600" />}
+                    onClick={() => {
+                      onMobileAccountClose();
+                      navigate("/account/wishlist");
+                    }}
+                    _hover={{ bg: "gray.50" }}
+                  >
+                    <HStack justify="space-between" w="full">
+                      <Text fontSize="md" color="gray.700">Ma liste de souhaits</Text>
+                      <Icon as={FaChevronRight} color="gray.400" fontSize="sm" />
+                    </HStack>
+                  </Button>
+
+                  {/* Addresses */}
+                  <Button
+                    variant="ghost"
+                    justifyContent="flex-start"
+                    h="60px"
+                    px={6}
+                    bg="white"
+                    borderBottom="1px"
+                    borderColor="gray.100"
+                    borderRadius={0}
+                    leftIcon={<Icon as={FaHome} color="gray.600" />}
+                    onClick={() => {
+                      onMobileAccountClose();
+                      navigate("/account/profile");
+                    }}
+                    _hover={{ bg: "gray.50" }}
+                  >
+                    <HStack justify="space-between" w="full">
+                      <Text fontSize="md" color="gray.700">Mes adresses</Text>
+                      <Icon as={FaChevronRight} color="gray.400" fontSize="sm" />
+                    </HStack>
+                  </Button>
+
+                  {/* Support */}
+                  <Button
+                    variant="ghost"
+                    justifyContent="flex-start"
+                    h="60px"
+                    px={6}
+                    bg="white"
+                    borderBottom="1px"
+                    borderColor="gray.100"
+                    borderRadius={0}
+                    leftIcon={<Icon as={FaHeadset} color="gray.600" />}
+                    onClick={() => {
+                      if (window.fcWidget) {
+                        window.fcWidget.open();
+                      }
+                      onMobileAccountClose();
+                    }}
+                    _hover={{ bg: "gray.50" }}
+                  >
+                    <HStack justify="space-between" w="full">
+                      <Text fontSize="md" color="gray.700">Centre d'aide</Text>
+                      <Icon as={FaChevronRight} color="gray.400" fontSize="sm" />
+                    </HStack>
+                  </Button>
+
+                  <Button
+                     variant="ghost"
+                    justifyContent="flex-start"
+                    h="60px"
+                    px={6}
+                    bg="white"
+                    borderBottom="1px"
+                    borderColor="gray.100"
+                    borderRadius={0}
+                    leftIcon={<Icon as={FaUser} />}
+                    onClick={() => {
+                      logout();
+                      onMobileAccountClose();
+                    }}
+                    fontWeight="600"
+                  >
+                    Déconnexion
+                  </Button>
+                </VStack>
+              </VStack>
+            ) : (
+              // Not logged in view
+              <VStack spacing={6} p={6} align="stretch">
+                <VStack spacing={4} textAlign="center">
+                  <Avatar size="xl" bg="gray.300" />
+                  <VStack spacing={2}>
+                    <Text fontSize="lg" fontWeight="500" color="gray.800">
+                      Connectez-vous à votre compte
+                    </Text>
+                    <Text fontSize="sm" color="gray.500" textAlign="center">
+                      Accédez à vos commandes, liste de souhaits et bien plus encore
+                    </Text>
+                  </VStack>
+                </VStack>
+
+                <VStack spacing={3} align="stretch">
+                  <Button
+                    variant="outline"
+                    size='sm'
+                    borderRadius="xl"
+                    onClick={() => {
+                      onMobileAccountClose();
+                      navigate("/account/signin");
+                    }}
+                  >
+                    Se connecter
+                  </Button>
+                  
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    borderRadius="xl"
+                    fontWeight="600"
+                    onClick={() => {
+                      onMobileAccountClose();
+                      navigate("/account/register");
+                    }}
+                  >
+                    Créer un compte
+                  </Button>
+                </VStack>
+
+                {/* Guest Options */}
+                <Box bg="gray.50" p={4} borderRadius="xl" mt={4}>
+                  <Text fontSize="sm" fontWeight="600" color="gray.700" mb={3}>
+                    Continuer en tant qu'invité
+                  </Text>
+                  <VStack spacing={2} align="stretch">
+                    <Button
+                      variant="ghost"
+                      justifyContent="flex-start"
+                      size="sm"
+                      leftIcon={<Icon as={FaBox} color="gray.600" />}
+                      onClick={() => {
+                        onMobileAccountClose();
+                        navigate("/order-tracking");
+                      }}
+                    >
+                      Suivre une commande
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      justifyContent="flex-start"
+                      size="sm"
+                      leftIcon={<Icon as={FaHeadset} color="gray.600" />}
+                      onClick={() => {
+                        if (window.fcWidget) {
+                          window.fcWidget.open();
+                        }
+                        onMobileAccountClose();
+                      }}
+                    >
+                      Centre d'aide
+                    </Button>
+                  </VStack>
+                </Box>
+              </VStack>
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
       {/* Category Navigation - Responsive for both desktop and mobile */}
       <Box
-        bg="white"
-        borderTop="1px"
+        bg="#c9dcfd"
+        borderTop="0px"
         borderColor="gray.200"
-        py={2}
+        py={1}
         display="block" // Show on both desktop and mobile
       >
         <Container maxW="8xl">
@@ -1311,25 +2091,25 @@ function Navbar() {
               <PopoverTrigger>
                 <Button
                   leftIcon={<Icon as={FaBars} />}
-                  variant="solid"
-                  bg="rgb(239,48,84)"
-                  color="white"
+                  bg="white"
+                  color="black"
                   _hover={{
-                    bg: "rgb(219,28,64)",
+                    bg: "white",
                     transform: "translateY(-1px)",
                     shadow: "lg",
                   }}
                   fontSize="sm"
-                  rounded="lg"
+                  rounded="full"
                   flexShrink={0}
                   px={4}
                   py={2}
                   h="auto"
                   transition="all 0.2s ease"
+                  fontWeight="500"
+                  fontFamily={"Airbnb Cereal VF"}
                   onMouseEnter={onCategoryOpen}
-                  fontFamily="Bricolage Grotesque"
                 >
-                  All Categories
+                  Catégories
                 </Button>
               </PopoverTrigger>
               <Portal>
@@ -1388,65 +2168,28 @@ function Navbar() {
               </Portal>
             </Popover>
 
-            {/* <Button
-              leftIcon={<Icon as={FaFire} color="red.500" />}
-              variant="ghost"
-              color="gray.700"
-              _hover={{ color: "red.600", bg: "red.50" }}
-              fontWeight="medium"
-              fontSize="sm"
-              px={3}
-              flexShrink={0}
-              minW="auto"
-              rounded="full"
-            >
-              Trending
-            </Button> */}
-
             <Button
-              leftIcon={<Icon as={FaStar} color="yellow.500" />}
-              variant="ghost"
-              color="gray.700"
-              _hover={{ color: "yellow.600", bg: "yellow.50" }}
-              fontWeight="medium"
+              leftIcon={<Icon as={FaTags} color="gray.900" />}
+              bg="white"
+              color="black"
+              _hover={{
+                bg: "white",
+                transform: "translateY(-1px)",
+                shadow: "lg",
+              }}
               fontSize="sm"
-              px={3}
-              flexShrink={0}
-              minW="auto"
               rounded="full"
-            >
-              Nouveautés
-            </Button>
-
-            <Button
-              leftIcon={<Icon as={FaTags} color="purple.500" />}
-              variant="ghost"
-              color="gray.700"
-              _hover={{ color: "purple.600", bg: "purple.50" }}
-              fontWeight="medium"
-              fontSize="sm"
-              px={3}
               flexShrink={0}
-              minW="auto"
-              rounded="full"
+              px={4}
+              py={2}
+              h="auto"
+              transition="all 0.2s ease"
+              fontWeight="500"
+              fontFamily={"Airbnb Cereal VF"}
+              href="/flash-deals"
             >
               Centre des offres
             </Button>
-
-            {/* <Button
-              leftIcon={<Icon as={FaPercent} color="green.500" />}
-              variant="ghost"
-              color="gray.700"
-              _hover={{ color: "green.600", bg: "green.50" }}
-              fontWeight="medium"
-              fontSize="sm"
-              px={3}
-              flexShrink={0}
-              minW="auto"
-              rounded="full"
-            >
-              Weekly Deals
-            </Button> */}
 
             {loading ? (
               <HStack spacing={2}>
@@ -1461,26 +2204,22 @@ function Navbar() {
                 return (
                   <Box key={category.id} position="relative">
                     <Button
-                      variant="ghost"
-                      color="gray.700"
+                      bg="white"
+                      color="black"
                       _hover={{
-                        color: colors.color,
-                        bg: colors.bgColor,
+                        bg: "white",
                         transform: "translateY(-1px)",
-                        shadow: "sm",
+                        shadow: "lg",
                       }}
-                      fontWeight="medium"
                       fontSize="sm"
-                      px={3}
+                      rounded="full"
                       flexShrink={0}
-                      minW="auto"
-                      position="relative"
+                      px={4}
+                      py={2}
+                      h="auto"
                       transition="all 0.2s ease"
-                      borderBottom={
-                        hoveredCategory === category.id
-                          ? `2px solid ${colors.color}`
-                          : "2px solid transparent"
-                      }
+                      fontWeight="500"
+                      fontFamily={"Airbnb Cereal VF"}
                       onClick={() => {
                         if (hoveredCategory === category.id) {
                           setHoveredCategory(null);
@@ -1488,7 +2227,6 @@ function Navbar() {
                           setHoveredCategory(category.id);
                         }
                       }}
-                      rounded="full"
                     >
                       {category.name}
                       <Icon
@@ -1562,8 +2300,8 @@ function Navbar() {
                                   fontWeight="medium"
                                   color="gray.700"
                                   _hover={{
-                                    bg: "rgba(239,48,84,0.1)",
-                                    color: "rgb(239,48,84)",
+                                    bg: "rgba(255, 255, 255, 1)",
+                                    color: "rgba(0, 26, 73, 1)",
                                   }}
                                   borderRadius="none"
                                   textAlign="left"
@@ -1690,7 +2428,8 @@ function Navbar() {
                                               h="auto"
                                               fontSize="sm"
                                               _hover={{
-                                                color: "rgb(239,48,84)",
+                                                color: "rgba(4, 0, 118, 1)",
+                                                fontWeight: "bold",
                                               }}
                                             >
                                               <VStack
@@ -1712,7 +2451,7 @@ function Navbar() {
                                                     fontSize="sm"
                                                     lineHeight="1.4"
                                                     flex={1}
-                                                    fontFamily="Bricolage Grotesque"
+                                                    fontFamily="Airbnb Cereal VF"
                                                   >
                                                     {child.name}
                                                   </Text>
@@ -1734,200 +2473,99 @@ function Navbar() {
                 );
               })
             )}
-
-            <Button
-              leftIcon={<Icon as={FaHandsHelping} color="blue.500" />}
-              variant="ghost"
-              color="gray.700"
-              _hover={{ color: "blue.600", bg: "blue.50" }}
-              fontWeight="medium"
-              fontSize="sm"
-              px={3}
-              flexShrink={0}
-              minW="auto"
-            >
-              Service Client
-            </Button>
           </HStack>
-
-          {/* Mobile Version - Horizontal Scrollable */}
-          <Box display={{ base: "block", md: "none" }} px={2} py={1}>
-            <Box
-              overflowX="auto"
-              overflowY="hidden"
-              css={{
-                scrollbarWidth: "none",
-                msOverflowStyle: "none",
-                "&::-webkit-scrollbar": {
-                  display: "none",
-                },
-              }}
-            >
-              <HStack
-                spacing={3}
-                align="center"
-                minW="max-content"
-                py={2}
-                px={2}
-              >
-                {/* <Button
-                  leftIcon={<Icon as={FaFire} color="red.500" />}
-                  variant="ghost"
-                  color="gray.700"
-                  _hover={{ color: "red.600", bg: "red.50" }}
-                  _active={{ color: "red.600", bg: "red.100" }}
-                  fontWeight="medium"
-                  fontSize="sm"
-                  px={4}
-                  py={2}
-                  h="auto"
-                  flexShrink={0}
-                  minW="auto"
-                  rounded="full"
-                  whiteSpace="nowrap"
-                  fontFamily="Bricolage Grotesque"
-                >
-                  Trending
-                </Button> */}
-
-                <Button
-                  leftIcon={<Icon as={FaStar} color="yellow.500" />}
-                  variant="ghost"
-                  color="gray.700"
-                  _hover={{ color: "yellow.600", bg: "yellow.50" }}
-                  _active={{ color: "yellow.600", bg: "yellow.100" }}
-                  fontWeight="medium"
-                  fontSize="sm"
-                  px={4}
-                  py={2}
-                  h="auto"
-                  flexShrink={0}
-                  minW="auto"
-                  rounded="full"
-                  whiteSpace="nowrap"
-                  fontFamily="Bricolage Grotesque"
-                >
-                  Nouveautés
-                </Button>
-
-                <Button
-                  leftIcon={<Icon as={FaTags} color="purple.500" />}
-                  variant="ghost"
-                  color="gray.700"
-                  _hover={{ color: "purple.600", bg: "purple.50" }}
-                  _active={{ color: "purple.600", bg: "purple.100" }}
-                  fontWeight="medium"
-                  fontSize="sm"
-                  px={4}
-                  py={2}
-                  h="auto"
-                  flexShrink={0}
-                  minW="auto"
-                  rounded="full"
-                  whiteSpace="nowrap"
-                  fontFamily="Bricolage Grotesque"
-                >
-                  Centre des offres
-                </Button>
-
-                {/* <Button
-                  leftIcon={<Icon as={FaPercent} color="green.500" />}
-                  variant="ghost"
-                  color="gray.700"
-                  _hover={{ color: "green.600", bg: "green.50" }}
-                  _active={{ color: "green.600", bg: "green.100" }}
-                  fontWeight="medium"
-                  fontSize="sm"
-                  px={4}
-                  py={2}
-                  h="auto"
-                  flexShrink={0}
-                  minW="auto"
-                  rounded="full"
-                  whiteSpace="nowrap"
-                  fontFamily="Bricolage Grotesque"
-                >
-                  Weekly Deals
-                </Button> */}
-
-                {loading ? (
-                  <HStack spacing={3}>
-                    {[...Array(3)].map((_, i) => (
-                      <Skeleton key={i} h="8" w="20" borderRadius="full" />
-                    ))}
-                  </HStack>
-                ) : (
-                  topCategories.slice(0, 6).map((category, index) => {
-                    const colors = getCategoryColor(category.name, index);
-
-                    return (
-                      <Button
-                        key={category.id}
-                        variant="ghost"
-                        color="gray.700"
-                        _hover={{
-                          color: colors.color,
-                          bg: colors.bgColor,
-                        }}
-                        _active={{
-                          color: colors.color,
-                          bg: colors.bgColor,
-                        }}
-                        fontWeight="medium"
-                        fontSize="sm"
-                        px={4}
-                        py={2}
-                        h="auto"
-                        flexShrink={0}
-                        minW="auto"
-                        rounded="full"
-                        whiteSpace="nowrap"
-                        fontFamily="Bricolage Grotesque"
-                        onClick={() => {
-                          navigateToCategory(category.slug);
-                        }}
-                      >
-                        {category.name}
-                      </Button>
-                    );
-                  })
-                )}
-
-                <Button
-                  leftIcon={<Icon as={FaHandsHelping} color="blue.500" />}
-                  variant="ghost"
-                  color="gray.700"
-                  _hover={{ color: "blue.600", bg: "blue.50" }}
-                  _active={{ color: "blue.600", bg: "blue.100" }}
-                  fontWeight="medium"
-                  fontSize="sm"
-                  px={4}
-                  py={2}
-                  h="auto"
-                  flexShrink={0}
-                  minW="auto"
-                  rounded="full"
-                  whiteSpace="nowrap"
-                  fontFamily="Bricolage Grotesque"
-                >
-                  Support
-                </Button>
-              </HStack>
-            </Box>
-
-            {/* Subtle scroll indicator */}
-            <Box
-              position="absolute"
-              right="0"
-              top="0"
-              bottom="0"
-              w="20px"
-              bg="linear-gradient(to left, rgba(255,255,255,0.8), transparent)"
-              pointerEvents="none"
-              display={{ base: "block", md: "none" }}
-            />
-          </Box>
         </Container>
+
+        {/* Mobile Version - Horizontal Scrollable */}
+        <Box display={{ base: "block", md: "none" }} px={0} py={1}>
+          <Box
+            overflowX="auto"
+            overflowY="hidden"
+            css={{
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              "&::-webkit-scrollbar": {
+                display: "none",
+              },
+            }}
+            bg="transparent"
+          >
+            <HStack spacing={3} align="center" minW="max-content" py={2} px={2}>
+              <Button
+                bg="white"
+                color="black"
+                _hover={{
+                  bg: "white",
+                  transform: "translateY(-1px)",
+                  shadow: "lg",
+                }}
+                fontSize="xs"
+                rounded="full"
+                flexShrink={0}
+                px={4}
+                py={2.5}
+                h="auto"
+                transition="all 0.2s ease"
+                fontWeight="500"
+                fontFamily={"Airbnb Cereal VF"}
+                as="a"
+                href="/flash-deals"
+              >
+                Centre des offres
+              </Button>
+
+              {loading ? (
+                <HStack spacing={3}>
+                  {[...Array(3)].map((_, i) => (
+                    <Skeleton key={i} h="8" w="20" borderRadius="full" />
+                  ))}
+                </HStack>
+              ) : (
+                topCategories.slice(0, 6).map((category, index) => {
+                  const colors = getCategoryColor(category.name, index);
+
+                  return (
+                    <Button
+                      key={category.id}
+                      bg="white"
+                      color="black"
+                      _hover={{
+                        bg: "white",
+                        transform: "translateY(-1px)",
+                        shadow: "lg",
+                      }}
+                      fontSize="xs"
+                      rounded="full"
+                      flexShrink={0}
+                      px={4}
+                      py={2}
+                      h="auto"
+                      transition="all 0.2s ease"
+                      fontWeight="500"
+                      fontFamily={"Airbnb Cereal VF"}
+                      onClick={() => {
+                        navigateToCategory(category.slug);
+                      }}
+                    >
+                      {category.name}
+                    </Button>
+                  );
+                })
+              )}
+            </HStack>
+          </Box>
+
+          {/* Subtle scroll indicator */}
+          <Box
+            position="absolute"
+            right="0"
+            top="0"
+            bottom="0"
+            w="20px"
+            pointerEvents="none"
+            display={{ base: "block", md: "none" }}
+          />
+        </Box>
       </Box>
     </>
   );

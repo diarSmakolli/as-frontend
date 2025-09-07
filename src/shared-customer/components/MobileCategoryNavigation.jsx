@@ -18,6 +18,9 @@ import {
   SkeletonText,
   Divider,
   Badge,
+  Input,
+  InputGroup,
+  InputLeftElement,
 } from "@chakra-ui/react";
 import {
   FaChevronRight,
@@ -40,6 +43,15 @@ import {
   FaHotjar,
   FaPercent,
   FaGift,
+  FaTimes,
+  FaArrowRight,
+  FaSearch,
+  FaShoppingBag,
+  FaShoppingCart,
+  FaUndo,
+  FaCheck,
+  FaArrowLeft,
+  FaUser,
 } from "react-icons/fa";
 
 const MobileCategoryNavigation = ({ isOpen, onClose, categories, loading }) => {
@@ -184,194 +196,359 @@ const MobileCategoryNavigation = ({ isOpen, onClose, categories, loading }) => {
   };
 
   return (
-    <Drawer
-      isOpen={isOpen}
-      placement="left"
-      onClose={onClose}
-      size="sm"
-      bg="gray.100"
-    >
-      <DrawerOverlay />
-      <DrawerContent>
-        <DrawerCloseButton zIndex={10} />
-
-        {/* Header with Back Navigation */}
+    <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="full">
+      <DrawerOverlay bg="#fff" />
+      <DrawerContent bg="#fff" maxW="100vw" w="100vw">
+        {/* Simplified Clean Header */}
         <DrawerHeader
-          bg="gray.100"
-          color="black"
-          fontFamily="Bricolage Grotesque"
-          fontSize="lg"
-          position="relative"
-          pr={12}
+          bg="#fff"
+          borderBottom="1px"
+          borderColor="gray.200"
+          p={0}
         >
-          <HStack spacing={2}>
-            {navigationStack.length > 0 && (
+          <VStack spacing={0} align="stretch">
+            {/* Top Bar */}
+            <HStack justify="space-between" align="center" p={4}>
+              <HStack spacing={3}>
+                {navigationStack.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    color="gray.600"
+                    _hover={{ bg: "gray.100" }}
+                    onClick={handleBackNavigation}
+                    borderRadius="lg"
+                    p={2}
+                  >
+                    <Icon as={FaChevronLeft} fontSize="lg" />
+                  </Button>
+                )}
+                <VStack align="start" spacing={0}>
+                  <Text
+                    fontSize="lg"
+                    fontWeight="bold"
+                    color="gray.800"
+                    fontFamily="Airbnb Cereal VF"
+                  >
+                    {getCurrentTitle()}
+                  </Text>
+                </VStack>
+              </HStack>
+
               <Button
                 variant="ghost"
                 size="sm"
-                color="black"
-                _hover={{ bg: "rgba(255,255,255,0.1)" }}
-                onClick={handleBackNavigation}
-                p={1}
-                minW="auto"
+                color="gray.600"
+                _hover={{ bg: "gray.100" }}
+                onClick={onClose}
+                borderRadius="lg"
+                p={2}
               >
-                <Icon as={FaChevronLeft} fontSize="lg" />
+                <Icon as={FaTimes} fontSize="lg" />
               </Button>
+            </HStack>
+
+            {/* Simple Breadcrumb */}
+            {navigationStack.length > 0 && (
+              <Box px={4} pb={4}>
+                <HStack
+                  spacing={2}
+                  fontSize="sm"
+                  color="gray.500"
+                  overflowX="auto"
+                  pb={2}
+                  css={{
+                    "&::-webkit-scrollbar": { display: "none" },
+                    scrollbarWidth: "none",
+                  }}
+                >
+                  <Button
+                    variant="link"
+                    size="sm"
+                    color="gray.700"
+                    fontWeight="medium"
+                    onClick={() => {
+                      setNavigationStack([]);
+                      setCurrentCategories(getRootCategories(categories));
+                    }}
+                  >
+                    Collections
+                  </Button>
+                  {navigationStack.map((item, index) => (
+                    <React.Fragment key={index}>
+                      <Text color="gray.300">/</Text>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        color={
+                          index === navigationStack.length - 1
+                            ? "gray.800"
+                            : "blue.500"
+                        }
+                        fontWeight={
+                          index === navigationStack.length - 1
+                            ? "semibold"
+                            : "medium"
+                        }
+                        onClick={() => {
+                          if (index < navigationStack.length - 1) {
+                            const newStack = navigationStack.slice(
+                              0,
+                              index + 1
+                            );
+                            setNavigationStack(newStack);
+                            setCurrentCategories(item.categories);
+                          }
+                        }}
+                        fontFamily="Airbnb Cereal VF"
+                        noOfLines={1}
+                        maxW="120px"
+                      >
+                        {item.name}
+                      </Button>
+                    </React.Fragment>
+                  ))}
+                </HStack>
+              </Box>
             )}
-            <Text fontSize="lg" fontWeight="semibold" noOfLines={1}>
-              {getCurrentTitle()}
-            </Text>
-          </HStack>
+          </VStack>
         </DrawerHeader>
 
-        {/* Breadcrumb */}
-        {navigationStack.length > 0 && (
-          <Box
-            px={4}
-            py={2}
-            bg="gray.50"
-            borderBottom="1px"
-            borderColor="gray.200"
-          >
-            <HStack spacing={1} fontSize="xs" color="gray.600">
-              <Text>Collections</Text>
-              {navigationStack.map((item, index) => (
-                <React.Fragment key={index}>
-                  <Icon as={FaChevronRight} fontSize="xs" />
-                  <Text noOfLines={1}>{item.name}</Text>
-                </React.Fragment>
-              ))}
-            </HStack>
-          </Box>
-        )}
-
-        <DrawerBody p={0}>
-          <VStack spacing={0} align="stretch">
-            {loading
-              ? // Loading skeleton
-                Array.from({ length: 8 }).map((_, i) => (
-                  <Box key={i} p={4} borderBottom="1px" borderColor="gray.100">
+        <DrawerBody p={0} bg="#fff" rounded='3xl'>
+          <Box h="100%" overflowY="auto">
+            {loading ? (
+              // Clean Loading State
+              <VStack spacing={0} p={4}>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Box
+                    key={i}
+                    w="full"
+                    bg="white"
+                    p={4}
+                    borderBottom="1px"
+                    borderColor="gray.100"
+                  >
                     <HStack spacing={3}>
-                      <Skeleton w="8" h="8" borderRadius="md" />
-                      <Box flex={1}>
+                      <Skeleton w="10" h="10" borderRadius="lg" />
+                      <VStack align="start" spacing={1} flex={1}>
                         <SkeletonText noOfLines={1} w="70%" />
-                      </Box>
-                      <Skeleton w="4" h="4" />
+                        <SkeletonText noOfLines={1} w="40%" />
+                      </VStack>
+                      <Skeleton w="4" h="4" borderRadius="md" />
                     </HStack>
                   </Box>
-                ))
-              : currentCategories.map((category, index) => (
-                  <Box key={category.id}>
-                    <Button
-                      w="full"
-                      justifyContent="space-between"
-                      variant="ghost"
-                      py={4}
-                      px={4}
-                      borderRadius="none"
-                      borderBottom="1px"
+                ))}
+              </VStack>
+            ) : (
+              <VStack spacing={0} align="stretch">
+                {currentCategories.map((category, index) => {
+                  const colors = [
+                    "blue",
+                    "purple",
+                    "green",
+                    "orange",
+                    "pink",
+                    "teal",
+                    "red",
+                    "cyan",
+                  ];
+                  const color = colors[index % colors.length];
+
+                  return (
+                    <Box
+                      key={category.id}
+                      rounded='full'
+                      borderBottom="0px"
                       borderColor="gray.100"
-                      _hover={{ bg: "gray.50" }}
-                      _active={{ bg: "gray.100" }}
-                      onClick={() => handleCategoryClick(category)}
-                      minH="60px"
+                      transition="all 0.2s ease"
+                      _hover={{
+                        bg: "gray.50",
+                      }}
                     >
-                      <HStack spacing={3} flex={1}>
-                        <Box w="8" h="8" flexShrink={0}>
-                          {category.image_url ? (
-                            <Image
-                              src={category.image_url}
-                              alt={category.name}
-                              w="full"
-                              h="full"
-                              objectFit="cover"
-                              borderRadius="md"
-                            />
-                          ) : (
-                            <Box
-                              w="full"
-                              h="full"
-                              bg="gray.100"
-                              borderRadius="md"
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="center"
-                            >
+                      <Box
+                        as="div"
+                        w="full"
+                        p={4}
+                        h="auto"
+                        minH="70px"
+                        borderRadius="none"
+                        borderBottom="0px"
+                        borderColor="gray.100"
+                        _hover={{ bg: "gray.50" }}
+                      >
+                        <HStack spacing={4} w="full" align="center">
+                          {/* Icon */}
+                          <Box
+                            w="12"
+                            h="12"
+                            bg={`${color}.100`}
+                            borderRadius="xl"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            flexShrink={0}
+                          >
+                            {category.image_url ? (
+                              <Image
+                                src={category.image_url}
+                                alt={category.name}
+                                w="full"
+                                h="full"
+                                objectFit="cover"
+                                borderRadius="xl"
+                              />
+                            ) : (
                               <Icon
                                 as={getCategoryIcon(category.name)}
-                                color="rgb(243, 0, 0)"
-                                fontSize="lg"
+                                color={`${color}.600`}
+                                fontSize="xl"
                               />
-                            </Box>
-                          )}
-                        </Box>
-                        <Box flex={1} textAlign="left">
-                          <Text
-                            fontSize="sm"
-                            fontWeight="medium"
-                            fontFamily="Bricolage Grotesque"
-                            color="gray.800"
-                            noOfLines={1}
+                            )}
+                          </Box>
+
+                          {/* Title (click to navigate) */}
+                          <VStack
+                            align="start"
+                            spacing={1}
+                            flex={1}
+                            cursor="pointer"
+                            onClick={() => {
+                              // Direct navigation on title click
+                              const categorySlug =
+                                category.slug ||
+                                category.name
+                                  .toLowerCase()
+                                  .replace(/\s+/g, "-");
+                              navigate(`/category/${categorySlug}`);
+                              onClose();
+                            }}
                           >
-                            {category.name}
-                          </Text>
-                          {/* Show subcategory count if has children */}
-                          {hasChildren(category) && (
-                            <Text fontSize="xs" color="gray.500" mt={0.5}>
-                              {category.children.length} subcategories
+                            <Text
+                              fontSize="md"
+                              fontWeight="500"
+                              color="black"
+                              textAlign="left"
+                              w="full"
+                              noOfLines={1}
+                              fontFamily="Airbnb Cereal VF"
+                            >
+                              {category.name}
                             </Text>
+                            {!hasChildren(category) && (
+                              <Text fontSize="sm" color="green.600">
+                                Prêt à acheter
+                              </Text>
+                            )}
+                          </VStack>
+
+                          {/* Arrow (click to expand) */}
+                          {hasChildren(category) && (
+                            <Icon
+                              as={FaChevronRight}
+                              color="gray.400"
+                              fontSize="sm"
+                              cursor="pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setNavigationStack((prev) => [
+                                  ...prev,
+                                  {
+                                    name: category.name,
+                                    categories: currentCategories,
+                                  },
+                                ]);
+                                setCurrentCategories(category.children);
+                              }}
+                            />
                           )}
-                        </Box>
-                      </HStack>
+                        </HStack>
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </VStack>
+            )}
 
-                      {/* Show chevron for subcategories or shop badge for leaf categories */}
-                      {hasChildren(category) ? (
-                        <Icon
-                          as={FaChevronRight}
-                          fontSize="sm"
-                          color="gray.400"
-                        />
-                      ) : (
-                        <Badge
-                          size="sm"
-                          colorScheme="red"
-                          variant="subtle"
-                          fontSize="xs"
-                        >
-                          Shop
-                        </Badge>
-                      )}
-                    </Button>
-                  </Box>
-                ))}
-
-            {/* Empty state */}
+            {/* Simple Empty State */}
             {!loading && currentCategories.length === 0 && (
-              <Box py={16} px={4} textAlign="center">
+              <VStack spacing={6} py={16} px={6}>
                 <Box
-                  w="16"
-                  h="16"
+                  w="20"
+                  h="20"
                   bg="gray.100"
                   borderRadius="full"
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
-                  mx="auto"
-                  mb={4}
                 >
                   <Icon as={FaBox} fontSize="2xl" color="gray.400" />
                 </Box>
-                <Text
-                  fontSize="sm"
-                  color="gray.500"
-                  fontFamily="Bricolage Grotesque"
+
+                <VStack spacing={3}>
+                  <Text
+                    fontSize="lg"
+                    fontWeight="semibold"
+                    color="gray.700"
+                    textAlign="center"
+                  >
+                    Aucune collection trouvée
+                  </Text>
+                  <Text fontSize="sm" color="gray.500" textAlign="center">
+                    Aucune collection disponible pour le moment.
+                  </Text>
+                </VStack>
+
+                <Button
+                  colorScheme="blue"
+                  variant="outline"
+                  borderRadius="lg"
+                  onClick={() => {
+                    setNavigationStack([]);
+                    setCurrentCategories(getRootCategories(categories));
+                  }}
                 >
-                  No available collections.
-                </Text>
-              </Box>
+                  Retour aux collections
+                </Button>
+              </VStack>
             )}
-          </VStack>
+
+            {/* Bottom padding for scroll */}
+            <Box h="20" />
+          </Box>
         </DrawerBody>
+
+        {/* Simple Footer */}
+        <Box bg="#fff" borderTop="1px" borderColor="gray.200" p={4}>
+          <HStack justify="space-between" align="center">
+            <Text fontSize="sm" color="gray.600" fontFamily="Airbnb Cereal VF">
+              {currentCategories.length} collections disponibles
+            </Text>
+
+            <HStack spacing={2}>
+              <Button
+                size="sm"
+                variant="outline"
+                borderRadius="lg"
+                onClick={() => {
+                  setNavigationStack([]);
+                  setCurrentCategories(getRootCategories(categories));
+                }}
+                fontFamily="Airbnb Cereal VF"
+              >
+                Réinitialiser
+              </Button>
+              <Button
+                size="sm"
+                colorScheme="red"
+                borderRadius="lg"
+                onClick={onClose}
+                fontFamily="Airbnb Cereal VF"
+              >
+                Fermer
+              </Button>
+            </HStack>
+          </HStack>
+        </Box>
       </DrawerContent>
     </Drawer>
   );

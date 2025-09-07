@@ -55,6 +55,7 @@ export default function CategoryManagement() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [categoryDetails, setCategoryDetails] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   if (authLoading) return <Loader />;
 
@@ -272,8 +273,18 @@ export default function CategoryManagement() {
   return (
     <>
       <chakra.Box minH="100vh" bg={secondaryBg}>
-        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
-        <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
+        <chakra.Box display={{ base: "none", md: "block" }}>
+          <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+        </chakra.Box>
+        {/* Mobile Sidebar: shown when menu is open */}
+        <chakra.Box display={{ base: isSidebarOpen ? "block" : "none", md: "none" }} position="fixed" zIndex={999}>
+          <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} onClose={() => setIsSidebarOpen(false)} />
+        </chakra.Box>
+        {/* MobileNav: always visible, passes menu toggle */}
+        <MobileNav
+          onSettingsOpen={() => setIsSettingsOpen(true)}
+          onOpen={() => setIsSidebarOpen(true)}
+        />
 
         <SettingsModal
           isOpen={isSettingsOpen}
@@ -285,10 +296,10 @@ export default function CategoryManagement() {
           <chakra.Flex
             flexDirection={{ base: "column", md: "row" }}
             justifyContent="space-between"
-            alignItems={{ base: "center", md: "flex-start" }}
+            alignItems={{ base: "left", md: "flex-start" }}
             mb={6}
           >
-            <chakra.Box textAlign={{ base: "center", md: "left" }}>
+            <chakra.Box textAlign={{ base: "left", md: "left" }}>
               <chakra.Text
                 color="gray.900"
                 fontSize={{ base: "xl", md: "2xl" }}

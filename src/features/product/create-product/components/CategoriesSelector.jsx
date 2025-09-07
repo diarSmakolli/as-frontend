@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   Box,
   VStack,
@@ -36,11 +36,11 @@ import {
   Alert,
   AlertIcon,
   Stack,
-} from '@chakra-ui/react';
-import { 
-  FiFolder, 
-  FiBookOpen, 
-  FiChevronRight, 
+} from "@chakra-ui/react";
+import {
+  FiFolder,
+  FiBookOpen,
+  FiChevronRight,
   FiChevronDown,
   FiSearch,
   FiCheck,
@@ -49,14 +49,18 @@ import {
   FiEyeOff,
   FiFilter,
   FiGrid,
-  FiList
-} from 'react-icons/fi';
+  FiList,
+} from "react-icons/fi";
 
-const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange }) => {
+const CategoriesSelector = ({
+  categories,
+  selectedCategories,
+  onCategoriesChange,
+}) => {
   // State for UI controls
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [expandedCategories, setExpandedCategories] = useState(new Set());
-  const [viewMode, setViewMode] = useState('tree'); // 'tree' or 'grid'
+  const [viewMode, setViewMode] = useState("tree"); // 'tree' or 'grid'
   const [showOnlySelected, setShowOnlySelected] = useState(false);
   const [autoExpandOnSearch, setAutoExpandOnSearch] = useState(true);
 
@@ -69,14 +73,10 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
   const searchBg = useColorModeValue("gray.50", "gray.700");
 
   const handleCategoryToggle = (categoryId) => {
-    console.log('Toggling category:', categoryId);
-    console.log('Current selected:', selectedCategories);
-    
     const newSelected = selectedCategories.includes(categoryId)
-      ? selectedCategories.filter(id => id !== categoryId)
+      ? selectedCategories.filter((id) => id !== categoryId)
       : [...selectedCategories, categoryId];
-    
-    console.log('New selected:', newSelected);
+
     onCategoriesChange(newSelected);
   };
 
@@ -93,7 +93,7 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
 
   // Bulk selection helpers
   const selectAllCategories = () => {
-    const allIds = flattenCategories(categories).map(cat => cat.id);
+    const allIds = flattenCategories(categories).map((cat) => cat.id);
     onCategoriesChange(allIds);
   };
 
@@ -104,8 +104,8 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
   const selectCategoryAndChildren = (categoryId) => {
     const category = findCategoryById(categories, categoryId);
     if (!category) return;
-    
-    const childrenIds = flattenCategories([category]).map(cat => cat.id);
+
+    const childrenIds = flattenCategories([category]).map((cat) => cat.id);
     const newSelected = [...new Set([...selectedCategories, ...childrenIds])];
     onCategoriesChange(newSelected);
   };
@@ -113,70 +113,89 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
   const deselectCategoryAndChildren = (categoryId) => {
     const category = findCategoryById(categories, categoryId);
     if (!category) return;
-    
-    const childrenIds = flattenCategories([category]).map(cat => cat.id);
-    const newSelected = selectedCategories.filter(id => !childrenIds.includes(id));
+
+    const childrenIds = flattenCategories([category]).map((cat) => cat.id);
+    const newSelected = selectedCategories.filter(
+      (id) => !childrenIds.includes(id)
+    );
     onCategoriesChange(newSelected);
   };
 
   // Enhanced search and filtering
   const filteredCategories = useMemo(() => {
     if (!searchTerm && !showOnlySelected) return categories;
-    
+
     const filterCategory = (category) => {
-      const matchesSearch = !searchTerm || 
+      const matchesSearch =
+        !searchTerm ||
         category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()));
-      
+        (category.description &&
+          category.description
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()));
+
       const isSelected = selectedCategories.includes(category.id);
       const matchesSelectedFilter = !showOnlySelected || isSelected;
-      
-      const filteredChildren = category.children ? 
-        category.children.map(filterCategory).filter(Boolean) : [];
-      
-      // Include if matches criteria or has matching children
-      if ((matchesSearch && matchesSelectedFilter) || filteredChildren.length > 0) {
+
+      const filteredChildren = category.children
+        ? category.children.map(filterCategory).filter(Boolean)
+        : [];
+
+      if (
+        (matchesSearch && matchesSelectedFilter) ||
+        filteredChildren.length > 0
+      ) {
         return {
           ...category,
-          children: filteredChildren
+          children: filteredChildren,
         };
       }
-      
+
       return null;
     };
-    
+
     const filtered = categories.map(filterCategory).filter(Boolean);
-    
+
     // Auto-expand categories when searching
     if (searchTerm && autoExpandOnSearch) {
       const newExpanded = new Set(expandedCategories);
-      flattenCategories(filtered).forEach(cat => {
+      flattenCategories(filtered).forEach((cat) => {
         if (cat.children && cat.children.length > 0) {
           newExpanded.add(cat.id);
         }
       });
       setExpandedCategories(newExpanded);
     }
-    
+
     return filtered;
-  }, [categories, searchTerm, showOnlySelected, selectedCategories, autoExpandOnSearch, expandedCategories]);
+  }, [
+    categories,
+    searchTerm,
+    showOnlySelected,
+    selectedCategories,
+    autoExpandOnSearch,
+    expandedCategories,
+  ]);
 
   // Flatten all categories for search and display
   const flattenCategories = (categoryList, level = 0) => {
     let flattened = [];
-    
-    categoryList.forEach(category => {
+
+    categoryList.forEach((category) => {
       flattened.push({
         ...category,
         level,
-        path: buildCategoryPath(category, categoryList)
+        path: buildCategoryPath(category, categoryList),
       });
-      
+
       if (category.children && category.children.length > 0) {
-        flattened = [...flattened, ...flattenCategories(category.children, level + 1)];
+        flattened = [
+          ...flattened,
+          ...flattenCategories(category.children, level + 1),
+        ];
       }
     });
-    
+
     return flattened;
   };
 
@@ -209,23 +228,22 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
   // Get category display name with full path
   const getCategoryDisplayName = (category) => {
     if (category.path) {
-      return category.path.join(' > ');
+      return category.path.join(" > ");
     }
     return category.name;
   };
 
-  // Enhanced category item renderer with collapse/expand
   const renderCategoryItem = (category, level = 0) => {
     const hasChildren = category.children && category.children.length > 0;
     const isSelected = selectedCategories.includes(category.id);
     const isExpanded = expandedCategories.has(category.id);
-    const paddingLeft = level * 4; // Reduced padding for better space usage
+    const paddingLeft = level * 4;
 
-    // Count selected children
-    const selectedChildrenCount = hasChildren ? 
-      flattenCategories(category.children).filter(child => 
-        selectedCategories.includes(child.id)
-      ).length : 0;
+    const selectedChildrenCount = hasChildren
+      ? flattenCategories(category.children).filter((child) =>
+          selectedCategories.includes(child.id)
+        ).length
+      : 0;
 
     // Choose background color based on level
     let bgColorForLevel = parentBgColor;
@@ -245,9 +263,9 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
           borderColor={isSelected ? "blue.400" : borderColor}
           mb={1}
           boxShadow={isSelected ? "0 0 0 2px rgba(66, 153, 225, 0.3)" : "none"}
-          _hover={{ 
+          _hover={{
             borderColor: "blue.300",
-            boxShadow: "0 0 0 1px rgba(66, 153, 225, 0.2)"
+            boxShadow: "0 0 0 1px rgba(66, 153, 225, 0.2)",
           }}
           transition="all 0.2s"
         >
@@ -260,10 +278,10 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
                 colorScheme="gray"
                 icon={isExpanded ? <FiChevronDown /> : <FiChevronRight />}
                 onClick={() => toggleCategoryExpansion(category.id)}
-                aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                aria-label={isExpanded ? "Collapse" : "Expand"}
               />
             )}
-            
+
             {/* Category Checkbox */}
             <Checkbox
               isChecked={isSelected}
@@ -288,52 +306,67 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
                   objectFit="cover"
                   fallback={
                     <Center bg="gray.100" boxSize="100%">
-                      <Icon as={hasChildren ? FiBookOpen : FiFolder} color="gray.400" fontSize="xs" />
+                      <Icon
+                        as={hasChildren ? FiBookOpen : FiFolder}
+                        color="gray.400"
+                        fontSize="xs"
+                      />
                     </Center>
                   }
                 />
               </Box>
             ) : (
-              <Icon 
-                as={hasChildren ? FiBookOpen : FiFolder} 
-                fontSize="md" 
-                color={level === 0 ? "blue.500" : level === 1 ? "purple.500" : "orange.500"} 
+              <Icon
+                as={hasChildren ? FiBookOpen : FiFolder}
+                fontSize="md"
+                color={
+                  level === 0
+                    ? "blue.500"
+                    : level === 1
+                    ? "purple.500"
+                    : "orange.500"
+                }
               />
             )}
-            
+
             {/* Category Info */}
             <VStack align="start" spacing={0} flex={1}>
               <HStack spacing={2} align="center" wrap="wrap">
-                <Text 
-                  fontSize="sm" 
-                  color="gray.800" 
-                  fontWeight={level === 0 ? "semibold" : level === 1 ? "medium" : "normal"}
+                <Text
+                  fontSize="sm"
+                  color="gray.800"
+                  fontWeight={
+                    level === 0 ? "semibold" : level === 1 ? "medium" : "normal"
+                  }
                   noOfLines={1}
                 >
                   {category.name}
                 </Text>
-                
+
                 {/* Level indicator */}
-                <Badge 
-                  size="xs" 
-                  colorScheme={level === 0 ? "blue" : level === 1 ? "purple" : "orange"}
+                <Badge
+                  size="xs"
+                  colorScheme={
+                    level === 0 ? "blue" : level === 1 ? "purple" : "orange"
+                  }
                   variant="subtle"
                 >
                   L{level}
                 </Badge>
-                
+
                 {/* Children count with selection info */}
                 {hasChildren && (
-                  <Badge 
-                    size="xs" 
-                    colorScheme={selectedChildrenCount > 0 ? "green" : "gray"} 
+                  <Badge
+                    size="xs"
+                    colorScheme={selectedChildrenCount > 0 ? "green" : "gray"}
                     variant={selectedChildrenCount > 0 ? "solid" : "outline"}
                   >
-                    {selectedChildrenCount}/{flattenCategories(category.children).length}
+                    {selectedChildrenCount}/
+                    {flattenCategories(category.children).length}
                   </Badge>
                 )}
               </HStack>
-              
+
               {/* Description */}
               {category.description && (
                 <Text fontSize="xs" color="gray.600" noOfLines={1}>
@@ -370,7 +403,9 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
         {hasChildren && (
           <Collapse in={isExpanded} animateOpacity>
             <Box ml={6} mt={1} mb={2}>
-              {category.children.map(child => renderCategoryItem(child, level + 1))}
+              {category.children.map((child) =>
+                renderCategoryItem(child, level + 1)
+              )}
             </Box>
           </Collapse>
         )}
@@ -381,33 +416,53 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
   // Enhanced flat view with better organization
   const renderFlatView = () => {
     const flatCategories = flattenCategories(filteredCategories);
-    
+
     if (flatCategories.length === 0) {
       return (
-        <Box p={8} textAlign="center" borderRadius="md" bg="gray.50" border="1px dashed" borderColor="gray.200">
+        <Box
+          p={8}
+          textAlign="center"
+          borderRadius="md"
+          bg="gray.50"
+          border="1px dashed"
+          borderColor="gray.200"
+        >
           <Text color="gray.500">
-            {searchTerm ? `No categories match "${searchTerm}"` : 'No categories found'}
+            {searchTerm
+              ? `No categories match "${searchTerm}"`
+              : "No categories found"}
           </Text>
         </Box>
       );
     }
-    
+
     return (
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={3}>
-        {flatCategories.map(category => {
+        {flatCategories.map((category) => {
           const isSelected = selectedCategories.includes(category.id);
           const displayName = getCategoryDisplayName(category);
-          
+
           return (
             <Box
               key={category.id}
               p={3}
-              bg={category.level === 0 ? parentBgColor : category.level === 1 ? childBgColor : level2BgColor}
+              bg={
+                category.level === 0
+                  ? parentBgColor
+                  : category.level === 1
+                  ? childBgColor
+                  : level2BgColor
+              }
               borderRadius="md"
               border="1px"
               borderColor={isSelected ? "blue.400" : borderColor}
-              _hover={{ borderColor: "blue.300", transform: "translateY(-1px)" }}
-              boxShadow={isSelected ? "0 0 0 2px rgba(66, 153, 225, 0.3)" : "sm"}
+              _hover={{
+                borderColor: "blue.300",
+                transform: "translateY(-1px)",
+              }}
+              boxShadow={
+                isSelected ? "0 0 0 2px rgba(66, 153, 225, 0.3)" : "sm"
+              }
               transition="all 0.2s"
               cursor="pointer"
               onClick={() => handleCategoryToggle(category.id)}
@@ -421,7 +476,7 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
                     size="sm"
                     onClick={(e) => e.stopPropagation()}
                   />
-                  
+
                   {/* Category Image */}
                   {category.image_url ? (
                     <Box
@@ -438,45 +493,66 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
                         objectFit="cover"
                         fallback={
                           <Center bg="gray.100" boxSize="100%">
-                            <Icon as={FiFolder} color="gray.400" fontSize="xs" />
+                            <Icon
+                              as={FiFolder}
+                              color="gray.400"
+                              fontSize="xs"
+                            />
                           </Center>
                         }
                       />
                     </Box>
                   ) : (
-                    <Icon 
-                      as={FiFolder} 
-                      fontSize="sm" 
-                      color={category.level === 0 ? "blue.500" : category.level === 1 ? "purple.500" : "orange.500"} 
+                    <Icon
+                      as={FiFolder}
+                      fontSize="sm"
+                      color={
+                        category.level === 0
+                          ? "blue.500"
+                          : category.level === 1
+                          ? "purple.500"
+                          : "orange.500"
+                      }
                     />
                   )}
-                  
-                  <Text 
-                    fontSize="sm" 
-                    color="gray.800" 
+
+                  <Text
+                    fontSize="sm"
+                    color="gray.800"
                     fontWeight={category.level === 0 ? "semibold" : "normal"}
                     noOfLines={1}
                     flex={1}
                   >
                     {category.name}
                   </Text>
-                  
-                  <Badge 
-                    size="xs" 
-                    colorScheme={category.level === 0 ? "blue" : category.level === 1 ? "purple" : "orange"}
+
+                  <Badge
+                    size="xs"
+                    colorScheme={
+                      category.level === 0
+                        ? "blue"
+                        : category.level === 1
+                        ? "purple"
+                        : "orange"
+                    }
                     variant="subtle"
                   >
                     L{category.level}
                   </Badge>
                 </HStack>
-                
+
                 {/* Full path for nested categories */}
                 {category.level > 0 && displayName !== category.name && (
-                  <Text fontSize="xs" color="gray.500" fontStyle="italic" noOfLines={1}>
+                  <Text
+                    fontSize="xs"
+                    color="gray.500"
+                    fontStyle="italic"
+                    noOfLines={1}
+                  >
                     {displayName}
                   </Text>
                 )}
-                
+
                 {/* Description */}
                 {category.description && (
                   <Text fontSize="xs" color="gray.600" noOfLines={2}>
@@ -502,8 +578,12 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
         borderColor="gray.200"
       >
         <Icon as={FiFolder} fontSize="3xl" color="gray.400" mb={4} />
-        <Text color="gray.500" fontSize="lg" fontWeight="medium">No categories available</Text>
-        <Text color="gray.400" fontSize="sm">Categories will appear here once they're loaded</Text>
+        <Text color="gray.500" fontSize="lg" fontWeight="medium">
+          No categories available
+        </Text>
+        <Text color="gray.400" fontSize="sm">
+          Categories will appear here once they're loaded
+        </Text>
       </Box>
     );
   }
@@ -527,7 +607,10 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
               onChange={(e) => setSearchTerm(e.target.value)}
               bg={searchBg}
               borderColor={borderColor}
-              _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #4299E1" }}
+              _focus={{
+                borderColor: "blue.400",
+                boxShadow: "0 0 0 1px #4299E1",
+              }}
             />
           </InputGroup>
 
@@ -537,17 +620,17 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
             <ButtonGroup size="sm" isAttached variant="outline">
               <Button
                 leftIcon={<FiList />}
-                onClick={() => setViewMode('tree')}
-                colorScheme={viewMode === 'tree' ? "blue" : "gray"}
-                variant={viewMode === 'tree' ? "solid" : "outline"}
+                onClick={() => setViewMode("tree")}
+                colorScheme={viewMode === "tree" ? "blue" : "gray"}
+                variant={viewMode === "tree" ? "solid" : "outline"}
               >
                 Tree View
               </Button>
               <Button
                 leftIcon={<FiGrid />}
-                onClick={() => setViewMode('grid')}
-                colorScheme={viewMode === 'grid' ? "blue" : "gray"}
-                variant={viewMode === 'grid' ? "solid" : "outline"}
+                onClick={() => setViewMode("grid")}
+                colorScheme={viewMode === "grid" ? "blue" : "gray"}
+                variant={viewMode === "grid" ? "solid" : "outline"}
               >
                 Grid View
               </Button>
@@ -606,7 +689,13 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
               <Tooltip label="Expand all categories">
                 <Button
                   leftIcon={<FiEye />}
-                  onClick={() => setExpandedCategories(new Set(flattenCategories(categories).map(cat => cat.id)))}
+                  onClick={() =>
+                    setExpandedCategories(
+                      new Set(
+                        flattenCategories(categories).map((cat) => cat.id)
+                      )
+                    )
+                  }
                 >
                   Expand
                 </Button>
@@ -640,23 +729,34 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
 
       {/* Category Display */}
       <Box>
-        {viewMode === 'tree' ? (
+        {viewMode === "tree" ? (
           <VStack spacing={1} align="stretch">
             {filteredCategories.length === 0 ? (
-              <Box p={8} textAlign="center" borderRadius="md" bg="gray.50" border="1px dashed" borderColor="gray.200">
+              <Box
+                p={8}
+                textAlign="center"
+                borderRadius="md"
+                bg="gray.50"
+                border="1px dashed"
+                borderColor="gray.200"
+              >
                 <Text color="gray.500">
-                  {searchTerm ? `No categories match "${searchTerm}"` : 'No categories found'}
+                  {searchTerm
+                    ? `No categories match "${searchTerm}"`
+                    : "No categories found"}
                 </Text>
               </Box>
             ) : (
-              filteredCategories.map(category => renderCategoryItem(category, 0))
+              filteredCategories.map((category) =>
+                renderCategoryItem(category, 0)
+              )
             )}
           </VStack>
         ) : (
           renderFlatView()
         )}
       </Box>
-      
+
       {/* Selected Categories Display */}
       {selectedCategories.length > 0 && (
         <Box>
@@ -669,7 +769,7 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
                 {selectedCategories.length}
               </Badge>
             </HStack>
-            
+
             <Button
               size="sm"
               variant="ghost"
@@ -680,22 +780,28 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
               Clear All
             </Button>
           </HStack>
-          
+
           <Wrap spacing={2}>
-            {selectedCategories.map(categoryId => {
+            {selectedCategories.map((categoryId) => {
               const category = findCategoryById(categories, categoryId);
               if (!category) return null;
-              
+
               const displayName = getCategoryDisplayName({
                 ...category,
-                path: buildCategoryPath(category, categories)
+                path: buildCategoryPath(category, categories),
               });
-              
+
               return (
                 <WrapItem key={categoryId}>
                   <Tag
                     size="md"
-                    colorScheme={category.level === 0 ? "blue" : category.level === 1 ? "purple" : "orange"}
+                    colorScheme={
+                      category.level === 0
+                        ? "blue"
+                        : category.level === 1
+                        ? "purple"
+                        : "orange"
+                    }
                     variant="solid"
                     borderRadius="full"
                   >
@@ -729,42 +835,61 @@ const CategoriesSelector = ({ categories, selectedCategories, onCategoriesChange
           </Wrap>
 
           {/* Enhanced Selection Summary */}
-          <Box mt={4} p={4} bg="blue.50" borderRadius="md" borderLeft="4px" borderColor="blue.400">
+          <Box
+            mt={4}
+            p={4}
+            bg="blue.50"
+            borderRadius="md"
+            borderLeft="4px"
+            borderColor="blue.400"
+          >
             <VStack align="start" spacing={2}>
               <Text fontSize="sm" color="blue.800" fontWeight="medium">
                 📊 Selection Summary:
               </Text>
-              <Stack direction={{ base: "column", md: "row" }} spacing={4} fontSize="xs" color="blue.700">
+              <Stack
+                direction={{ base: "column", md: "row" }}
+                spacing={4}
+                fontSize="xs"
+                color="blue.700"
+              >
                 <HStack>
                   <Badge colorScheme="blue" size="sm">
-                    {selectedCategories.filter(id => {
-                      const cat = findCategoryById(categories, id);
-                      return cat && cat.level === 0;
-                    }).length}
+                    {
+                      selectedCategories.filter((id) => {
+                        const cat = findCategoryById(categories, id);
+                        return cat && cat.level === 0;
+                      }).length
+                    }
                   </Badge>
                   <Text>Parent categories</Text>
                 </HStack>
                 <HStack>
                   <Badge colorScheme="purple" size="sm">
-                    {selectedCategories.filter(id => {
-                      const cat = findCategoryById(categories, id);
-                      return cat && cat.level === 1;
-                    }).length}
+                    {
+                      selectedCategories.filter((id) => {
+                        const cat = findCategoryById(categories, id);
+                        return cat && cat.level === 1;
+                      }).length
+                    }
                   </Badge>
                   <Text>Level-1 subcategories</Text>
                 </HStack>
                 <HStack>
                   <Badge colorScheme="orange" size="sm">
-                    {selectedCategories.filter(id => {
-                      const cat = findCategoryById(categories, id);
-                      return cat && cat.level >= 2;
-                    }).length}
+                    {
+                      selectedCategories.filter((id) => {
+                        const cat = findCategoryById(categories, id);
+                        return cat && cat.level >= 2;
+                      }).length
+                    }
                   </Badge>
                   <Text>Deep subcategories</Text>
                 </HStack>
               </Stack>
               <Text fontSize="xs" color="blue.600" fontStyle="italic">
-                💡 Categories help organize your products for better customer navigation and discovery
+                💡 Categories help organize your products for better customer
+                navigation and discovery
               </Text>
             </VStack>
           </Box>

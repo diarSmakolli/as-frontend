@@ -11,7 +11,7 @@ export const useExploreAllProducts = (initialFilters = {}) => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   const [filters, setFilters] = useState({
-    limit: 30, // 30 items per page as requested
+    limit: 30,
     offset: 0,
     search: "",
     category_id: "",
@@ -67,7 +67,7 @@ export const useExploreAllProducts = (initialFilters = {}) => {
         }
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred while exploring products');
+      setError(null);
     } finally {
       setLoading(false);
     }

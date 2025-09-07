@@ -11,7 +11,9 @@ const fontName = "Inter";
 export default function Dashboard() {
   const { account, isLoading } = useAuth(); 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isAuthContextLoading = isLoading || false;
+
   if(isAuthContextLoading) {
     return <Loader />;
   }
@@ -19,8 +21,15 @@ export default function Dashboard() {
   return (
     <>
       <chakra.Box minH="100vh" bg="rgb(241,241,241)">
-        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
-        <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
+        <chakra.Box display={{ base: "none", md: "block" }}>
+          <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+        </chakra.Box>
+        {/* Mobile Sidebar: shown when menu is open */}
+        <chakra.Box display={{ base: isSidebarOpen ? "block" : "none", md: "none" }} position="fixed" zIndex={999}>
+          <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} onClose={() => setIsSidebarOpen(false)} />
+        </chakra.Box>
+        {/* MobileNav: always visible, passes menu toggle */}
+        <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} onOpen={() => setIsSidebarOpen(true)} />
 
         <SettingsModal
           isOpen={isSettingsOpen}
@@ -33,7 +42,7 @@ export default function Dashboard() {
             fontSize={{ base: "2xl", md: "3xl" }}
             fontFamily={fontName}
             fontWeight="light"
-            textAlign={{ base: "center", md: "left" }}
+            textAlign={{ base: "left", md: "left" }}
           >
             Good Afternoon, {account?.preferred_name || account?.first_name || "User"}
           </chakra.Text>

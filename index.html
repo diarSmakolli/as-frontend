@@ -1,13 +1,92 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>As Solutions Fournitures</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/logo/logo-web.png" />
+</head>
+<link rel="stylesheet" href="/src/index.css" />
+<body>
+  <div id="root"></div>
+  <div id="custom-fc-chat" style="
+    position:fixed;
+    bottom:24px;
+    left:10px;
+    z-index:9999;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    background: transparent;
+    color:#fff;
+    border-radius: 0px;
+    box-shadow: none;
+    padding: 0px;
+    font-weight:600;
+    font-size:1.0em;
+    font-family: Bogle, sans-serif;
+  " onmouseover="this.style.boxShadow='0px'" onmouseout="this.style.boxShadow='0px'">
+    <span style="font-family: Bogle, sans-serif">
+      <img
+        src="https://cdn-icons-png.flaticon.com/128/18878/18878645.png"
+        alt="As Solutions Fournitures"
+        style="height: auto; max-height: 60px; vertical-align: middle; margin-right: 0px; margin-left: 0px; 
+        border-radius: 0px;" />
+    </span>
+    <span id="chat-notification" style="display:none;margin-left:8px;background:#fff;color:#e53935;
+    border-radius:50%;padding:2px 8px;font-size:0.9em;font-weight:700;">
+      0
+    </span>
+  </div>
+  <style>
+    @media (max-width: 768px) {
+      #custom-fc-chat {
+        display: none !important;
+      }
+    }
+  </style>
+  <script type="module" src="/src/main.jsx"></script>
+  <script src="https://wchat.freshchat.com/js/widget.js"></script>
+  <script>
+    window.fcWidget.init({
+      token: "07cc3744-c6d6-49df-b23b-3914548514c8",
+      host: "https://wchat.freshchat.com",
+      config: {
+        headerProperty: {
+          appName: 'As Solutions Fournitures',
+          hideChatButton: true
+        },
+        position: {
+          bottom: window.innerWidth <= 768 ? 90 : 24,
+          right: 24
+        }
+      }
+    });
+
+    const chatBtn = document.getElementById("custom-fc-chat");
+    const chatNotif = document.getElementById("chat-notification");
+    let messageCount = 0;
+
+    chatBtn.onclick = function () {
+      if (window.fcWidget.isOpen()) {
+        window.fcWidget.close();
+      } else {
+        window.fcWidget.open();
+      }
+    };
+
+    window.fcWidget.on('message:received', function () {
+      messageCount++;
+      chatNotif.innerText = messageCount;
+      chatNotif.style.display = "inline-block";
+    });
+
+    window.fcWidget.on("widget:opened", function () {
+      messageCount = 0;
+      chatNotif.style.display = "none";
+    });
+  </script>
+</body>
+
 </html>

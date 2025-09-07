@@ -75,4 +75,10 @@ export const administrationService = {
     }
     return axiosInstance.put(`/user-details/${accountId}/assign-company/${companyId}`);
   },
+  editPercentageCommission: async (accountId, percentage) => {
+    return axiosInstance.put(`/user-details/${accountId}/update-commission`, { percentage });
+  },
+  processRewardPaymentsForAllAgents: async () => {
+    return axiosInstance.post("/process-reward-payments");
+  },
 };

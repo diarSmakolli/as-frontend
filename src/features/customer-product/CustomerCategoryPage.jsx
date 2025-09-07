@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Box,
   Container,
@@ -40,6 +40,8 @@ import {
   Image,
   useDisclosure as useCollapseDisclosure,
   Collapse,
+  Skeleton,
+  SkeletonCircle,
 } from "@chakra-ui/react";
 import {
   FaFilter,
@@ -58,6 +60,8 @@ import Navbar from "../../shared-customer/components/Navbar";
 import Footer from "../../shared-customer/components/Footer";
 import ProductCard from "./ProductCard";
 import { customToastContainerStyle } from "../../commons/toastStyles";
+import Error404 from "../../commons/components/Error404";
+import { useCustomerAuth } from "../customer-account/auth-context/customerAuthContext";
 
 // Reuse the same FilterSidebar component from CustomerSearchPage
 const FilterSidebar = React.memo(
@@ -89,27 +93,31 @@ const FilterSidebar = React.memo(
         align="stretch"
         spacing={6}
         p={isMobile ? 0 : 4}
-        bg={isMobile ? "white" : "gray.50"}
+        bg={"#fff"}
+        border="1px solid rgba(145, 158, 171, 0.2)"
         borderRadius={isMobile ? 0 : "lg"}
         maxH={isMobile ? "auto" : "calc(100vh - 120px)"}
         overflowY={isMobile ? "visible" : "auto"}
       >
         <HStack justify="space-between">
           <Text
-            fontSize="lg"
-            fontWeight="bold"
-            fontFamily={"Bricolage Grotesque"}
+            fontSize="md"
+            fontWeight="500"
+            fontFamily={"Airbnb Cereal VF"}
+            color='gray.700'
           >
-            Filters{" "}
+            Filtres{" "}
             {getSelectedFiltersCount() > 0 && `(${getSelectedFiltersCount()})`}
           </Text>
           <Button
             size="sm"
             variant="ghost"
             onClick={clearFilters}
-            fontFamily={"Bricolage Grotesque"}
+            fontFamily={"Airbnb Cereal VF"}
+            fontSize={'sm'}
+            color='gray.700'
           >
-            Clear All
+            Tout effacer
           </Button>
         </HStack>
 
@@ -117,7 +125,7 @@ const FilterSidebar = React.memo(
         {getSelectedFiltersCount() > 0 && (
           <Box>
             <Text fontSize="sm" fontWeight="semibold" mb={2}>
-              Active Filters:
+              Filtres actifs
             </Text>
             <Box maxH="120px" overflowY="auto">
               <Wrap spacing={1}>
@@ -135,7 +143,7 @@ const FilterSidebar = React.memo(
                 {includeOutOfStock && (
                   <WrapItem>
                     <Tag size="sm" colorScheme="orange" variant="solid">
-                      <TagLabel>Include Out of Stock</TagLabel>
+                      <TagLabel>Inclure les ruptures de stock</TagLabel>
                       <TagCloseButton
                         onClick={() => setIncludeOutOfStock(false)}
                       />
@@ -145,7 +153,9 @@ const FilterSidebar = React.memo(
                 {/* Dynamic specification filters tags */}
                 {Object.entries(selectedFilters.specifications || {}).map(
                   ([specKey, specValues]) =>
-                    specValues.slice(0, 8).map((value) => (
+                    // specValues.slice(0, 8)
+                    specValues
+                    .map((value) => (
                       <WrapItem key={`${specKey}-${value}`}>
                         <Tag size="sm" colorScheme="purple" variant="solid">
                           <TagLabel noOfLines={1} maxW="120px">
@@ -170,7 +180,7 @@ const FilterSidebar = React.memo(
                         {Object.values(
                           selectedFilters.specifications || {}
                         ).flat().length - 8}{" "}
-                        more
+                        plus
                       </TagLabel>
                     </Tag>
                   </WrapItem>
@@ -185,14 +195,14 @@ const FilterSidebar = React.memo(
         {/* Price Range Filter */}
         <Box>
           <HStack mb={3}>
-            <FaEuroSign color="gray.500" />
-            <Text fontWeight="semibold" fontFamily={"Bricolage Grotesque"}>
-              Price Range
+            {/* <FaEuroSign color="gray.500" /> */}
+            <Text fontWeight="500" fontFamily={"Airbnb Cereal VF"}>
+              Gamme de prix
             </Text>
           </HStack>
 
           {availableFilters?.price_range && (
-            <Text fontSize="xs" color="gray.600" mb={2}>
+            <Text fontSize="xs" color="gray.600" mb={2} fontFamily={"Airbnb Cereal VF"}>
               {availableFilters.price_range.formatted_range}
             </Text>
           )}
@@ -200,8 +210,8 @@ const FilterSidebar = React.memo(
           <VStack spacing={3}>
             <HStack spacing={2} w="full">
               <VStack spacing={1} flex={1}>
-                <Text fontSize="xs" color="gray.500">
-                  Min Price
+                <Text fontSize="xs" color="gray.500" fontFamily={"Airbnb Cereal VF"}>
+                  Prix minimum
                 </Text>
                 <Input
                   value={tempMinPrice}
@@ -213,12 +223,12 @@ const FilterSidebar = React.memo(
                   autoComplete="off"
                 />
               </VStack>
-              <Text alignSelf="end" pb={2} color="gray.400">
-                to
+              <Text alignSelf="end" pb={2} color="gray.400" fontFamily={"Airbnb Cereal VF"}>
+                à
               </Text>
               <VStack spacing={1} flex={1}>
-                <Text fontSize="xs" color="gray.500">
-                  Max Price
+                <Text fontSize="xs" color="gray.500" fontFamily={"Airbnb Cereal VF"}>
+                  Prix maximum
                 </Text>
                 <Input
                   value={tempMaxPrice}
@@ -234,19 +244,28 @@ const FilterSidebar = React.memo(
             <HStack spacing={2} w="full">
               <Button
                 size="sm"
-                colorScheme="blue"
+                bg='#0d00caff'
+                color='white'
+                _hover={{ bg: '#0d00caff' }}
+                _active={{ bg: '#0d00caff' }}
+                _focus={{ bg: '#0d00caff' }}
                 onClick={applyPriceRange}
                 flex={1}
+                fontFamily={"Airbnb Cereal VF"}
               >
-                Apply
+                Appliquer
               </Button>
               <Button
                 size="sm"
-                variant="outline"
+                bg='#0d00caff'
+                color='white'
+                _hover={{ bg: '#0d00caff' }}
+                _active={{ bg: '#0d00caff' }}
+                _focus={{ bg: '#0d00caff' }}
                 onClick={clearPriceRange}
                 flex={1}
               >
-                Clear
+                Claire
               </Button>
             </HStack>
           </VStack>
@@ -258,8 +277,8 @@ const FilterSidebar = React.memo(
         <Box>
           <HStack mb={3}>
             <FaBoxOpen color="gray.500" />
-            <Text fontWeight="semibold" fontFamily={"Bricolage Grotesque"}>
-              Availability
+            <Text fontWeight="500" fontFamily="Airbnb Cereal VF">
+              Disponibilité
             </Text>
           </HStack>
 
@@ -285,16 +304,16 @@ const FilterSidebar = React.memo(
                   >
                     <Text fontSize="sm">{option.label}</Text>
                   </Checkbox>
-                  <Text fontSize="xs" color="gray.500">
+                  {/* <Text fontSize="xs" color="gray.500">
                     ({option.count})
-                  </Text>
+                  </Text> */}
                 </HStack>
               ))}
             </VStack>
           ) : (
             <HStack justify="space-between" align="center">
-              <Text fontSize="sm" color="gray.600">
-                Include Out of Stock Products
+              <Text fontSize="sm" color="gray.600" fontFamily="Airbnb Cereal VF">
+                Inclure les produits en rupture de stock
               </Text>
               <Box
                 as="button"
@@ -349,15 +368,15 @@ const FilterSidebar = React.memo(
                     <FaCog color="gray.500" />
                     <VStack align="start" spacing={0}>
                       <Text
-                        fontWeight="semibold"
-                        fontFamily={"Bricolage Grotesque"}
+                        fontWeight="500"
+                        fontFamily="Airbnb Cereal VF"
                       >
-                        Filter by Specifications
+                        Filtrer par spécifications
                       </Text>
-                      <Text fontSize="xs" color="gray.500">
+                      {/* <Text fontSize="xs" color="gray.500" fontFamily="Airbnb Cereal VF">
                         {Object.keys(availableFilters.specifications).length}{" "}
-                        categories available
-                      </Text>
+                        catégories disponibles
+                      </Text> */}
                     </VStack>
                   </HStack>
                   <Box color="gray.400">
@@ -387,7 +406,7 @@ const FilterSidebar = React.memo(
                     >
                       <Accordion allowMultiple defaultIndex={[]}>
                         {Object.entries(availableFilters.specifications)
-                          .slice(0, 8)
+                          // .slice(0, 8)
                           .map(([specKey, specData]) => (
                             <AccordionItem key={specKey} border="none" mb={2}>
                               <AccordionButton
@@ -397,13 +416,13 @@ const FilterSidebar = React.memo(
                                 _hover={{ bg: "gray.100" }}
                               >
                                 <Box flex="1" textAlign="left">
-                                  <Text fontSize="sm" fontWeight="medium">
+                                  <Text fontSize="xs" fontWeight="medium">
                                     {specData.label}
                                   </Text>
                                   <HStack spacing={2}>
-                                    <Text fontSize="xs" color="gray.500">
+                                    {/* <Text fontSize="xs" color="gray.500">
                                       {specData.total_products} products
-                                    </Text>
+                                    </Text> */}
                                     {selectedFilters.specifications?.[specKey]
                                       ?.length > 0 && (
                                       <Text
@@ -417,7 +436,7 @@ const FilterSidebar = React.memo(
                                             specKey
                                           ].length
                                         }{" "}
-                                        selected)
+                                        choisie)
                                       </Text>
                                     )}
                                   </HStack>
@@ -456,13 +475,13 @@ const FilterSidebar = React.memo(
                                             {option.label}
                                           </Text>
                                         </Checkbox>
-                                        <Text
+                                        {/* <Text
                                           fontSize="xs"
                                           color="gray.500"
                                           flexShrink={0}
                                         >
                                           ({option.count})
-                                        </Text>
+                                        </Text> */}
                                       </HStack>
                                     ))}
                                   </VStack>
@@ -471,21 +490,6 @@ const FilterSidebar = React.memo(
                             </AccordionItem>
                           ))}
                       </Accordion>
-
-                      {Object.keys(availableFilters.specifications).length >
-                        8 && (
-                        <Text
-                          fontSize="xs"
-                          color="gray.500"
-                          textAlign="center"
-                          py={3}
-                        >
-                          +
-                          {Object.keys(availableFilters.specifications).length -
-                            8}{" "}
-                          more specification categories available
-                        </Text>
-                      )}
                     </Box>
 
                     {Object.keys(selectedFilters.specifications).length > 0 && (
@@ -497,7 +501,7 @@ const FilterSidebar = React.memo(
                                 selectedFilters.specifications
                               ).flat().length
                             }{" "}
-                            specifications selected
+                            spécifications sélectionnées
                           </Text>
                           <Button
                             size="xs"
@@ -510,7 +514,7 @@ const FilterSidebar = React.memo(
                             }
                             color="red.500"
                           >
-                            Clear All Specs
+                            Effacer toutes les spécifications
                           </Button>
                         </HStack>
                       </Box>
@@ -522,8 +526,8 @@ const FilterSidebar = React.memo(
           )}
 
         {isMobile && (
-          <Button colorScheme="blue" onClick={applyFilters} size="lg">
-            Apply Filters
+          <Button bg="#0d00caff" _hover={{ bg: '#0d00caff'}} _active={{bg: '#0d00caff'}} _focus={{bg: '#0d00caff'}} onClick={applyFilters} size="lg" fontFamily={"Airbnb Cereal VF"}>
+            Appliquer des filtres
           </Button>
         )}
       </VStack>
@@ -533,25 +537,125 @@ const FilterSidebar = React.memo(
 
 const CustomerCategoryPage = () => {
   const { slug } = useParams();
+  const { customer } = useCustomerAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
-
-  // State for category data
   const [categoryData, setCategoryData] = useState(null);
   const [loadingCategory, setLoadingCategory] = useState(false);
-
-  // State for products (same as search page)
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [offset, setOffset] = useState(0);
-
-  // Available filters from backend (auto-generated)
   const [availableFilters, setAvailableFilters] = useState(null);
+
+  const impressionRefs = useRef([]);
+  const sentImpressions = useRef(new Set());
+
+  useEffect(() => {
+    if (!categoryData?.category?.id) return;
+
+    const eventPayload = {
+      event_type: "category_view",
+      session_id:
+        typeof window !== "undefined"
+          ? localStorage.getItem("session_id")
+          : null,
+      customer_id: customer?.id || null,
+      category_id: categoryData.category.id,
+      category_slug: categoryData.category.slug || slug,
+      page_type: "category_page",
+      page_url: typeof window !== "undefined" ? window.location.href : null,
+      referrer_url: typeof document !== "undefined" ? document.referrer : null,
+      timestamp: new Date().toISOString(),
+      viewport_size:
+        typeof window !== "undefined"
+          ? { width: window.innerWidth, height: window.innerHeight }
+          : null,
+    };
+
+    (async () => {
+      try {
+        await homeService.createProductEvent(eventPayload);
+      } catch {}
+    })();
+  }, [
+    categoryData?.category?.id,
+    categoryData?.category?.slug,
+    customer?.id,
+    slug,
+  ]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
+
+
+  // ANALYTICS
+
+  // Track impressions (batch)
+  useEffect(() => {
+    if (!products || products.length === 0) return;
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        const batchEvents = [];
+        entries.forEach((entry) => {
+          if (
+            entry.isIntersecting &&
+            entry.target.dataset.impression !== "sent"
+          ) {
+            const index = Number(entry.target.dataset.index);
+            const product = products[index];
+            const uniqueKey = `category-${product.id}-${index}`;
+            if (!sentImpressions.current.has(uniqueKey)) {
+              batchEvents.push({
+                event_type: "impression",
+                product_id: product.id,
+                category_id: categoryData?.category?.id || null,
+                position: index,
+                page_type: "category_page",
+                page_url: typeof window !== "undefined" ? window.location.href : null,
+                referrer_url: typeof document !== "undefined" ? document.referrer : null,
+                timestamp: new Date().toISOString(),
+              });
+              sentImpressions.current.add(uniqueKey);
+              entry.target.dataset.impression = "sent";
+            }
+          }
+        });
+        if (batchEvents.length > 0) {
+          homeService.createProductEventsBatch(batchEvents).catch(() => {});
+        }
+      },
+      { threshold: 0.5 }
+    );
+    impressionRefs.current.forEach((el) => {
+      if (el) observer.observe(el);
+    });
+    return () => {
+      impressionRefs.current.forEach((el) => {
+        if (el) observer.unobserve(el);
+      });
+    };
+  }, [products, categoryData?.category?.id]);
+
+  // Product hover event
+  const handleProductHover = (product, index) => {
+    homeService.createProductEvent({
+      event_type: "hover",
+      product_id: product.id,
+      category_id: categoryData?.category?.id || null,
+      position: index,
+      page_type: "category_page",
+      page_url: typeof window !== "undefined" ? window.location.href : null,
+      referrer_url: typeof document !== "undefined" ? document.referrer : null,
+      timestamp: new Date().toISOString(),
+    }).catch(() => {});
+  };
+  
 
   // Filter states (same as search page)
   const [sortBy, setSortBy] = useState(
@@ -567,9 +671,8 @@ const CustomerCategoryPage = () => {
     searchParams.get("include_out_of_stock") === "true"
   );
 
-  // Auto-generated specification filters (same as search page)
   const [selectedFilters, setSelectedFilters] = useState({
-    specifications: {}, // Dynamic specifications from backend
+    specifications: {}, 
   });
 
   // Price input states
@@ -585,19 +688,9 @@ const CustomerCategoryPage = () => {
       const result = await homeService.getCategoryBySlug(slug);
       if (result.success) {
         setCategoryData(result.data);
-      } else {
-        throw new Error(result.message || "Failed to fetch category");
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load category. Please try again.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        variant: "custom",
-        containerStyle: customToastContainerStyle,
-      });
+      setCategoryData(null);
       navigate("/");
     } finally {
       setLoadingCategory(false);
@@ -627,7 +720,6 @@ const CustomerCategoryPage = () => {
           include_out_of_stock: includeOutOfStock,
         };
 
-        // Add specification filters if any are selected (same as search)
         const hasSpecificationFilters =
           Object.keys(selectedFilters.specifications).length > 0;
 
@@ -654,7 +746,6 @@ const CustomerCategoryPage = () => {
           setTotalCount(result.data.pagination.total_count);
           setHasMore(result.data.pagination.has_more);
 
-          // Update available filters from backend response (NEW)
           if (result.data.available_filters) {
             setAvailableFilters(result.data.available_filters);
           }
@@ -662,15 +753,9 @@ const CustomerCategoryPage = () => {
           throw new Error(result.message);
         }
       } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load products. Please try again.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          variant: "custom",
-          containerStyle: customToastContainerStyle,
-        });
+        setProducts([]);
+        setCategoryData(null);
+        navigate("/");
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -762,8 +847,8 @@ const CustomerCategoryPage = () => {
 
     if (tempMinPrice && isNaN(min)) {
       toast({
-        title: "Invalid Price",
-        description: "Please enter a valid minimum price.",
+        title: "Prix invalide",
+        description: "Veuillez saisir un prix minimum valide.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -774,8 +859,8 @@ const CustomerCategoryPage = () => {
 
     if (tempMaxPrice && isNaN(max)) {
       toast({
-        title: "Invalid Price",
-        description: "Please enter a valid maximum price.",
+        title: "Prix invalide",
+        description: "Veuillez saisir un prix maximum valide.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -786,8 +871,8 @@ const CustomerCategoryPage = () => {
 
     if (min < 0) {
       toast({
-        title: "Invalid Price",
-        description: "Minimum price cannot be negative.",
+        title: "Prix invalide",
+        description: "Le prix minimum ne peut pas être négatif.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -798,8 +883,8 @@ const CustomerCategoryPage = () => {
 
     if (max > 0 && min > max) {
       toast({
-        title: "Invalid Price Range",
-        description: "Minimum price cannot be greater than maximum price.",
+        title: "Gamme de prix non valide",
+        description: "Le prix minimum ne peut pas être supérieur au prix maximum.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -905,43 +990,386 @@ const CustomerCategoryPage = () => {
     categoryData?.category?.id,
   ]);
 
-  if (loadingCategory) {
+  if (loadingCategory || loading) {
     return (
-      <Box minH="100vh" bg="gray.50">
-        <Navbar />
-        <Container maxW="8xl" py={20}>
-          <VStack spacing={4}>
-            <Spinner size="xl" color="blue.500" />
-            <Text>Loading category...</Text>
-          </VStack>
-        </Container>
-        <Footer />
-      </Box>
+      <>
+        <Box minH="100vh" bg="gray.50">
+          {/* Navbar Skeleton */}
+          <Box bg="white" borderBottom="1px" borderColor="gray.100" py={4}>
+            <Container maxW="8xl">
+              <HStack spacing={6} justify="space-between">
+                <Skeleton height="40px" width="120px" borderRadius="md" />
+                <HStack spacing={4} flex={1} justify="center">
+                  <Skeleton height="32px" width="80px" borderRadius="md" />
+                  <Skeleton height="32px" width="100px" borderRadius="md" />
+                  <Skeleton height="32px" width="90px" borderRadius="md" />
+                  <Skeleton height="32px" width="110px" borderRadius="md" />
+                </HStack>
+                <HStack spacing={3}>
+                  <SkeletonCircle size="40px" />
+                  <SkeletonCircle size="40px" />
+                  <Skeleton height="40px" width="100px" borderRadius="md" />
+                </HStack>
+              </HStack>
+            </Container>
+          </Box>
+
+          <Container maxW="8xl" py={6}>
+            {/* Header Section Skeleton */}
+            <VStack spacing={6} mb={8}>
+              <Flex
+                w="full"
+                justify="space-between"
+                align="center"
+                wrap="wrap"
+                gap={4}
+              >
+                <VStack align="start" spacing={3}>
+                  {/* Flash Deals Title with Lightning Icon */}
+                  <HStack spacing={3}>
+                    <SkeletonCircle size="24px" />
+                    <Skeleton height="32px" width="180px" />
+                  </HStack>
+
+                  {/* Subtitle */}
+                  <Skeleton height="24px" width="250px" />
+
+                  {/* Filter count */}
+                  <Skeleton height="16px" width="120px" />
+
+                  {/* Description */}
+                  <Skeleton height="14px" width="350px" />
+                </VStack>
+
+                <HStack spacing={4}>
+                  {/* Mobile Filter Button Skeleton */}
+                  <Skeleton
+                    height="40px"
+                    width="100px"
+                    borderRadius="md"
+                    display={{ base: "block", lg: "none" }}
+                  />
+
+                  {/* Sort Section */}
+                  <HStack spacing={2}>
+                    <Skeleton
+                      height="16px"
+                      width="40px"
+                      display={{ base: "none", md: "block" }}
+                    />
+                    <Skeleton height="32px" width="160px" borderRadius="md" />
+                  </HStack>
+                </HStack>
+              </Flex>
+            </VStack>
+
+            {/* Main Content Grid */}
+            <Grid templateColumns={{ base: "1fr", lg: "300px 1fr" }} gap={6}>
+              {/* Desktop Filter Sidebar Skeleton */}
+              <Box display={{ base: "none", lg: "block" }}>
+                <VStack
+                  align="stretch"
+                  spacing={6}
+                  p={4}
+                  bg="gray.50"
+                  borderRadius="lg"
+                >
+                  {/* Filter Header */}
+                  <HStack justify="space-between">
+                    <Skeleton height="20px" width="140px" />
+                    <Skeleton height="20px" width="60px" />
+                  </HStack>
+
+                  {/* Active Filters Section */}
+                  <Box>
+                    <Skeleton height="16px" width="100px" mb={2} />
+                    <HStack spacing={2}>
+                      <Skeleton
+                        height="24px"
+                        width="80px"
+                        borderRadius="full"
+                      />
+                      <Skeleton
+                        height="24px"
+                        width="60px"
+                        borderRadius="full"
+                      />
+                      <Skeleton
+                        height="24px"
+                        width="70px"
+                        borderRadius="full"
+                      />
+                    </HStack>
+                  </Box>
+
+                  <Skeleton height="1px" width="100%" />
+
+                  {/* Price Range Filter */}
+                  <VStack align="stretch" spacing={3}>
+                    <HStack>
+                      <SkeletonCircle size="16px" />
+                      <Skeleton height="18px" width="90px" />
+                    </HStack>
+
+                    <HStack spacing={2} w="full">
+                      <VStack spacing={1} flex={1}>
+                        <Skeleton height="12px" width="60px" />
+                        <Skeleton
+                          height="32px"
+                          width="100%"
+                          borderRadius="md"
+                        />
+                      </VStack>
+                      <Skeleton
+                        height="16px"
+                        width="20px"
+                        alignSelf="end"
+                        mb={2}
+                      />
+                      <VStack spacing={1} flex={1}>
+                        <Skeleton height="12px" width="60px" />
+                        <Skeleton
+                          height="32px"
+                          width="100%"
+                          borderRadius="md"
+                        />
+                      </VStack>
+                    </HStack>
+
+                    <HStack spacing={2} w="full">
+                      <Skeleton height="32px" flex={1} borderRadius="md" />
+                      <Skeleton height="32px" flex={1} borderRadius="md" />
+                    </HStack>
+                  </VStack>
+
+                  <Skeleton height="1px" width="100%" />
+
+                  {/* Discount Range Filter */}
+                  <VStack align="stretch" spacing={3}>
+                    <HStack>
+                      <SkeletonCircle size="16px" />
+                      <Skeleton height="18px" width="110px" />
+                    </HStack>
+
+                    <HStack spacing={2} w="full">
+                      <VStack spacing={1} flex={1}>
+                        <Skeleton height="12px" width="80px" />
+                        <Skeleton
+                          height="32px"
+                          width="100%"
+                          borderRadius="md"
+                        />
+                      </VStack>
+                      <Skeleton
+                        height="16px"
+                        width="20px"
+                        alignSelf="end"
+                        mb={2}
+                      />
+                      <VStack spacing={1} flex={1}>
+                        <Skeleton height="12px" width="80px" />
+                        <Skeleton
+                          height="32px"
+                          width="100%"
+                          borderRadius="md"
+                        />
+                      </VStack>
+                    </HStack>
+
+                    <HStack spacing={2} w="full">
+                      <Skeleton height="32px" flex={1} borderRadius="md" />
+                      <Skeleton height="32px" flex={1} borderRadius="md" />
+                    </HStack>
+                  </VStack>
+
+                  <Skeleton height="1px" width="100%" />
+
+                  {/* Availability Filter */}
+                  <VStack align="stretch" spacing={3}>
+                    <HStack>
+                      <SkeletonCircle size="16px" />
+                      <Skeleton height="18px" width="80px" />
+                    </HStack>
+
+                    <HStack justify="space-between" align="center">
+                      <Skeleton height="16px" width="180px" />
+                      <Skeleton
+                        height="24px"
+                        width="48px"
+                        borderRadius="full"
+                      />
+                    </HStack>
+                  </VStack>
+
+                  {/* Additional Filter Categories */}
+                  {[...Array(2)].map((_, index) => (
+                    <VStack key={index} align="stretch" spacing={3}>
+                      <Skeleton height="1px" width="100%" />
+                      <HStack>
+                        <SkeletonCircle size="16px" />
+                        <Skeleton height="18px" width="120px" />
+                      </HStack>
+                      <VStack spacing={2} align="stretch">
+                        {[...Array(3)].map((_, i) => (
+                          <HStack key={i} justify="space-between">
+                            <HStack>
+                              <SkeletonCircle size="16px" />
+                              <Skeleton height="16px" width="100px" />
+                            </HStack>
+                            <Skeleton height="16px" width="20px" />
+                          </HStack>
+                        ))}
+                      </VStack>
+                    </VStack>
+                  ))}
+                </VStack>
+              </Box>
+
+              {/* Products Grid Skeleton */}
+              <Box>
+                {/* Loading Animation with Spinner */}
+                <VStack py={8} spacing={6}>
+                  <HStack spacing={3}>
+                    <Skeleton height="40px" width="40px" borderRadius="full" />
+                    <VStack spacing={2}>
+                      <Skeleton height="20px" width="200px" />
+                      <Skeleton height="16px" width="150px" />
+                    </VStack>
+                  </HStack>
+                </VStack>
+
+                {/* Product Cards Grid Skeleton */}
+                <SimpleGrid
+                  columns={{ base: 2, md: 3, lg: 4, xl: 5 }}
+                  spacing={4}
+                  mb={8}
+                >
+                  {[...Array(20)].map((_, index) => (
+                    <Box
+                      key={index}
+                      bg="white"
+                      borderRadius="lg"
+                      overflow="hidden"
+                      shadow="sm"
+                    >
+                      {/* Product Image */}
+                      <Box position="relative">
+                        <Skeleton height="200px" />
+
+                        {/* Flash Deal Badge */}
+                        <Box position="absolute" top={2} left={2}>
+                          <Skeleton
+                            height="24px"
+                            width="60px"
+                            borderRadius="full"
+                          />
+                        </Box>
+
+                        {/* Discount Badge */}
+                        <Box position="absolute" top={2} right={2}>
+                          <Skeleton
+                            height="24px"
+                            width="40px"
+                            borderRadius="full"
+                          />
+                        </Box>
+
+                        {/* Urgency Indicator */}
+                        <Box position="absolute" bottom={2} left={2}>
+                          <Skeleton
+                            height="20px"
+                            width="80px"
+                            borderRadius="full"
+                          />
+                        </Box>
+                      </Box>
+
+                      {/* Product Info */}
+                      <VStack p={3} spacing={3} align="stretch">
+                        {/* Product Title */}
+                        <VStack spacing={1} align="stretch">
+                          <Skeleton height="16px" width="100%" />
+                          <Skeleton height="16px" width="80%" />
+                        </VStack>
+
+                        {/* Price Section */}
+                        <VStack spacing={1} align="stretch">
+                          <HStack justify="space-between" align="center">
+                            <Skeleton height="20px" width="70px" />
+                            <Skeleton height="16px" width="50px" />
+                          </HStack>
+                          <Skeleton height="14px" width="60px" />
+                        </VStack>
+
+                        {/* Savings */}
+                        <Skeleton height="16px" width="90px" />
+
+                        {/* Progress Bar for Stock/Time */}
+                        <VStack spacing={1}>
+                          <Skeleton
+                            height="8px"
+                            width="100%"
+                            borderRadius="full"
+                          />
+                          <Skeleton height="12px" width="60%" />
+                        </VStack>
+
+                        {/* Action Button */}
+                        <Skeleton height="36px" borderRadius="md" />
+                      </VStack>
+                    </Box>
+                  ))}
+                </SimpleGrid>
+
+                {/* Load More Button Skeleton */}
+                <VStack spacing={4}>
+                  <Skeleton height="40px" width="200px" borderRadius="md" />
+                </VStack>
+              </Box>
+            </Grid>
+          </Container>
+
+          {/* Footer Skeleton */}
+          <Box bg="gray.900" mt={12} py={8}>
+            <Container maxW="8xl">
+              <SimpleGrid columns={{ base: 1, md: 4 }} spacing={8}>
+                {[...Array(4)].map((_, i) => (
+                  <VStack key={i} align="start" spacing={4}>
+                    <Skeleton height="20px" width="120px" />
+                    <VStack align="start" spacing={2}>
+                      <Skeleton height="16px" width="80px" />
+                      <Skeleton height="16px" width="100px" />
+                      <Skeleton height="16px" width="90px" />
+                      <Skeleton height="16px" width="70px" />
+                    </VStack>
+                  </VStack>
+                ))}
+              </SimpleGrid>
+
+              <Skeleton height="1px" width="100%" my={8} />
+
+              <HStack justify="space-between" wrap="wrap" gap={4}>
+                <Skeleton height="16px" width="200px" />
+                <HStack spacing={4}>
+                  <Skeleton height="32px" width="32px" borderRadius="md" />
+                  <Skeleton height="32px" width="32px" borderRadius="md" />
+                  <Skeleton height="32px" width="32px" borderRadius="md" />
+                  <Skeleton height="32px" width="32px" borderRadius="md" />
+                </HStack>
+              </HStack>
+            </Container>
+          </Box>
+        </Box>
+      </>
     );
   }
 
   if (!categoryData) {
-    return (
-      <Box minH="100vh" bg="gray.50">
-        <Navbar />
-        <Container maxW="8xl" py={20}>
-          <Alert status="error" borderRadius="lg">
-            <AlertIcon />
-            <VStack align="start" spacing={2}>
-              <Text fontWeight="semibold">Category not found</Text>
-              <Text fontSize="sm">
-                The category you're looking for doesn't exist or has been moved.
-              </Text>
-            </VStack>
-          </Alert>
-        </Container>
-        <Footer />
-      </Box>
-    );
+    return <Error404 />;
   }
 
   return (
-    <Box minH="100vh" bg="gray.50">
+    <Box minH="100vh" bg="rgba(252, 252, 253, 1)">
       <Navbar />
 
       <Container maxW="8xl" py={6}>
@@ -955,23 +1383,30 @@ const CustomerCategoryPage = () => {
             <BreadcrumbItem>
               <BreadcrumbLink href="/">
                 <HStack spacing={2}>
-                  <FaHome />
-                  <Text>Home</Text>
+                  {/* <FaHome /> */}
+                  <Text fontFamily={"Airbnb Cereal VF"}>Maison</Text>
                 </HStack>
               </BreadcrumbLink>
             </BreadcrumbItem>
 
-            {categoryData.parents?.map((parent) => (
+            {categoryData?.parents?.map((parent) => (
               <BreadcrumbItem key={parent.id}>
-                <BreadcrumbLink onClick={() => navigateToCategory(parent.slug)}>
+                <BreadcrumbLink
+                  onClick={() => navigateToCategory(parent.slug)}
+                  fontFamily={"Airbnb Cereal VF"}
+                >
                   {parent.name}
                 </BreadcrumbLink>
               </BreadcrumbItem>
             ))}
 
             <BreadcrumbItem isCurrentPage>
-              <BreadcrumbLink fontWeight="semibold" color="blue.600">
-                {categoryData.category.name}
+              <BreadcrumbLink
+                fontWeight="500"
+                color="gray.700"
+                fontFamily={"Airbnb Cereal VF"}
+              >
+                {categoryData?.category.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
           </Breadcrumb>
@@ -980,8 +1415,8 @@ const CustomerCategoryPage = () => {
         {/* Category Header */}
         <VStack spacing={6} mb={8}>
           {/* IKEA-Style Horizontal Scrollable Subcategories */}
-          {categoryData.direct_children &&
-            categoryData.direct_children.length > 0 && (
+          {categoryData?.direct_children &&
+            categoryData?.direct_children.length > 0 && (
               <Box w="full" position="relative">
                 <Box
                   position="relative"
@@ -989,8 +1424,7 @@ const CustomerCategoryPage = () => {
                   bg="transparent"
                   borderRadius="lg"
                   shadow="none"
-                  border="0px"
-                  borderColor="gray.200"
+                  border="0px solid rgba(145, 158, 171, 0.2)"
                   mb={4}
                 >
                   <Box
@@ -1022,25 +1456,24 @@ const CustomerCategoryPage = () => {
                         <Box
                           w="80px"
                           h="80px"
+                          borderRadius="full"
+                          overflow="hidden"
                           bg="gray.100"
-                          borderRadius="md"
                           display="flex"
                           alignItems="center"
                           justifyContent="center"
-                          _hover={{ bg: "gray.200" }}
+                          _hover={{ shadow: "sm" }}
                           transition="all 0.2s ease"
                         >
-                          <Box
-                            w="40px"
-                            h="40px"
-                            bg="gray.300"
-                            borderRadius="sm"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                          >
-                            <FaHome size="20px" color="gray.600" />
-                          </Box>
+                          <Image
+                            src={`${categoryData.category.image_url}`}
+                            alt={categoryData.category.name}
+                            w="full"
+                            h="full"
+                            objectFit="cover"
+                            _hover={{ transform: "scale(1.02)" }}
+                            transition="transform 0.2s ease"
+                          />
                         </Box>
                         <Text
                           fontSize="sm"
@@ -1049,6 +1482,7 @@ const CustomerCategoryPage = () => {
                           color="gray.700"
                           lineHeight="1.2"
                           noOfLines={2}
+                          fontFamily={"Airbnb Cereal VF"}
                         >
                           {categoryData.category.name}
                         </Text>
@@ -1061,11 +1495,16 @@ const CustomerCategoryPage = () => {
                         alignSelf="stretch"
                         my={0}
                       >
-                        <Box w="1px" h="100px" bg="black" borderRadius="full" />
+                        <Box
+                          w="1px"
+                          h="100px"
+                          bg="rgba(54, 63, 74, 0.2)"
+                          borderRadius="full"
+                        />
                       </Box>
 
                       {/* Child Categories */}
-                      {categoryData.direct_children.map((child, index) => (
+                      {categoryData?.direct_children.map((child, index) => (
                         <VStack
                           key={child.id}
                           spacing={3}
@@ -1090,7 +1529,7 @@ const CustomerCategoryPage = () => {
                             _hover={{ shadow: "sm" }}
                             transition="all 0.2s ease"
                           >
-                            {child.image_url ? (
+                            {child?.image_url ? (
                               <Image
                                 src={child.image_url}
                                 alt={child.name}
@@ -1127,8 +1566,9 @@ const CustomerCategoryPage = () => {
                             minH="32px"
                             display="flex"
                             alignItems="center"
+                            fontFamily={"Airbnb Cereal VF"}
                           >
-                            {child.name}
+                            {child?.name}
                           </Text>
                         </VStack>
                       ))}
@@ -1162,22 +1602,32 @@ const CustomerCategoryPage = () => {
             <VStack align="start" spacing={1}>
               <Text
                 fontSize="xl"
-                fontWeight="bold"
-                fontFamily={"Bricolage Grotesque"}
+                fontWeight="500"
+                fontFamily={"Airbnb Cereal VF"}
               >
-                {loading ? "Loading products..." : `${totalCount} Products`}
-                {categoryData.category.name &&
-                  ` in ${categoryData.category.name}`}
+                {loading
+                  ? "Chargement des produits..."
+                  : `${totalCount} Produits`}
+                {categoryData?.category?.name &&
+                  ` dans ${categoryData?.category.name}`}
               </Text>
               {getSelectedFiltersCount() > 0 && (
-                <Text fontSize="sm" color="gray.600">
-                  {getSelectedFiltersCount()} filters applied
+                <Text
+                  fontSize="sm"
+                  color="gray.600"
+                  fontFamily={"Airbnb Cereal VF"}
+                >
+                  {getSelectedFiltersCount()} filtre(s) appliqué(s)
                 </Text>
               )}
               {availableFilters && (
-                <Text fontSize="xs" color="gray.500">
+                <Text
+                  fontSize="xs"
+                  color="gray.500"
+                  fontFamily={"Airbnb Cereal VF"}
+                >
                   {Object.keys(availableFilters.specifications || {}).length}{" "}
-                  specification types available
+                  type(s) de spécification disponible(s)
                 </Text>
               )}
             </VStack>
@@ -1189,16 +1639,20 @@ const CustomerCategoryPage = () => {
                 variant="outline"
                 display={{ base: "flex", lg: "none" }}
                 onClick={onOpen}
-                fontFamily={"Bricolage Grotesque"}
+                fontFamily={"Airbnb Cereal VF"}
               >
-                Filters{" "}
+                Filtres{" "}
                 {getSelectedFiltersCount() > 0 &&
                   `(${getSelectedFiltersCount()})`}
               </Button>
 
               {/* Sort Options */}
               <HStack>
-                <Text fontSize="sm" display={{ base: "none", md: "block" }}>
+                <Text
+                  fontSize="sm"
+                  display={{ base: "none", md: "block" }}
+                  fontFamily={"Airbnb Cereal VF"}
+                >
                   Sort:
                 </Text>
                 <Select
@@ -1249,28 +1703,36 @@ const CustomerCategoryPage = () => {
             {loading ? (
               <VStack py={20}>
                 <Spinner size="xl" color="blue.500" />
-                <Text>Loading products...</Text>
+                <Text>Chargement des produits ...</Text>
               </VStack>
             ) : products.length === 0 ? (
               <VStack align="start" spacing={2}>
-                <Text fontWeight="semibold">No products found</Text>
-                <Text fontSize="sm" fontFamily={"Bricolage Grotesque"}>
-                  No products found in this category. Try adjusting your filters
-                  or check back later.
+                <Text fontWeight="semibold">Aucun produit trouvé</Text>
+                <Text fontSize="sm" fontFamily="Bogle">
+                  Aucun produit trouvé dans cette catégorie. Essayez d'ajuster
+                  vos filtres ou revenez plus tard.
                 </Text>
               </VStack>
             ) : (
               <>
                 <SimpleGrid
-                  columns={{ base: 2, md: 3, lg: 4, xl: 5 }}
+                  columns={{ base: 2, md: 3, lg: 4, xl: 4 }}
                   spacing={4}
                   mb={8}
                 >
-                  {products.map((product) => (
-                    <ProductCard
+                  {products.map((product, idx) => (
+                    <Box
                       key={product.id}
-                      product={homeService.formatProductData(product)}
-                    />
+                      ref={(el) => (impressionRefs.current[idx] = el)}
+                      data-index={idx}
+                      data-impression="not-sent"
+                      onMouseEnter={() => handleProductHover(product, idx)}
+                    >
+                      <ProductCard
+                        key={product.id}
+                        product={homeService.formatProductData(product)}
+                      />
+                    </Box>
                   ))}
                 </SimpleGrid>
 
@@ -1288,11 +1750,11 @@ const CustomerCategoryPage = () => {
                       borderWidth={0}
                       color="white"
                       p={5}
-                      _hover={{ bg: "rgb(239, 48, 84)" }}
-                      bg="rgb(239, 48, 84)"
-                      fontFamily={"Bricolage Grotesque"}
+                      _hover={{ bg: "rgb(241, 36, 36)" }}
+                      bg="rgb(241, 36, 36)"
+                      fontFamily="Bogle"
                     >
-                      Show More Products ({products.length} of {totalCount})
+                      Afficher plus de produits
                     </Button>
                   </VStack>
                 )}
@@ -1306,9 +1768,7 @@ const CustomerCategoryPage = () => {
           <DrawerOverlay />
           <DrawerContent>
             <DrawerCloseButton />
-            <DrawerHeader fontFamily={"Bricolage Grotesque"}>
-              Filter Products
-            </DrawerHeader>
+            <DrawerHeader fontFamily="Bogle">Filtrer les produits</DrawerHeader>
             <DrawerBody p={0}>
               <Box p={4}>
                 <FilterSidebar

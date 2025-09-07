@@ -1,411 +1,473 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
-  SimpleGrid,
-  Card,
-  CardBody,
-  Image,
+  Container,
+  Flex,
+  Heading,
   Text,
+  Button,
+  Image,
   VStack,
   HStack,
-  Badge,
-  IconButton,
   Icon,
-  Spinner,
-  Button,
-  Center,
-  Alert,
-  AlertIcon,
-  useBreakpointValue,
-} from '@chakra-ui/react';
+  SimpleGrid,
+  IconButton,
+  Link,
+  Select,
+} from "@chakra-ui/react";
 import {
-  FaHeart,
-  FaBox,
-  FaChevronUp,
-} from 'react-icons/fa';
-import { useExploreAllProducts } from '../../features/home/hooks/useExploreAllProducts';
-import { useNavigate } from 'react-router-dom';
+  FaFacebook,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedin,
+  FaYoutube,
+  FaPinterest,
+  FaLeaf,
+  FaGlobe,
+  FaApple,
+  FaMobileAlt,
+  FaArrowUp,
+} from "react-icons/fa";
+import Logo from "../../assets/logo-v2.png";
 
-const ExploreAll = ({ initialFilters = {} }) => {
-  const bottomRef = useRef();
-  
-  const {
-    products,
-    loading,
-    error,
-    hasMore,
-    totalCount,
-    loadMore,
-    filters,
-  } = useExploreAllProducts({
-    limit: 30,
-    sort_by: "created_at",
-    sort_order: "DESC",
-    ...initialFilters
-  });
 
-  const columns = useBreakpointValue({
-    base: 2,
-    sm: 2,
-    md: 3,
-    lg: 4,
-    xl: 5,
-    "2xl": 6,
-  });
+const Footer = () => {
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
-  const navigate = useNavigate();
-
-  const transformProductData = (apiProduct) => {
-    return {
-      id: apiProduct.id,
-      slug: apiProduct.slug,
-      title: apiProduct.title,
-      image: apiProduct.main_image_url,
-      price: apiProduct.pricing.final_price_nett,
-      originalPrice: apiProduct.pricing.is_discounted 
-        ? apiProduct.pricing.regular_price_nett 
-        : null,
-      discountPercentage: apiProduct.pricing.discount_percentage,
-      tag: apiProduct.badges.is_new 
-        ? "NEW" 
-        : apiProduct.badges.is_featured 
-        ? "FEATURED" 
-        : apiProduct.badges.is_on_sale 
-        ? "SALE" 
-        : null,
-      badges: apiProduct.badges,
-      category: apiProduct.category,
-      company: apiProduct.company,
-      is_recently_added: apiProduct.is_recently_added,
-    };
-  };
-
-  // Scroll to top function
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
-
-  const handleProductClick = (slug) => {
-    return () => navigate(`/product/${slug}`);
-  };
-
-  // Intersection Observer for infinite scroll
   useEffect(() => {
-    if (!hasMore || loading) return;
+    const handleScroll = () => {
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
+      setShowBackToTop(scrollTop > 300); // Show button after scrolling 300px
+    };
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore();
-        }
-      },
-      { 
-        threshold: 0.1,
-        rootMargin: '100px'
-      }
-    );
-
-    if (bottomRef.current) {
-      observer.observe(bottomRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasMore, loading, loadMore]);
-
-  if (error) {
-    return (
-      <Alert status="error" borderRadius="md">
-        <AlertIcon />
-        {error}
-        <Button 
-          ml={4} 
-          size="sm" 
-          onClick={() => window.location.reload()}
-        >
-          Retry
-        </Button>
-      </Alert>
-    );
-  }
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <Box position="relative" minH="400px">
-      {/* Products Grid */}
-      <SimpleGrid columns={columns} spacing={4} mb={8}>
-        {products.map((apiProduct, index) => {
-          const product = transformProductData(apiProduct);
-          const productId = `explore-${index}-${product.id}`;
+    <Box bg='#0053e2s'>
+      <Box as="footer" color="white" mt={12} bg="black">
+        {/* Renewable Energy Banner */}
 
-          return (
-            <Card
-              key={productId}
-              bg="white"
-              borderRadius="12px"
-              overflow="hidden"
-              shadow="sm"
-              _hover={{ 
-                shadow: "md", 
-                transform: "translateY(-2px)" 
-              }}
-              transition="all 0.2s"
-              cursor="pointer"
-              border="1px"
-              borderColor="gray.100"
-              onClick={handleProductClick(product.slug)}
-            >
-              <Box position="relative">
-                <Image
-                  src={product.image}
-                  alt={product.title}
-                  w="full"
-                  h="200px"
-                  objectFit="cover"
-                  fallback={
-                    <Box
-                      w="full"
-                      h="200px"
-                      bg="gray.200"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <VStack spacing={2}>
-                        <Icon
-                          as={FaBox}
-                          fontSize="2xl"
-                          color="gray.400"
-                        />
-                        <Text
-                          fontSize="xs"
-                          color="gray.500"
-                          textAlign="center"
-                        >
-                          No Image
-                        </Text>
-                      </VStack>
-                    </Box>
-                  }
-                />
-
-                {/* Top Badge with AS Solutions color */}
-                {product.tag && (
-                  <Badge
-                    position="absolute"
-                    top="2"
-                    left="2"
-                    bg={product.badges.is_new ? "green.500" : "rgb(239,48,84)"}
-                    color="white"
-                    fontSize="xs"
+        {/* Main Footer Content */}
+        <Box bg="#0053e2s" position="relative">
+          <Container maxW="8xl" py={16}>
+            <Flex direction={{ base: "column", lg: "row" }} gap={16}>
+              {/* Left Section - Logo and App Download */}
+              <Box
+                flexShrink={0}
+                mr={6}
+                as="a"
+                href="/"
+                _hover={{ cursor: "pointer" }}
+              >
+                <Flex align="center">
+                  <Image
+                    src={Logo}
+                    alt="AS Solutions Logo"
+                    height="30.9px"
+                    width="auto"
+                    objectFit="contain"
+                  />
+                  <Text
+                    ml={2}
+                    mt={0}
                     fontWeight="bold"
-                    px="2"
-                    py="1"
-                    borderRadius="md"
-                  >
-                    {product.tag}
-                  </Badge>
-                )}
-
-                {/* Discount Badge */}
-                {product.discountPercentage > 0 && (
-                  <Badge
-                    position="absolute"
-                    top="2"
-                    right="12"
-                    bg="red.500"
+                    fontSize="26.5px"
                     color="white"
-                    fontSize="xs"
-                    fontWeight="bold"
-                    px="2"
-                    py="1"
-                    borderRadius="md"
+                    fontFamily="Bogle"
+                    lineHeight={"0.7"}
+                    letterSpacing={"1.1px"}
                   >
-                    -{Math.round(product.discountPercentage)}% OFF
-                  </Badge>
-                )}
-
-                {/* Heart Icon */}
-                <IconButton
-                  position="absolute"
-                  top="2"
-                  right="2"
-                  size="sm"
-                  icon={<FaHeart />}
-                  bg="white"
-                  color="gray.400"
-                  _hover={{ color: "rgb(239,48,84)" }}
-                  borderRadius="full"
-                  aria-label="Add to wishlist"
-                  shadow="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                />
+                    | AS SOLUTIONS
+                  </Text>
+                </Flex>
               </Box>
 
-              <CardBody p={3}>
-                <VStack align="start" spacing={2}>
-                  <Text
-                    fontSize="sm"
-                    color="gray.800"
-                    noOfLines={2}
-                    lineHeight="short"
-                    minH="40px"
-                    title={product.title}
-                  >
-                    {product.title}
-                  </Text>
-
-                  <VStack align="start" spacing={1} w="full">
-                    <HStack spacing={2} w="full" align="center">
-                      <Text
-                        fontSize="lg"
-                        fontWeight="bold"
-                        color="rgb(239,48,84)"
+              {/* Right Section - Footer Links */}
+              <Box flex="2">
+                <SimpleGrid columns={{ base: 2, md: 4 }} spacing={8}>
+                  {/* Shop Column */}
+                  <VStack align="start" spacing={6}>
+                    <Heading
+                      size="md"
+                      color="white"
+                      fontWeight="600"
+                      fontSize="lg"
+                      fontFamily={"Airbnb Cereal VF"}
+                    >
+                      Account
+                    </Heading>
+                    <VStack align="start" spacing={3}>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
                       >
-                        €{product.price.toFixed(2)}
-                      </Text>
-
-                      {product.originalPrice && (
-                        <Text
-                          fontSize="sm"
-                          color="gray.500"
-                          textDecoration="line-through"
-                        >
-                          €{product.originalPrice.toFixed(2)}
-                        </Text>
-                      )}
-                    </HStack>
-
-                    {/* Company name */}
-                    {product.company && (
-                      <Text
-                        fontSize="xs"
-                        color="gray.500"
-                        noOfLines={1}
+                        My Cart
+                      </Link>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
                       >
-                        by {product.company.business_name || product.company.market_name}
-                      </Text>
-                    )}
-
-                    {/* Category */}
-                    {product.category && (
-                      <Text
-                        fontSize="xs"
-                        color="blue.500"
-                        noOfLines={1}
+                        My Orders
+                      </Link>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
                       >
-                        {product.category.name}
-                      </Text>
-                    )}
-
-                    {/* Badges */}
-                    <HStack spacing={1} flexWrap="wrap">
-                      {product.badges?.free_shipping && (
-                        <Badge
-                          size="sm"
-                          colorScheme="green"
-                          variant="subtle"
-                          fontSize="2xs"
-                        >
-                          Free Shipping
-                        </Badge>
-                      )}
-
-                      {product.is_recently_added && (
-                        <Badge
-                          size="sm"
-                          colorScheme="purple"
-                          variant="subtle"
-                          fontSize="2xs"
-                        >
-                          Recent
-                        </Badge>
-                      )}
-                    </HStack>
+                        My Wishlist
+                      </Link>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
+                      >
+                        My Account
+                      </Link>
+                    </VStack>
                   </VStack>
-                </VStack>
-              </CardBody>
-            </Card>
-          );
-        })}
-      </SimpleGrid>
 
-      {/* Loading indicator */}
-      {loading && (
-        <Center py={8}>
-          <VStack spacing={4}>
-            <Spinner
-              thickness="4px"
-              speed="0.65s"
-              emptyColor="gray.200"
-              color="rgb(239,48,84)"
-              size="xl"
-            />
-            <Text color="gray.600">Loading more products...</Text>
-            <Text fontSize="sm" color="gray.400">
-              {products.length} of {totalCount} products loaded
-            </Text>
-          </VStack>
-        </Center>
-      )}
+                  {/* Sell Column */}
+                  <VStack align="start" spacing={6}>
+                    <Heading
+                      size="md"
+                      color="white"
+                      fontWeight="bold"
+                      fontSize="lg"
+                      fontFamily={"Airbnb Cereal VF"}
+                    >
+                      Frequently Questions
+                    </Heading>
+                    <VStack align="start" spacing={3}>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
+                      >
+                        About As-Solutions
+                      </Link>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
+                      >
+                        Payments
+                      </Link>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
+                      >
+                        Technical Support
+                      </Link>
+                    </VStack>
+                  </VStack>
 
-      {/* End of results */}
-      {!hasMore && products.length > 0 && (
-        <Box py={8}>
-          <VStack spacing={4}>
-            <Text color="gray.500" textAlign="center" fontSize="lg">
-              🎉 You've reached the end!
-            </Text>
-            <Text fontSize="sm" color="gray.400" textAlign="center">
-              Showing all {totalCount} products
-            </Text>
-            <Button
-              leftIcon={<Icon as={FaChevronUp} />}
-              variant="outline"
-              colorScheme="gray"
-              size="sm"
-              onClick={scrollToTop}
-            >
-              Back to top
-            </Button>
-          </VStack>
+                  {/* About Column */}
+                  <VStack align="start" spacing={6}>
+                    <Heading
+                      size="md"
+                      color="white"
+                      fontWeight="bold"
+                      fontSize="lg"
+                      fontFamily={"Airbnb Cereal VF"}
+                    >
+                      Contact
+                    </Heading>
+                    <VStack align="start" spacing={3}>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
+                      >
+                        contact@assolutions.fr
+                      </Link>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
+                      >
+                        For request of offers:
+                      </Link>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
+                      >
+                        b2b@assolutions.fr
+                      </Link>
+                    </VStack>
+                  </VStack>
+
+                  {/* Help Column */}
+                  <VStack align="start" spacing={6}>
+                    <Heading
+                      size="md"
+                      color="white"
+                      fontWeight="bold"
+                      fontSize="lg"
+                      fontFamily={"Airbnb Cereal VF"}
+                    >
+                      Help
+                    </Heading>
+                    <VStack align="start" spacing={3}>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
+                      >
+                        Help Center
+                      </Link>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
+                      >
+                        Privacy
+                      </Link>
+                      <Link
+                        fontSize="sm"
+                        color="gray.100"
+                        _hover={{
+                          color: "rgb(239,48,84)",
+                          textDecoration: "underline",
+                          transform: "translateX(4px)",
+                        }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                        fontFamily={"Airbnb Cereal VF"}
+                      >
+                        Terms Of Policy
+                      </Link>
+                    </VStack>
+
+                    {/* Social Media Icons */}
+                    <VStack align="start" spacing={4} mt={6}>
+                      <HStack spacing={3}>
+                        {[
+                          {
+                            icon: FaInstagram,
+                            label: "Instagram",
+                            color: "#E4405F",
+                          },
+                          {
+                            icon: FaFacebook,
+                            label: "Facebook",
+                            color: "#1877F2",
+                          },
+                          {
+                            icon: FaTwitter,
+                            label: "X",
+                            color: "#BD081C",
+                          },
+                        ].map((social, index) => (
+                          <IconButton
+                            key={index}
+                            icon={<Icon as={social.icon} />}
+                            variant="ghost"
+                            color="gray.400"
+                            _hover={{
+                              color: social.color,
+                              transform: "translateY(-3px) scale(1.1)",
+                              bg: "whiteAlpha.100",
+                            }}
+                            size="lg"
+                            borderRadius="full"
+                            transition="all 0.3s"
+                            aria-label={social.label}
+                          />
+                        ))}
+                      </HStack>
+                    </VStack>
+                  </VStack>
+                </SimpleGrid>
+              </Box>
+            </Flex>
+          </Container>
         </Box>
-      )}
 
-      {/* Empty state */}
-      {!loading && !products.length === 0 && (
-        <Center py={16}>
-          <VStack spacing={4}>
-            <Box
-              w="16"
-              h="16"
-              bg="gray.100"
-              borderRadius="full"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
+        {/* Bottom Footer - Dark Section */}
+        <Box bg="black" py={6} borderTop="1px" borderColor="gray.700">
+          <Container maxW="8xl">
+            <Flex
+              direction={{ base: "column", md: "row" }}
+              align="center"
+              justify="space-between"
+              gap={6}
             >
-              <Icon as={FaBox} boxSize="8" color="gray.300" />
-            </Box>
-            <VStack spacing={2}>
-              <Text fontSize="lg" fontWeight="medium" color="gray.600">
-                No products found for exploring.
-              </Text>
-              <Text fontSize="sm" color="gray.400" textAlign="center">
-                Try adjusting your search or filters
-              </Text>
-            </VStack>
-          </VStack>
-        </Center>
-     )}
+              {/* Language and Region Selector */}
+              <HStack spacing={4} align="center">
+                <Icon as={FaGlobe} color="gray.400" fontSize="lg" />
+                <Select
+                  variant="unstyled"
+                  size="sm"
+                  color="gray.300"
+                  fontWeight="medium"
+                  cursor="pointer"
+                  w="auto"
+                  minW="250px"
+                  _focus={{ color: "white" }}
+                >
+                  <option
+                    value="fr"
+                    style={{ backgroundColor: "#2D3748", color: "white" }}
+                  >
+                    🇫🇷 France | Français | € (EUR)
+                  </option>
+                </Select>
+              </HStack>
 
-      {/* Scroll trigger element - invisible div that triggers loading */}
-      <div ref={bottomRef} style={{ height: '1px', visibility: 'hidden' }} />
+              {/* Copyright and Links */}
+              <Flex
+                direction={{ base: "column", md: "row" }}
+                align="center"
+                gap={4}
+                justify={{ base: "center", md: "end" }}
+              >
+                <Text fontSize="sm" color="gray.400" textAlign="center">
+                  © 2025 AS Solutions, Inc.
+                </Text>
+                <HStack
+                  spacing={8}
+                  flexWrap="wrap"
+                  justify="center"
+                  divider={<Text color="gray.600">•</Text>}
+                >
+                  {["Terms of Use", "Privacy"].map((item, index) => (
+                    <Link
+                      key={index}
+                      fontSize="sm"
+                      color="gray.400"
+                      _hover={{
+                        color: "rgb(239,48,84)",
+                        textDecoration: "underline",
+                      }}
+                      transition="color 0.2s"
+                      whiteSpace="nowrap"
+                    >
+                      {item}
+                    </Link>
+                  ))}
+                </HStack>
+              </Flex>
+            </Flex>
+          </Container>
+        </Box>
+
+        {/* Back to Top Button */}
+        {showBackToTop && (
+          <IconButton
+            position="fixed"
+            bottom={{ base: "24", lg: "6" }}
+            right={{ base: "5", lg: "6" }}
+            icon={<FaArrowUp />}
+            bg="rgb(255, 109, 136)"
+            color="white"
+            _hover={{
+              bg: "rgb(219,28,64)",
+              transform: "translateY(-3px) scale(1.1)",
+              shadow: "2xl",
+            }}
+            size="lg"
+            borderRadius="2xl"
+            shadow="lg"
+            zIndex="1000"
+            transition="all 0.3s"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            aria-label="Back to top"
+          />
+        )}
+      </Box>
     </Box>
   );
 };
 
-export default ExploreAll;
+export default Footer;

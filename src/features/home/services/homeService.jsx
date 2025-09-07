@@ -3,6 +3,8 @@ import { API_BASE_URL } from "../../../commons/api";
 
 const CATEGORY_API_URL = `${API_BASE_URL}/categories`;
 const PRODUCT_API_URL = `${API_BASE_URL}/products`;
+const BASKET_API_URL = `${API_BASE_URL}/basket`;
+const ORDER_API_URL = `${API_BASE_URL}/orders`;
 
 const axiosInstance = axios.create({
   baseURL: CATEGORY_API_URL,
@@ -14,6 +16,22 @@ const axiosInstance = axios.create({
 
 const productAxiosInstance = axios.create({
   baseURL: PRODUCT_API_URL,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+const basketAxiosInstance = axios.create({
+  baseURL: BASKET_API_URL,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+const orderAxiosInstance = axios.create({
+  baseURL: ORDER_API_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -198,7 +216,6 @@ export const homeService = {
       queryParams.append("limit", limit);
       queryParams.append("exclude_out_of_stock", exclude_out_of_stock);
 
-
       const response = await productAxiosInstance.get(
         `/details/${slug}/recommendations?${queryParams.toString()}`
       );
@@ -246,50 +263,9 @@ export const homeService = {
         queryParams.append("include_out_of_stock", params.include_out_of_stock);
       }
 
-      // ENHANCED: Add all supported filters as JSON string
+      // --- SIMPLIFIED: Always send filters as JSON string if present ---
       if (params.filters && Object.keys(params.filters).length > 0) {
-        // Filter out empty arrays and objects
-        const cleanFilters = {};
-
-        // Price range filters (new)
-        if (params.filters.price_range) {
-          cleanFilters.price_range = params.filters.price_range;
-        }
-
-        // Availability filters (new)
-        if (
-          params.filters.availability &&
-          params.filters.availability.length > 0
-        ) {
-          cleanFilters.availability = params.filters.availability;
-        }
-
-        // Custom details filters (enhanced)
-        if (params.filters.materials && params.filters.materials.length > 0) {
-          cleanFilters.materials = params.filters.materials;
-        }
-        if (params.filters.colors && params.filters.colors.length > 0) {
-          cleanFilters.colors = params.filters.colors;
-        }
-        if (params.filters.sizes && params.filters.sizes.length > 0) {
-          cleanFilters.sizes = params.filters.sizes;
-        }
-        if (params.filters.features && params.filters.features.length > 0) {
-          cleanFilters.features = params.filters.features;
-        }
-
-        // General custom attributes (enhanced)
-        if (
-          params.filters.custom_attributes &&
-          Object.keys(params.filters.custom_attributes).length > 0
-        ) {
-          cleanFilters.custom_attributes = params.filters.custom_attributes;
-        }
-
-        // Only add filters parameter if we have actual filters
-        if (Object.keys(cleanFilters).length > 0) {
-          queryParams.append("filters", JSON.stringify(cleanFilters));
-        }
+        queryParams.append("filters", JSON.stringify(params.filters));
       }
 
       const response = await productAxiosInstance.get(
@@ -568,39 +544,101 @@ export const homeService = {
         queryParams.append("include_out_of_stock", params.include_out_of_stock);
       }
 
-      // Add all supported filters as JSON string
+      // --- SIMPLIFIED: Always send filters as JSON string if present ---
       if (params.filters && Object.keys(params.filters).length > 0) {
-        // Filter out empty arrays and objects
+        queryParams.append("filters", JSON.stringify(params.filters));
+      }
+
+      const response = await productAxiosInstance.get(
+        `/category/${categoryId}?${queryParams.toString()}`
+      );
+
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getAdvancedFlashDeals: async (params = {}) => {
+    try {
+      const queryParams = new URLSearchParams();
+
+      // Pagination parameters
+      if (params.limit) queryParams.append("limit", params.limit);
+      if (params.offset) queryParams.append("offset", params.offset);
+
+      // Sorting parameters
+      if (params.sort_by) queryParams.append("sort_by", params.sort_by);
+      if (params.sort_order)
+        queryParams.append("sort_order", params.sort_order);
+
+      // Price filters
+      if (params.min_price !== undefined && params.min_price !== "") {
+        queryParams.append("min_price", params.min_price);
+      }
+      if (params.max_price !== undefined && params.max_price !== "") {
+        queryParams.append("max_price", params.max_price);
+      }
+
+      // Discount filters
+      if (params.min_discount !== undefined) {
+        queryParams.append("min_discount", params.min_discount);
+      }
+      if (params.max_discount !== undefined && params.max_discount !== "") {
+        queryParams.append("max_discount", params.max_discount);
+      }
+
+      // Availability filter
+      if (params.include_out_of_stock !== undefined) {
+        queryParams.append("include_out_of_stock", params.include_out_of_stock);
+      }
+
+      // Category filter
+      if (params.category_id) {
+        queryParams.append("category_id", params.category_id);
+      }
+
+      // Advanced filters (JSON string)
+      if (params.filters && Object.keys(params.filters).length > 0) {
+        // Clean and format filters
         const cleanFilters = {};
 
-        // Price range filters
-        if (params.filters.price_range) {
-          cleanFilters.price_range = params.filters.price_range;
-        }
-
-        // Availability filters
+        // Handle different filter types
         if (
-          params.filters.availability &&
-          params.filters.availability.length > 0
+          params.filters.specifications &&
+          Object.keys(params.filters.specifications).length > 0
         ) {
-          cleanFilters.availability = params.filters.availability;
+          cleanFilters.specifications = params.filters.specifications;
         }
 
-        // Custom details filters
         if (params.filters.materials && params.filters.materials.length > 0) {
           cleanFilters.materials = params.filters.materials;
         }
+
         if (params.filters.colors && params.filters.colors.length > 0) {
           cleanFilters.colors = params.filters.colors;
         }
+
         if (params.filters.sizes && params.filters.sizes.length > 0) {
           cleanFilters.sizes = params.filters.sizes;
         }
+
         if (params.filters.features && params.filters.features.length > 0) {
           cleanFilters.features = params.filters.features;
         }
 
-        // General custom attributes
+        if (
+          params.filters.discount_ranges &&
+          params.filters.discount_ranges.length > 0
+        ) {
+          cleanFilters.discount_ranges = params.filters.discount_ranges;
+        }
+
+        if (params.filters.deal_types && params.filters.deal_types.length > 0) {
+          cleanFilters.deal_types = params.filters.deal_types;
+        }
+
+        // Add custom attributes if present
         if (
           params.filters.custom_attributes &&
           Object.keys(params.filters.custom_attributes).length > 0
@@ -615,104 +653,8 @@ export const homeService = {
       }
 
       const response = await productAxiosInstance.get(
-        `/category/${categoryId}?${queryParams.toString()}`
-      );
-
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // IMPLEMENT HERE THE FLASH DEALS /flash-deals/advanced
-  // NEW: Advanced Flash Deals - Enhanced version with full filtering capabilities
-  getAdvancedFlashDeals: async (params = {}) => {
-    try {
-      const queryParams = new URLSearchParams();
-      
-      // Pagination parameters
-      if (params.limit) queryParams.append('limit', params.limit);
-      if (params.offset) queryParams.append('offset', params.offset);
-      
-      // Sorting parameters
-      if (params.sort_by) queryParams.append('sort_by', params.sort_by);
-      if (params.sort_order) queryParams.append('sort_order', params.sort_order);
-      
-      // Price filters
-      if (params.min_price !== undefined && params.min_price !== '') {
-        queryParams.append('min_price', params.min_price);
-      }
-      if (params.max_price !== undefined && params.max_price !== '') {
-        queryParams.append('max_price', params.max_price);
-      }
-      
-      // Discount filters
-      if (params.min_discount !== undefined) {
-        queryParams.append('min_discount', params.min_discount);
-      }
-      if (params.max_discount !== undefined && params.max_discount !== '') {
-        queryParams.append('max_discount', params.max_discount);
-      }
-      
-      // Availability filter
-      if (params.include_out_of_stock !== undefined) {
-        queryParams.append('include_out_of_stock', params.include_out_of_stock);
-      }
-      
-      // Category filter
-      if (params.category_id) {
-        queryParams.append('category_id', params.category_id);
-      }
-      
-      // Advanced filters (JSON string)
-      if (params.filters && Object.keys(params.filters).length > 0) {
-        // Clean and format filters
-        const cleanFilters = {};
-        
-        // Handle different filter types
-        if (params.filters.specifications && Object.keys(params.filters.specifications).length > 0) {
-          cleanFilters.specifications = params.filters.specifications;
-        }
-        
-        if (params.filters.materials && params.filters.materials.length > 0) {
-          cleanFilters.materials = params.filters.materials;
-        }
-        
-        if (params.filters.colors && params.filters.colors.length > 0) {
-          cleanFilters.colors = params.filters.colors;
-        }
-        
-        if (params.filters.sizes && params.filters.sizes.length > 0) {
-          cleanFilters.sizes = params.filters.sizes;
-        }
-        
-        if (params.filters.features && params.filters.features.length > 0) {
-          cleanFilters.features = params.filters.features;
-        }
-        
-        if (params.filters.discount_ranges && params.filters.discount_ranges.length > 0) {
-          cleanFilters.discount_ranges = params.filters.discount_ranges;
-        }
-        
-        if (params.filters.deal_types && params.filters.deal_types.length > 0) {
-          cleanFilters.deal_types = params.filters.deal_types;
-        }
-        
-        // Add custom attributes if present
-        if (params.filters.custom_attributes && Object.keys(params.filters.custom_attributes).length > 0) {
-          cleanFilters.custom_attributes = params.filters.custom_attributes;
-        }
-        
-        // Only add filters parameter if we have actual filters
-        if (Object.keys(cleanFilters).length > 0) {
-          queryParams.append('filters', JSON.stringify(cleanFilters));
-        }
-      }
-
-      const response = await productAxiosInstance.get(
         `/flash-deals/advanced?${queryParams.toString()}`
       );
-
 
       return response.data;
     } catch (error) {
@@ -793,7 +735,8 @@ export const homeService = {
         is_top_seller:
           product.badges?.is_top_seller || product.mark_as_top_seller,
         is_on_sale: product.badges?.is_on_sale || product.is_on_sale,
-        is_special_offer: product.badges?.is_special_offer || product.is_special_offer,
+        is_special_offer:
+          product.badges?.is_special_offer || product.is_special_offer,
         free_shipping: product.badges?.free_shipping || product.shipping_free,
         // Flash deal specific badges
         hot_deal: product.badges?.hot_deal || false,
@@ -843,4 +786,678 @@ export const homeService = {
       updated_at: product.updated_at,
     };
   },
+
+  // calculations
+  calculateProductPricing: async (productId, config) => {
+    try {
+      const response = await productAxiosInstance.post(
+        `/${productId}/calculate-pricing`,
+        config
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getProductPricingConfig: async (productId) => {
+    try {
+      const response = await productAxiosInstance.get(
+        `/${productId}/pricing-config`
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Helper method to format pricing calculation request
+  formatPricingRequest: (dimensions, selectedOptions, quantity, taxRate) => {
+    return {
+      dimensions: dimensions || {},
+      selectedOptions: selectedOptions || [],
+      quantity: quantity || 1,
+      taxRate: taxRate,
+    };
+  },
+
+  // Helper method to validate dimensions based on product constraints
+  validateDimensions: (dimensions, constraints) => {
+    const errors = [];
+
+    if (!constraints) return { valid: true, errors: [] };
+
+    Object.entries(dimensions).forEach(([key, value]) => {
+      if (value && constraints[key]) {
+        const constraint = constraints[key];
+        if (constraint.min && value < constraint.min) {
+          errors.push(
+            `${key} must be at least ${constraint.min}${constraint.unit}`
+          );
+        }
+        if (constraint.max && value > constraint.max) {
+          errors.push(
+            `${key} cannot exceed ${constraint.max}${constraint.unit}`
+          );
+        }
+      }
+    });
+
+    return {
+      valid: errors.length === 0,
+      errors,
+    };
+  },
+
+  // Helper method to format selected options for API
+  formatSelectedOptionsForAPI: (selectedCustomOptions) => {
+    return Object.entries(selectedCustomOptions).map(
+      ([optionId, valueData]) => ({
+        optionId,
+        valueId: valueData.valueId,
+      })
+    );
+  },
+
+  // Method to get required dimensions based on product type
+  getRequiredDimensionsForProduct: (product) => {
+    if (!product?.is_dimensional_pricing) {
+      return [];
+    }
+
+    const calculationType = product.dimensional_calculation_type;
+
+    switch (calculationType) {
+      case "m2":
+        return ["width", "height"];
+      case "m3":
+        return ["width", "height", "depth"];
+      case "linear-meter":
+        return ["width", "height"];
+      case "meter":
+        return ["length"];
+      default:
+        return [];
+    }
+  },
+
+  getTopProductsByCategorySlug: async (categorySlug, params = {}) => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params.limit) queryParams.append("limit", params.limit);
+
+      const response = await productAxiosInstance.get(
+        `/category-slug/${categorySlug}/top-products?${queryParams.toString()}`
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // create product event
+  createProductEvent: async (eventData) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/product-events`,
+        eventData
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // create multiple product events (batch)
+  createProductEventsBatch: async (eventsArray) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/product-events/batch`,
+        eventsArray
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Add product to cart
+  addToCart: async (cartItemData) => {
+    try {
+      const response = await basketAxiosInstance.post("/add", cartItemData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get active cart for the current customer
+  getActiveCart: async (country, postalCode) => {
+    try {
+      const response = await basketAxiosInstance.get("/active", {
+        params: {
+        country: country,
+        postalCode: postalCode,w
+      },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Get the count of items in the active cart
+  getCartItemCount: async () => {
+    try {
+      const response = await basketAxiosInstance.get("/count");
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Remove an item from the cart
+  removeFromCart: async (cart_item_id) => {
+    try {
+      const response = await basketAxiosInstance.delete("/remove", {
+        data: { cart_item_id },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Update quantity of a cart item
+  updateCartItemQuantity: async (cart_item_id, quantity) => {
+    try {
+      const response = await basketAxiosInstance.put("/update-quantity", {
+        cart_item_id,
+        quantity,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  applyPromotionCode: async (promotion_code) => {
+    try {
+      const response = await basketAxiosInstance.post("/apply-promotion", {
+        promotion_code,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  removePromotion: async () => {
+    try {
+      const response = await basketAxiosInstance.delete("/remove-promotion");
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  applyGiftCard: async (gift_card_code) => {
+    try {
+      const response = await basketAxiosInstance.post("/apply-gift-card", {
+        gift_card_code,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  removeGiftCard: async () => {
+    try {
+      const response = await basketAxiosInstance.delete("/remove-gift-card");
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // ORDERS START
+  checkout: async (checkoutData) => {
+    try {
+      const response = await orderAxiosInstance.post("/checkout", checkoutData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  // ORDERS END
+  // create a promotion
+  createPromotion: async (promotionData) => {
+    try {
+      const response = await basketAxiosInstance.post(
+        `/admin/promotions`,
+        promotionData,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  // get all promotions
+  getAllPromotions: async (params = {}) => {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (params.page) queryParams.append("page", params.page);
+      if (params.limit) queryParams.append("limit", params.limit);
+      if (params.search) queryParams.append("search", params.search);
+      if (typeof params.is_active !== "undefined")
+        queryParams.append("is_active", params.is_active);
+      if (params.type) queryParams.append("type", params.type);
+      if (params.valid_from)
+        queryParams.append("valid_from", params.valid_from);
+      if (params.valid_until)
+        queryParams.append("valid_until", params.valid_until);
+      if (params.applicable_to)
+        queryParams.append("applicable_to", params.applicable_to);
+
+      const response = await basketAxiosInstance.get(
+        `/admin/promotions?${queryParams.toString()}`,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  // update a promotion
+  updatePromotion: async (promotionId, updateData) => {
+    try {
+      const response = await basketAxiosInstance.put(
+        `/admin/promotions/${promotionId}`,
+        updateData,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  // create giftcard
+  createGiftCard: async (giftCardData) => {
+    try {
+      const response = await basketAxiosInstance.post(
+        `/admin/gift-cards`,
+        giftCardData,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  // Get all gift cards (admin) with pagination, search, and filters
+  getAllGiftCards: async (params = {}) => {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (params.page) queryParams.append("page", params.page);
+      if (params.limit) queryParams.append("limit", params.limit);
+      if (params.search) queryParams.append("search", params.search);
+      if (typeof params.is_active !== "undefined")
+        queryParams.append("is_active", params.is_active);
+      if (params.valid_from)
+        queryParams.append("valid_from", params.valid_from);
+      if (params.valid_until)
+        queryParams.append("valid_until", params.valid_until);
+      if (params.recipient_email)
+        queryParams.append("recipient_email", params.recipient_email);
+
+      const response = await basketAxiosInstance.get(
+        `/admin/gift-cards?${queryParams.toString()}`,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  // Update a gift card (admin only)
+  updateGiftCard: async (giftCardId, updateData) => {
+    try {
+      const response = await basketAxiosInstance.put(
+        `/admin/gift-cards/${giftCardId}`,
+        updateData,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // ADMIN CUSTOMERS ROUTES
+  // Get all customers (admin) with pagination, search, and filters
+  getAllCustomers: async (params = {}) => {
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (params.page) queryParams.append("page", params.page);
+      if (params.limit) queryParams.append("limit", params.limit);
+      if (params.search) queryParams.append("search", params.search);
+      if (params.is_active !== undefined && params.is_active !== "")
+        queryParams.append("is_active", params.is_active);
+      if (params.customer_type)
+        queryParams.append("customer_type", params.customer_type);
+      if (params.email_verified !== undefined && params.email_verified !== "")
+        queryParams.append("email_verified", params.email_verified);
+      if (params.customer_group)
+        queryParams.append("customer_group", params.customer_group);
+      if (params.preferred_language)
+        queryParams.append("preferred_language", params.preferred_language);
+      if (params.preferred_currency)
+        queryParams.append("preferred_currency", params.preferred_currency);
+      if (params.created_from)
+        queryParams.append("created_from", params.created_from);
+      if (params.created_until)
+        queryParams.append("created_until", params.created_until);
+
+      const response = await axios.get(
+        `${API_BASE_URL}/customers/admin/customers?${queryParams.toString()}`,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  // Get customer details by id (admin)
+  getCustomerById: async (customerId) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/customers/admin/customers/${customerId}`,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  // Get all orders for a customer (admin)
+  getOrdersByCustomerId: async (customerId, params = {}) => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params.page) queryParams.append("page", params.page);
+      if (params.limit) queryParams.append("limit", params.limit);
+      if (params.status) queryParams.append("status", params.status);
+      if (params.search) queryParams.append("search", params.search);
+
+      const response = await axios.get(
+        `${API_BASE_URL}/customers/admin/customers/${customerId}/orders?${queryParams.toString()}`,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  // END ADMIN CUSTOMER ROUTES
+  // ORDER ADMIN
+  // Get very detailed order info for admins
+  getOrderDetailsAdmin: async (orderId) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/orders/admin/orders/${orderId}/details`,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  handleCancellationRequest: async (requestData) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/orders/admin/handle-cancellation-request`,
+        requestData,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  addStaffNoteToOrder: async ({ order_id, note }) => {
+    try {
+      const response = await orderAxiosInstance.post(
+        "/admin/orders/add-staff-note",
+        { order_id, note }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  updateOrderStatus: async ({ order_id, new_status, note }) => {
+    try {
+      const response = await orderAxiosInstance.post(
+        "/admin/orders/update-status",
+        { order_id, new_status, note }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  // Generate delivery note for an order (Admin only)
+  generateDeliveryNote: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.get(
+        `/admin/orders/${order_id}/delivery-note`,
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  // ADMIN: Cancel an order
+  cancelOrderByAdmin: async ({
+    order_id,
+    admin_id,
+    admin_name,
+    admin_note,
+  }) => {
+    try {
+      const response = await orderAxiosInstance.post(
+        `/admin/orders/${order_id}/cancel`,
+        { admin_id, admin_name, admin_note }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  // Generate Proforma Invoice (Admin)
+  generateProInvoice: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.get(
+        `/admin/orders/${order_id}/pro-invoice`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Generate Credit Note (Admin)
+  generateCreditNote: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.get(
+        `/admin/orders/${order_id}/credit-note`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Generate Storno Bill (Admin)
+  generateStornoBill: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.get(
+        `/admin/orders/${order_id}/storno-bill`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Generate Invoice (Admin)
+  generateInvoice: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.get(
+        `/admin/orders/${order_id}/invoice`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Send Paid Invoice Email (Admin)
+  sendPaidInvoiceEmail: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.post(
+        `/admin/orders/${order_id}/send-paid-email`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Send Processing Email (Admin)
+  sendProcessingEmail: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.post(
+        `/admin/orders/${order_id}/send-processing-email`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Send Shipped Email (Admin)
+  sendShippedEmail: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.post(
+        `/admin/orders/${order_id}/send-shipped-email`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Send In Customs Email (Admin)
+  sendInCustomsEmail: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.post(
+        `/admin/orders/${order_id}/send-in-customs-email`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Send On Delivery Email (Admin)
+  sendOnDeliveryEmail: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.post(
+        `/admin/orders/${order_id}/send-on-delivery-email`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Send Delivered Email (Admin)
+  sendDeliveredEmail: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.post(
+        `/admin/orders/${order_id}/send-delivered-email`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Send Cancelled Email (Admin)
+  sendCancelledEmail: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.post(
+        `/admin/orders/${order_id}/send-cancelled-email`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+
+  // Send Refunded Email (Admin)
+  sendRefundedEmail: async (order_id) => {
+    try {
+      const response = await orderAxiosInstance.post(
+        `/admin/orders/${order_id}/send-refunded-email`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
+  getAllOrders: async (params = {}) => {
+  try {
+    const queryParams = new URLSearchParams();
+
+    if (params.page) queryParams.append("page", params.page);
+    if (params.limit) queryParams.append("limit", params.limit);
+    if (params.status) queryParams.append("status", params.status);
+    if (params.payment_status) queryParams.append("payment_status", params.payment_status);
+    if (params.payment_method) queryParams.append("payment_method", params.payment_method);
+    if (params.customer_email) queryParams.append("customer_email", params.customer_email);
+    if (params.customer_name) queryParams.append("customer_name", params.customer_name);
+    if (params.order_number) queryParams.append("order_number", params.order_number);
+    if (params.fromDate) queryParams.append("fromDate", params.fromDate);
+    if (params.toDate) queryParams.append("toDate", params.toDate);
+    if (params.min_total) queryParams.append("min_total", params.min_total);
+    if (params.max_total) queryParams.append("max_total", params.max_total);
+    if (params.search) queryParams.append("search", params.search);
+
+    const response = await orderAxiosInstance.get(
+      `/admin/orders?${queryParams.toString()}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+},
+createOrderByAdmin: async (orderData) => {
+  try {
+    const response = await orderAxiosInstance.post(
+      "/admin/orders",
+      orderData
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+},
+  // ORDER ADMIN
 };

@@ -43,6 +43,9 @@ import {
   StatLabel,
   StatNumber,
   StatHelpText,
+  Skeleton,
+  SkeletonCircle,
+  SkeletonText,
 } from "@chakra-ui/react";
 import {
   FaFilter,
@@ -107,31 +110,33 @@ const FlashDealFilterSidebar = React.memo(
         p={isMobile ? 0 : 4}
         bg={isMobile ? "white" : "gray.50"}
         borderRadius={isMobile ? 0 : "lg"}
+        border="1px solid rgba(145, 158, 171, 0.2)"
       >
         <HStack justify="space-between">
           <Text
-            fontSize="lg"
-            fontWeight="bold"
-            fontFamily={"Bricolage Grotesque"}
+            fontSize="md"
+            fontWeight="500"
+            fontFamily={"Airbnb Cereal VF"}
           >
-            Flash Deal Filters{" "}
+            Filtres d'offres flash{" "}
             {getSelectedFiltersCount() > 0 && `(${getSelectedFiltersCount()})`}
           </Text>
           <Button
             size="sm"
             variant="ghost"
             onClick={clearFilters}
-            fontFamily={"Bricolage Grotesque"}
+            fontFamily={"Airbnb Cereal VF"}
+            fontSize={'sm'}
           >
-            Clear All
+            Tout effacer
           </Button>
         </HStack>
 
         {/* Active Filters Summary */}
         {getSelectedFiltersCount() > 0 && (
           <Box>
-            <Text fontSize="sm" fontWeight="semibold" mb={2}>
-              Active Filters:
+            <Text fontSize="sm" fontWeight="500" mb={2} fontFamily={"Airbnb Cereal VF"}>
+              Filtres actifs :
             </Text>
             <Wrap spacing={1}>
               {(minPrice > 0 || maxPrice > 0) && (
@@ -195,9 +200,8 @@ const FlashDealFilterSidebar = React.memo(
         {/* Price Range Filter */}
         <Box>
           <HStack mb={3}>
-            <FaEuroSign color="gray.500" />
-            <Text fontWeight="semibold" fontFamily={"Bricolage Grotesque"}>
-              Price Range
+            <Text fontWeight="500" fontFamily={"Airbnb Cereal VF"}>
+              Gamme de prix
             </Text>
           </HStack>
 
@@ -205,7 +209,7 @@ const FlashDealFilterSidebar = React.memo(
             <HStack spacing={2} w="full">
               <VStack spacing={1} flex={1}>
                 <Text fontSize="xs" color="gray.500">
-                  Min Price
+                  Prix minimum
                 </Text>
                 <Input
                   value={tempMinPrice}
@@ -216,11 +220,11 @@ const FlashDealFilterSidebar = React.memo(
                 />
               </VStack>
               <Text alignSelf="end" pb={2} color="gray.400">
-                to
+                à
               </Text>
               <VStack spacing={1} flex={1}>
                 <Text fontSize="xs" color="gray.500">
-                  Max Price
+                  Prix maximum
                 </Text>
                 <Input
                   value={tempMaxPrice}
@@ -238,7 +242,7 @@ const FlashDealFilterSidebar = React.memo(
                 onClick={applyPriceRange}
                 flex={1}
               >
-                Apply
+                Appliquer
               </Button>
               <Button
                 size="sm"
@@ -246,7 +250,7 @@ const FlashDealFilterSidebar = React.memo(
                 onClick={clearPriceRange}
                 flex={1}
               >
-                Clear
+                Clair
               </Button>
             </HStack>
           </VStack>
@@ -257,8 +261,7 @@ const FlashDealFilterSidebar = React.memo(
         {/* Discount Range Filter */}
         <Box>
           <HStack mb={3}>
-            <FaPercent color="gray.500" />
-            <Text fontWeight="semibold" fontFamily={"Bricolage Grotesque"}>
+            <Text fontWeight="500" fontFamily={"Airbnb Cereal VF"}>
               Discount Range
             </Text>
           </HStack>
@@ -267,7 +270,7 @@ const FlashDealFilterSidebar = React.memo(
             <HStack spacing={2} w="full">
               <VStack spacing={1} flex={1}>
                 <Text fontSize="xs" color="gray.500">
-                  Min Discount (%)
+                  Remise minimale (%)
                 </Text>
                 <Input
                   value={tempMinDiscount}
@@ -278,11 +281,11 @@ const FlashDealFilterSidebar = React.memo(
                 />
               </VStack>
               <Text alignSelf="end" pb={2} color="gray.400">
-                to
+                à
               </Text>
               <VStack spacing={1} flex={1}>
                 <Text fontSize="xs" color="gray.500">
-                  Max Discount (%)
+                  Remise maximale (%)
                 </Text>
                 <Input
                   value={tempMaxDiscount}
@@ -300,7 +303,7 @@ const FlashDealFilterSidebar = React.memo(
                 onClick={applyDiscountRange}
                 flex={1}
               >
-                Apply
+                Appliquer
               </Button>
               <Button
                 size="sm"
@@ -308,7 +311,7 @@ const FlashDealFilterSidebar = React.memo(
                 onClick={clearDiscountRange}
                 flex={1}
               >
-                Clear
+                Clair
               </Button>
             </HStack>
           </VStack>
@@ -320,14 +323,14 @@ const FlashDealFilterSidebar = React.memo(
         <Box>
           <HStack mb={3}>
             <FaBoxOpen color="gray.500" />
-            <Text fontWeight="semibold" fontFamily={"Bricolage Grotesque"}>
-              Availability
+            <Text fontWeight="500" fontFamily={"Airbnb Cereal VF"}>
+              Disponibilité
             </Text>
           </HStack>
 
           <HStack justify="space-between" align="center">
-            <Text fontSize="sm" color="gray.600">
-              Include Out of Stock Products
+            <Text fontSize="sm" color="gray.600" fontFamily={"Airbnb Cereal VF"}>
+              Inclure les produits en rupture de stock
             </Text>
             <Box
               as="button"
@@ -362,8 +365,8 @@ const FlashDealFilterSidebar = React.memo(
         </Box>
 
         {isMobile && (
-          <Button colorScheme="blue" onClick={applyFilters} size="lg">
-            Apply Filters
+          <Button colorScheme="blue" onClick={applyFilters} size="lg" fontFamily={"Airbnb Cereal VF"}>
+            Appliquer des filtres
           </Button>
         )}
       </VStack>
@@ -474,19 +477,11 @@ const CustomerDealsPage = () => {
           setAvailableFilters(response.data.available_filters || {});
           setDealStats(response.data.deal_statistics || {});
         } else {
-          throw new Error(response.message || "Failed to fetch deals");
+          navigate("/");
         }
       } catch (err) {
-        setError(err.message || "Failed to load deals");
         setDeals([]);
-        toast({
-          description: "Failed to load flash deals. Please try again.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-          variant: "custom",
-          containerStyle: customToastContainerStyle,
-        });
+        navigate("/");
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -565,8 +560,8 @@ const CustomerDealsPage = () => {
 
     if (tempMinPrice && isNaN(min)) {
       toast({
-        title: "Invalid Price",
-        description: "Please enter a valid minimum price.",
+        title: "Prix invalide",
+        description: "Veuillez saisir un prix minimum valide.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -577,8 +572,8 @@ const CustomerDealsPage = () => {
 
     if (tempMaxPrice && isNaN(max)) {
       toast({
-        title: "Invalid Price",
-        description: "Please enter a valid maximum price.",
+        title: "Prix invalide",
+        description: "Veuillez saisir un prix maximum valide.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -589,8 +584,8 @@ const CustomerDealsPage = () => {
 
     if (min < 0) {
       toast({
-        title: "Invalid Price",
-        description: "Minimum price cannot be negative.",
+        title: "Prix invalide",
+        description: "Le prix minimum ne peut pas être négatif.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -601,8 +596,8 @@ const CustomerDealsPage = () => {
 
     if (max > 0 && min > max) {
       toast({
-        title: "Invalid Price Range",
-        description: "Minimum price cannot be greater than maximum price.",
+        title: "Prix invalide",
+        description: "Le prix minimum ne peut pas être supérieur au prix maximum.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -628,8 +623,8 @@ const CustomerDealsPage = () => {
 
     if (tempMinDiscount && isNaN(min)) {
       toast({
-        title: "Invalid Discount",
-        description: "Please enter a valid minimum discount.",
+        title: "Remise invalide",
+        description: "Veuillez saisir une remise minimale valide.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -640,8 +635,8 @@ const CustomerDealsPage = () => {
 
     if (tempMaxDiscount && isNaN(max)) {
       toast({
-        title: "Invalid Discount",
-        description: "Please enter a valid maximum discount.",
+        title: "Remise invalide",
+        description: "Veuillez saisir une remise maximale valide.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -652,8 +647,8 @@ const CustomerDealsPage = () => {
 
     if (min < 0) {
       toast({
-        title: "Invalid Discount",
-        description: "Minimum discount cannot be negative.",
+        title: "Remise invalide",
+        description: "La remise minimale ne peut pas être négative.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -664,9 +659,9 @@ const CustomerDealsPage = () => {
 
     if (max > 0 && min > max) {
       toast({
-        title: "Invalid Discount Range",
+        title: "Plage de remise non valide",
         description:
-          "Minimum discount cannot be greater than maximum discount.",
+          "La remise minimale ne peut pas être supérieure à la remise maximale.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -809,6 +804,380 @@ const CustomerDealsPage = () => {
     { value: "newest", label: "Newest" },
   ];
 
+  if (loading) {
+    return (
+      <>
+        <Box minH="100vh" bg="rgba(252, 252, 253, 1)">
+          {/* Navbar Skeleton */}
+          <Box bg="white" borderBottom="1px" borderColor="gray.100" py={4}>
+            <Container maxW="8xl">
+              <HStack spacing={6} justify="space-between">
+                <Skeleton height="40px" width="120px" borderRadius="md" />
+                <HStack spacing={4} flex={1} justify="center">
+                  <Skeleton height="32px" width="80px" borderRadius="md" />
+                  <Skeleton height="32px" width="100px" borderRadius="md" />
+                  <Skeleton height="32px" width="90px" borderRadius="md" />
+                  <Skeleton height="32px" width="110px" borderRadius="md" />
+                </HStack>
+                <HStack spacing={3}>
+                  <SkeletonCircle size="40px" />
+                  <SkeletonCircle size="40px" />
+                  <Skeleton height="40px" width="100px" borderRadius="md" />
+                </HStack>
+              </HStack>
+            </Container>
+          </Box>
+
+          <Container maxW="8xl" py={6}>
+            {/* Header Section Skeleton */}
+            <VStack spacing={6} mb={8}>
+              <Flex
+                w="full"
+                justify="space-between"
+                align="center"
+                wrap="wrap"
+                gap={4}
+              >
+                <VStack align="start" spacing={3}>
+                  {/* Flash Deals Title with Lightning Icon */}
+                  <HStack spacing={3}>
+                    <SkeletonCircle size="24px" />
+                    <Skeleton height="32px" width="180px" />
+                  </HStack>
+
+                  {/* Subtitle */}
+                  <Skeleton height="24px" width="250px" />
+
+                  {/* Filter count */}
+                  <Skeleton height="16px" width="120px" />
+
+                  {/* Description */}
+                  <Skeleton height="14px" width="350px" />
+                </VStack>
+
+                <HStack spacing={4}>
+                  {/* Mobile Filter Button Skeleton */}
+                  <Skeleton
+                    height="40px"
+                    width="100px"
+                    borderRadius="md"
+                    display={{ base: "block", lg: "none" }}
+                  />
+
+                  {/* Sort Section */}
+                  <HStack spacing={2}>
+                    <Skeleton
+                      height="16px"
+                      width="40px"
+                      display={{ base: "none", md: "block" }}
+                    />
+                    <Skeleton height="32px" width="160px" borderRadius="md" />
+                  </HStack>
+                </HStack>
+              </Flex>
+            </VStack>
+
+            {/* Main Content Grid */}
+            <Grid templateColumns={{ base: "1fr", lg: "300px 1fr" }} gap={6}>
+              {/* Desktop Filter Sidebar Skeleton */}
+              <Box display={{ base: "none", lg: "block" }}>
+                <VStack
+                  align="stretch"
+                  spacing={6}
+                  p={4}
+                  bg="gray.50"
+                  borderRadius="lg"
+                >
+                  {/* Filter Header */}
+                  <HStack justify="space-between">
+                    <Skeleton height="20px" width="140px" />
+                    <Skeleton height="20px" width="60px" />
+                  </HStack>
+
+                  {/* Active Filters Section */}
+                  <Box>
+                    <Skeleton height="16px" width="100px" mb={2} />
+                    <HStack spacing={2}>
+                      <Skeleton
+                        height="24px"
+                        width="80px"
+                        borderRadius="full"
+                      />
+                      <Skeleton
+                        height="24px"
+                        width="60px"
+                        borderRadius="full"
+                      />
+                      <Skeleton
+                        height="24px"
+                        width="70px"
+                        borderRadius="full"
+                      />
+                    </HStack>
+                  </Box>
+
+                  <Skeleton height="1px" width="100%" />
+
+                  {/* Price Range Filter */}
+                  <VStack align="stretch" spacing={3}>
+                    <HStack>
+                      <SkeletonCircle size="16px" />
+                      <Skeleton height="18px" width="90px" />
+                    </HStack>
+
+                    <HStack spacing={2} w="full">
+                      <VStack spacing={1} flex={1}>
+                        <Skeleton height="12px" width="60px" />
+                        <Skeleton
+                          height="32px"
+                          width="100%"
+                          borderRadius="md"
+                        />
+                      </VStack>
+                      <Skeleton
+                        height="16px"
+                        width="20px"
+                        alignSelf="end"
+                        mb={2}
+                      />
+                      <VStack spacing={1} flex={1}>
+                        <Skeleton height="12px" width="60px" />
+                        <Skeleton
+                          height="32px"
+                          width="100%"
+                          borderRadius="md"
+                        />
+                      </VStack>
+                    </HStack>
+
+                    <HStack spacing={2} w="full">
+                      <Skeleton height="32px" flex={1} borderRadius="md" />
+                      <Skeleton height="32px" flex={1} borderRadius="md" />
+                    </HStack>
+                  </VStack>
+
+                  <Skeleton height="1px" width="100%" />
+
+                  {/* Discount Range Filter */}
+                  <VStack align="stretch" spacing={3}>
+                    <HStack>
+                      <SkeletonCircle size="16px" />
+                      <Skeleton height="18px" width="110px" />
+                    </HStack>
+
+                    <HStack spacing={2} w="full">
+                      <VStack spacing={1} flex={1}>
+                        <Skeleton height="12px" width="80px" />
+                        <Skeleton
+                          height="32px"
+                          width="100%"
+                          borderRadius="md"
+                        />
+                      </VStack>
+                      <Skeleton
+                        height="16px"
+                        width="20px"
+                        alignSelf="end"
+                        mb={2}
+                      />
+                      <VStack spacing={1} flex={1}>
+                        <Skeleton height="12px" width="80px" />
+                        <Skeleton
+                          height="32px"
+                          width="100%"
+                          borderRadius="md"
+                        />
+                      </VStack>
+                    </HStack>
+
+                    <HStack spacing={2} w="full">
+                      <Skeleton height="32px" flex={1} borderRadius="md" />
+                      <Skeleton height="32px" flex={1} borderRadius="md" />
+                    </HStack>
+                  </VStack>
+
+                  <Skeleton height="1px" width="100%" />
+
+                  {/* Availability Filter */}
+                  <VStack align="stretch" spacing={3}>
+                    <HStack>
+                      <SkeletonCircle size="16px" />
+                      <Skeleton height="18px" width="80px" />
+                    </HStack>
+
+                    <HStack justify="space-between" align="center">
+                      <Skeleton height="16px" width="180px" />
+                      <Skeleton
+                        height="24px"
+                        width="48px"
+                        borderRadius="full"
+                      />
+                    </HStack>
+                  </VStack>
+
+                  {/* Additional Filter Categories */}
+                  {[...Array(2)].map((_, index) => (
+                    <VStack key={index} align="stretch" spacing={3}>
+                      <Skeleton height="1px" width="100%" />
+                      <HStack>
+                        <SkeletonCircle size="16px" />
+                        <Skeleton height="18px" width="120px" />
+                      </HStack>
+                      <VStack spacing={2} align="stretch">
+                        {[...Array(3)].map((_, i) => (
+                          <HStack key={i} justify="space-between">
+                            <HStack>
+                              <SkeletonCircle size="16px" />
+                              <Skeleton height="16px" width="100px" />
+                            </HStack>
+                            <Skeleton height="16px" width="20px" />
+                          </HStack>
+                        ))}
+                      </VStack>
+                    </VStack>
+                  ))}
+                </VStack>
+              </Box>
+
+              {/* Products Grid Skeleton */}
+              <Box>
+                {/* Loading Animation with Spinner */}
+                <VStack py={8} spacing={6}>
+                  <HStack spacing={3}>
+                    <Skeleton height="40px" width="40px" borderRadius="full" />
+                    <VStack spacing={2}>
+                      <Skeleton height="20px" width="200px" />
+                      <Skeleton height="16px" width="150px" />
+                    </VStack>
+                  </HStack>
+                </VStack>
+
+                {/* Product Cards Grid Skeleton */}
+                <SimpleGrid
+                  columns={{ base: 2, md: 3, lg: 4, xl: 5 }}
+                  spacing={4}
+                  mb={8}
+                >
+                  {[...Array(20)].map((_, index) => (
+                    <Box
+                      key={index}
+                      bg="white"
+                      borderRadius="lg"
+                      overflow="hidden"
+                      shadow="sm"
+                    >
+                      {/* Product Image */}
+                      <Box position="relative">
+                        <Skeleton height="200px" />
+
+                        {/* Flash Deal Badge */}
+                        <Box position="absolute" top={2} left={2}>
+                          <Skeleton
+                            height="24px"
+                            width="60px"
+                            borderRadius="full"
+                          />
+                        </Box>
+
+                        {/* Discount Badge */}
+                        <Box position="absolute" top={2} right={2}>
+                          <Skeleton
+                            height="24px"
+                            width="40px"
+                            borderRadius="full"
+                          />
+                        </Box>
+
+                        {/* Urgency Indicator */}
+                        <Box position="absolute" bottom={2} left={2}>
+                          <Skeleton
+                            height="20px"
+                            width="80px"
+                            borderRadius="full"
+                          />
+                        </Box>
+                      </Box>
+
+                      {/* Product Info */}
+                      <VStack p={3} spacing={3} align="stretch">
+                        {/* Product Title */}
+                        <VStack spacing={1} align="stretch">
+                          <Skeleton height="16px" width="100%" />
+                          <Skeleton height="16px" width="80%" />
+                        </VStack>
+
+                        {/* Price Section */}
+                        <VStack spacing={1} align="stretch">
+                          <HStack justify="space-between" align="center">
+                            <Skeleton height="20px" width="70px" />
+                            <Skeleton height="16px" width="50px" />
+                          </HStack>
+                          <Skeleton height="14px" width="60px" />
+                        </VStack>
+
+                        {/* Savings */}
+                        <Skeleton height="16px" width="90px" />
+
+                        {/* Progress Bar for Stock/Time */}
+                        <VStack spacing={1}>
+                          <Skeleton
+                            height="8px"
+                            width="100%"
+                            borderRadius="full"
+                          />
+                          <Skeleton height="12px" width="60%" />
+                        </VStack>
+
+                        {/* Action Button */}
+                        <Skeleton height="36px" borderRadius="md" />
+                      </VStack>
+                    </Box>
+                  ))}
+                </SimpleGrid>
+
+                {/* Load More Button Skeleton */}
+                <VStack spacing={4}>
+                  <Skeleton height="40px" width="200px" borderRadius="md" />
+                </VStack>
+              </Box>
+            </Grid>
+          </Container>
+
+          {/* Footer Skeleton */}
+          <Box bg="gray.900" mt={12} py={8}>
+            <Container maxW="8xl">
+              <SimpleGrid columns={{ base: 1, md: 4 }} spacing={8}>
+                {[...Array(4)].map((_, i) => (
+                  <VStack key={i} align="start" spacing={4}>
+                    <Skeleton height="20px" width="120px" />
+                    <VStack align="start" spacing={2}>
+                      <Skeleton height="16px" width="80px" />
+                      <Skeleton height="16px" width="100px" />
+                      <Skeleton height="16px" width="90px" />
+                      <Skeleton height="16px" width="70px" />
+                    </VStack>
+                  </VStack>
+                ))}
+              </SimpleGrid>
+
+              <Skeleton height="1px" width="100%" my={8} />
+
+              <HStack justify="space-between" wrap="wrap" gap={4}>
+                <Skeleton height="16px" width="200px" />
+                <HStack spacing={4}>
+                  <Skeleton height="32px" width="32px" borderRadius="md" />
+                  <Skeleton height="32px" width="32px" borderRadius="md" />
+                  <Skeleton height="32px" width="32px" borderRadius="md" />
+                  <Skeleton height="32px" width="32px" borderRadius="md" />
+                </HStack>
+              </HStack>
+            </Container>
+          </Box>
+        </Box>
+      </>
+    );
+  }
+
   return (
     <Box minH="100vh" bg="gray.50">
       <Navbar />
@@ -825,30 +1194,29 @@ const CustomerDealsPage = () => {
           >
             <VStack align="start" spacing={1}>
               <HStack>
-                <FaBolt color="red.500" size="24px" />
                 <Heading
-                  fontSize="2xl"
-                  fontWeight="bold"
-                  fontFamily={"Bricolage Grotesque"}
-                  color="red.500"
+                  fontSize="xl"
+                  fontWeight="600"
+                  fontFamily="Airbnb Cereal VF"
+                  color="black"
                 >
-                  Flash Deals
+                  Offres flash
                 </Heading>
               </HStack>
               <Text
-                fontSize="lg"
-                fontWeight="bold"
-                fontFamily={"Bricolage Grotesque"}
+                fontSize="md"
+                fontWeight="500"
+                fontFamily="Airbnb Cereal VF"
               >
-                {loading ? "Loading..." : `${totalCount} Amazing Deals Found`}
+                {loading ? "Loading..." : `${totalCount} Offres incroyables trouvées`}
               </Text>
               {getSelectedFiltersCount() > 0 && (
-                <Text fontSize="sm" color="gray.600">
-                  {getSelectedFiltersCount()} filters applied
+                <Text fontSize="sm" color="gray.600" fontFamily="Airbnb Cereal VF">
+                  {getSelectedFiltersCount()} filtres appliqués
                 </Text>
               )}
-              <Text fontSize="sm" color="gray.500">
-                Discover amazing deals with up to 70% off on selected products
+              <Text fontSize="sm" color="gray.500" fontFamily="Airbnb Cereal VF">
+                Découvrez des offres incroyables avec jusqu'à 70 % de réduction sur une sélection de produits
               </Text>
             </VStack>
 
@@ -859,9 +1227,9 @@ const CustomerDealsPage = () => {
                 variant="outline"
                 display={{ base: "flex", lg: "none" }}
                 onClick={onOpen}
-                fontFamily={"Bricolage Grotesque"}
+                fontFamily="Airbnb Cereal VF"
               >
-                Filters{" "}
+                Filtres{" "}
                 {getSelectedFiltersCount() > 0 &&
                   `(${getSelectedFiltersCount()})`}
               </Button>
@@ -929,32 +1297,24 @@ const CustomerDealsPage = () => {
             {loading ? (
               <VStack py={20}>
                 <Spinner size="xl" color="red.500" />
-                <Text>Loading flash deals...</Text>
+                <Text>Chargement des offres flash...</Text>
               </VStack>
             ) : error ? (
-              <Alert status="error" borderRadius="lg">
-                <AlertIcon />
-                <VStack align="start" spacing={2}>
-                  <Text fontWeight="semibold">Error Loading Deals</Text>
-                  <Text fontSize="sm" fontFamily={"Bricolage Grotesque"}>
-                    {error}
-                  </Text>
-                </VStack>
-              </Alert>
+              window.location.href = "/"
             ) : deals.length === 0 ? (
               <Alert status="info" borderRadius="lg">
                 <AlertIcon />
                 <VStack align="start" spacing={2}>
-                  <Text fontWeight="semibold">No flash deals found</Text>
-                  <Text fontSize="sm" fontFamily={"Bricolage Grotesque"}>
-                    Try adjusting your filters to see more deals.
+                  <Text fontWeight="semibold">Aucune offre flash trouvée</Text>
+                  <Text fontSize="sm" fontFamily="Bogle">
+                    Essayez d'ajuster vos filtres pour voir plus d'offres.
                   </Text>
                 </VStack>
               </Alert>
             ) : (
               <>
                 <SimpleGrid
-                  columns={{ base: 2, md: 3, lg: 4, xl: 5 }}
+                  columns={{ base: 2, md: 3, lg: 4, xl: 4 }}
                   spacing={4}
                   mb={8}
                 >
@@ -975,18 +1335,18 @@ const CustomerDealsPage = () => {
                       size="sm"
                       onClick={loadMore}
                       isLoading={loadingMore}
-                      loadingText="Loading more deals..."
+                      loadingText="Chargement de plus d'offres..."
                       w="auto"
                       maxW="auto"
                       borderColor="red.500"
                       borderWidth={0}
                       color="white"
                       p={5}
-                      _hover={{ bg: "rgb(239, 48, 84)" }}
-                      bg="rgb(239, 48, 84)"
-                      fontFamily={"Bricolage Grotesque"}
+                      _hover={{ bg: "rgb(241, 36, 36)" }}
+                      bg="rgb(241, 36, 36)"
+                      fontFamily="Bogle"
                     >
-                      Show More Flash Deals
+                      Afficher plus d'offres flash
                     </Button>
                   </VStack>
                 )}
@@ -1000,7 +1360,7 @@ const CustomerDealsPage = () => {
           <DrawerOverlay />
           <DrawerContent>
             <DrawerCloseButton />
-            <DrawerHeader>Flash Deal Filters</DrawerHeader>
+            <DrawerHeader>Filtres d'offres flash</DrawerHeader>
             <DrawerBody>
               <FlashDealFilterSidebar
                 isMobile={true}

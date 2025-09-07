@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Container,
@@ -71,8 +71,17 @@ import {
   FaUser,
   FaChevronUp,
   FaTimes,
+  FaRegHeart,
 } from "react-icons/fa";
 import Logo from "../../assets/logo-as.png";
+import AsSolutionsPhoto from "../../assets/welcome-as.png";
+import FlashSalePromo from "../../assets/flash-sale-4.png";
+import BabySalePromo from "../../assets/baby-3.png";
+import FournitureSalePromo from "../../assets/fourniture-2.png";
+import FourniturePromoSlide from "../../assets/fourniture-g.png";
+import GaragePromoSlide from "../../assets/garage.png";
+import JasquaMobile from "../../assets/jasqua-mobile.png";
+import GarageSliderMobile from "../../assets/garage-slider-mobile.png";
 import { homeService } from "./services/homeService";
 import Footer from "../../shared-customer/components/Footer";
 import MobileCategoryNavigation from "../../shared-customer/components/MobileCategoryNavigation";
@@ -80,64 +89,103 @@ import { useSwipeable } from "react-swipeable";
 import ExploreAll from "../../shared-customer/components/ExploreAll";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../shared-customer/components/Navbar";
+import { customerAccountService } from "../customer-account/customerAccountService";
+import { useToast } from "@chakra-ui/react";
+import { useCustomerAuth } from "../customer-account/auth-context/customerAuthContext";
+import { customToastContainerStyle } from "../../commons/toastStyles";
 
 function Home() {
+  let toast = useToast();
+  const { customer, isLoading } = useCustomerAuth();
   const [currentPromoSlide, setCurrentPromoSlide] = useState(0);
   const [newArrivals, setNewArrivals] = useState([]);
   const [newArrivalsLoading, setNewArrivalsLoading] = useState(false);
   const [flashDeals, setFlashDeals] = useState([]);
   const [flashDealsLoading, setFlashDealsLoading] = useState(false);
+  const [flashDealsFurniture, setFlashDealsFurniture] = useState([]);
+  const [flashDealsFurnitureLoading, setFlashDealsFurnitureLoading] =
+    useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const [topDoorsProducts, setTopDoorsProducts] = useState([]);
+  const [topDoorsLoading, setTopDoorsLoading] = useState(false);
+  const [topFetresLoading, setTopFetresLoading] = useState(false);
+  const [topFetresProducts, setTopFetresProducts] = useState([]);
+  const [topAutoMotoProducts, setTopAutoMotoProducts] = useState([]);
+  const [topAutoMotoLoading, setTopAutoMotoLoading] = useState(false);
+  const [topBabyProducts, setTopBabyProducts] = useState([]);
+  const [topBabyLoading, setTopBabyLoading] = useState(false);
+  const [constructionProducts, setConstructionProducts] = useState(false);
+  const [constructionProductsLoading, setConstructionProductsLoading] =
+    useState(false);
+  const [sanitaryProducts, setSanitaryProducts] = useState([]);
+  const [sanitaryProductsLoading, setSanitaryProductsLoading] = useState(false);
+
+  const carouselImage = useBreakpointValue({
+    base: GarageSliderMobile, // mobile image
+    lg: GaragePromoSlide, // desktop image
+  });
 
   // Promotional carousel data
   const promoSlides = [
     {
       id: 1,
-      title: "Hot summer savings on what's cool",
-      subtitle: "Get it in as fast as an hour*",
-      buttonText: "Shop now",
-      bgGradient: "linear-gradient(135deg, #EBF8FF, #BEE3F8)",
-      image:
-        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200&h=200&fit=crop",
-      textColor: "blue.900",
-      subtitleColor: "blue.700",
-      buttonBg: "blue.600",
-      buttonHoverBg: "blue.700",
-    },
-    {
-      id: 2,
-      title: "Summer fashion deals up to 60% off",
-      subtitle: "Limited time offer",
-      buttonText: "Explore deals",
-      bgGradient: "linear-gradient(135deg, #FEF3C7, #FCD34D)",
-      image:
-        "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=200&h=200&fit=crop",
-      textColor: "gray.800",
-      subtitleColor: "gray.700",
-      buttonBg: "gray.800",
-      buttonHoverBg: "gray.700",
-    },
-    {
-      id: 3,
-      title: "Premium home & garden essentials",
-      subtitle: "Transform your space",
-      buttonText: "Shop collection",
-      bgGradient: "linear-gradient(135deg, #F0FDF4, #86EFAC)",
-      image:
-        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop",
-      textColor: "green.900",
-      subtitleColor: "green.700",
-      buttonBg: "green.600",
-      buttonHoverBg: "green.700",
+      title: "",
+      subtitle: "",
+      buttonText: "",
+      bgGradient: "transparent",
+      image: carouselImage,
+      textColor: "transparent",
+      subtitleColor: "transparent",
+      buttonBg: "transparent",
+      buttonHoverBg: "transparent",
+      link: "/category/automoto",
     },
   ];
 
-  const handleProductClick = (slug) => {
-    return () => navigate(`/product/${slug}`);
+  const handleAddToWishlist = async (productId) => {
+    if (!customer || !customer.id) {
+      navigate("/account/signin");
+      return;
+    }
+    try {
+      await customerAccountService.addToWishlist(productId);
+      toast({
+        title: "Ajouté à la liste de souhaits",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+        variant: "custom",
+        containerStyle: customToastContainerStyle,
+      });
+
+      const eventPayload = {
+        event_type: "wishlist_add",
+        session_id: customer?.id || null,
+        customer_id: customer?.id || null,
+        product_id: productId,
+        page_type: "homepage",
+        page_url: typeof window !== "undefined" ? window.location.href : null,
+        referrer_url:
+          typeof document !== "undefined" ? document.referrer : null,
+        timestamp: new Date().toISOString(),
+      };
+
+      await homeService.createProductEvent(eventPayload);
+    } catch (error) {
+      toast({
+        title:
+          error?.message || "Erreur lors de l'ajout à la liste de souhaits",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+        variant: "custom",
+        containerStyle: customToastContainerStyle,
+      });
+    }
   };
 
   const isMobile = useBreakpointValue({ base: true, md: false });
@@ -147,6 +195,12 @@ function Home() {
     fetchNewArrivals();
     fetchFlashDeals();
     fetchFurnitureFlashDeals();
+    fetchTopDoorsProducts();
+    fetchTopWindowssProducts();
+    fetchTopAutoMotoProducts();
+    fetchTopBabyProducts();
+    fetchTopConstructionProducts();
+    fetchTopSanitaryProducts();
 
     // Auto-slide banner every 4 seconds
     const interval = setInterval(() => {
@@ -170,7 +224,7 @@ function Home() {
     try {
       setNewArrivalsLoading(true);
       const response = await homeService.getNewArrivals({
-        limit: 24, // Fetch 24 products for horizontal scroll
+        limit: 24,
       });
 
       if (response.status === "success" && response.data?.products) {
@@ -191,7 +245,7 @@ function Home() {
       setFlashDealsLoading(true);
       const response = await homeService.getFlashDeals({
         limit: 24, // Fetch 24 products for horizontal scroll
-        min_discount: 15, // Minimum 15% discount for flash deals
+        min_discount: 5, // Minimum 15% discount for flash deals
       });
 
       if (response.status === "success" && response.data?.products) {
@@ -209,22 +263,23 @@ function Home() {
   // New function to fetch furniture flash deals specifically
   const fetchFurnitureFlashDeals = async () => {
     try {
-      setFlashDealsLoading(true);
+      setFlashDealsFurnitureLoading(true);
+
       const response = await homeService.getFurnitureFlashDeals({
         limit: 24,
         min_discount: 15,
-        category_id: "edffdc4c-36bb-4b05-82c1-22fb322dc88f", // furniture
+        category_id: "91f52fda-b2a9-4330-b922-7039c7e764c6", // furniture id
       });
 
       if (response.status === "success" && response.data?.products) {
-        setFlashDeals(response.data.products);
+        setFlashDealsFurniture(response.data.products);
       } else {
-        setFlashDeals([]);
+        setFlashDealsFurniture([]);
       }
     } catch (error) {
-      setFlashDeals([]);
+      setFlashDealsFurniture([]);
     } finally {
-      setFlashDealsLoading(false);
+      setFlashDealsFurnitureLoading(false);
     }
   };
 
@@ -271,16 +326,345 @@ function Home() {
       isMegaDeal: apiProduct.badges?.mega_deal || false,
       isSpecialOffer: apiProduct.flash_deal?.is_special_offer || false,
       discountPercentage: apiProduct.flash_deal?.discount_percentage || 0,
+      isLimitedStock:
+        apiProduct.flash_deal?.availability?.is_available || false,
     };
   };
 
+  // FETCH BY CATEGORY TOP PRODUCTS
+  const fetchTopDoorsProducts = async () => {
+    try {
+      setTopDoorsLoading(true);
+      const response = await homeService.getTopProductsByCategorySlug(
+        "portes",
+        {
+          limit: 20,
+        }
+      );
+
+      const products = response.data || [];
+
+      setTopDoorsProducts(products);
+    } catch (error) {
+      setTopDoorsProducts([]);
+    } finally {
+      setTopDoorsLoading(false);
+    }
+  };
+
+  const fetchTopWindowssProducts = async () => {
+    try {
+      setTopFetresLoading(true);
+      const response = await homeService.getTopProductsByCategorySlug(
+        "fentres",
+        {
+          limit: 20,
+        }
+      );
+
+      const products = response.data || [];
+
+      setTopFetresProducts(products);
+    } catch (error) {
+      setTopFetresProducts([]);
+    } finally {
+      setTopFetresLoading(false);
+    }
+  };
+
+  const fetchTopAutoMotoProducts = async () => {
+    try {
+      setTopAutoMotoLoading(true);
+      const response = await homeService.getTopProductsByCategorySlug(
+        "automoto",
+        {
+          limit: 20,
+        }
+      );
+
+      const products = response.data || [];
+
+      setTopAutoMotoProducts(products);
+    } catch (error) {
+      setTopAutoMotoProducts([]);
+    } finally {
+      setTopAutoMotoLoading(false);
+    }
+  };
+
+  const fetchTopBabyProducts = async () => {
+    try {
+      setTopBabyLoading(true);
+      const response = await homeService.getTopProductsByCategorySlug(
+        "enfants-bb",
+        {
+          limit: 20,
+        }
+      );
+
+      const products = response.data || [];
+
+      setTopBabyProducts(products);
+    } catch (error) {
+      setTopBabyProducts([]);
+    } finally {
+      setTopBabyLoading(false);
+    }
+  };
+
+  const fetchTopConstructionProducts = async () => {
+    try {
+      setConstructionProductsLoading(true);
+      const response = await homeService.getTopProductsByCategorySlug(
+        "mtallerie-matriaux-construction",
+        {
+          limit: 20,
+        }
+      );
+
+      const products = response.data || [];
+
+      setConstructionProducts(products);
+    } catch (error) {
+      setConstructionProducts([]);
+    } finally {
+      setConstructionProductsLoading(false);
+    }
+  };
+
+  const fetchTopSanitaryProducts = async () => {
+    try {
+      setSanitaryProductsLoading(true);
+      const response = await homeService.getTopProductsByCategorySlug(
+        "salle-de-bain-sanitaires",
+        {
+          limit: 20,
+        }
+      );
+
+      const products = response.data || [];
+
+      setSanitaryProducts(products);
+    } catch (error) {
+      setSanitaryProducts([]);
+    } finally {
+      setSanitaryProductsLoading(false);
+    }
+  };
+
+  // USER BEHAVIOR EVENTS
+  // ======================
+  // Build product impression event payload
+  function buildProductImpressionEvent({
+    product,
+    index,
+    section = "homepage",
+  }) {
+    return {
+      event_type: "impression",
+      session_id: customer?.id || null,
+      customer_id: customer?.id || null,
+      product_id: product.id,
+      category_id: product.category?.id,
+      page_type: section,
+      page_url: window.location.href,
+      referrer_url: document.referrer,
+      category_path: "/category/" + (product.category?.slug || "unknown"),
+      position_in_list: index + 1,
+      total_results: null,
+      page_number: 1,
+      viewport_size: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      },
+      timestamp: new Date(),
+      created_at: new Date(),
+    };
+  };
+
+  // Intersection Observer hook for impressions (BATCHED)
+  function useImpressionObserver(products, section, transformFn) {
+    const observedRef = useRef([]);
+    const sentImpressions = useRef(new Set());
+
+    useEffect(() => {
+      if (!products || products.length === 0) return;
+      const observer = new window.IntersectionObserver(
+        (entries) => {
+          const batchEvents = [];
+          entries.forEach((entry) => {
+            if (
+              entry.isIntersecting &&
+              entry.target.dataset.impression !== "sent"
+            ) {
+              const index = Number(entry.target.dataset.index);
+              const product = transformFn(products[index]);
+              const uniqueKey = `${section}-${product.id}-${index}`;
+              if (!sentImpressions.current.has(uniqueKey)) {
+                const eventPayload = buildProductImpressionEvent({
+                  product,
+                  index,
+                  section,
+                });
+                batchEvents.push(eventPayload);
+                sentImpressions.current.add(uniqueKey);
+                entry.target.dataset.impression = "sent";
+              }
+            }
+          });
+          if (batchEvents.length > 0) {
+            homeService.createProductEventsBatch(batchEvents).catch(() => {});
+          }
+        },
+        { threshold: 0.5 }
+      );
+      observedRef.current.forEach((el) => {
+        if (el) observer.observe(el);
+      });
+      return () => {
+        observedRef.current.forEach((el) => {
+          if (el) observer.unobserve(el);
+        });
+      };
+    }, [products, section, transformFn]);
+    return observedRef;
+  }
+
+  // Product Click Event Payload
+  function buildProductClickEvent({ product, index, section = "homepage" }) {
+    return {
+      event_type: "click",
+      session_id: localStorage.getItem("session_id") || null,
+      customer_id: window.user?.id || null,
+      product_id: product.id,
+      category_id: product.category?.id,
+      page_type: section,
+      page_url: window.location.href,
+      referrer_url: document.referrer,
+      category_path: "/category/" + (product.category?.slug || "unknown"),
+      position_in_list: index + 1,
+      total_results: null,
+      page_number: 1,
+      viewport_size: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      },
+      timestamp: new Date(),
+      created_at: new Date(),
+    };
+  }
+
+  // New arrivals section (Impression tracking)
+  const newArrivalsImpressionRefs = useImpressionObserver(
+    newArrivals,
+    "homepage",
+    transformProductData
+  );
+
+  const flashDealsImpressionRefs = useImpressionObserver(
+    flashDeals,
+    "homepage",
+    transformProductData
+  );
+
+  const bigSaveOnFurnitureImpressionRefs = useImpressionObserver(
+    flashDeals,
+    "homepage",
+    transformFlashDealData
+  );
+
+  // Portes
+  const topDoorsImpressionRefs = useImpressionObserver(
+    topDoorsProducts,
+    "homepage",
+    transformProductData
+  );
+
+  // Fenetres
+  const topWindowsImpressionRefs = useImpressionObserver(
+    topFetresProducts,
+    "homepage",
+    transformProductData
+  );
+
+  // Auto Moto
+  const topAutoMotoImpressionRefs = useImpressionObserver(
+    topAutoMotoProducts,
+    "homepage",
+    transformProductData
+  );
+
+  // Baby
+  const topBabyImpressionRefs = useImpressionObserver(
+    topBabyProducts,
+    "homepage",
+    transformProductData
+  );
+
+  // Construction
+  const topConstructionImpressionRefs = useImpressionObserver(
+    constructionProducts,
+    "homepage",
+    transformProductData
+  );
+
+  // Sanitary
+  const topSanitaryImpressionRefs = useImpressionObserver(
+    sanitaryProducts,
+    "homepage",
+    transformProductData
+  );
+
+  // Handle click
+  const handleProductClick = (product, index, section = "homepage") => {
+    return (e) => {
+      // Send click event
+      const eventPayload = buildProductClickEvent({ product, index, section });
+      homeService.createProductEvent(eventPayload);
+
+      // Navigate to product page
+      navigate(`/product/${product.slug}`);
+    };
+  };
+
+  // product hove event payload
+  function buildProductHoverEvent({ product, index, section = "homepage" }) {
+    return {
+      event_type: "hover",
+      session_id: localStorage.getItem("session_id") || null,
+      customer_id: window.user?.id || null,
+      product_id: product.id,
+      category_id: product.category?.id,
+      page_type: section,
+      page_url: window.location.href,
+      referrer_url: document.referrer,
+      category_path: "/category/" + (product.category?.slug || "unknown"),
+      position_in_list: index + 1,
+      total_results: null,
+      page_number: 1,
+      viewport_size: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      },
+      timestamp: new Date(),
+      created_at: new Date(),
+    };
+  }
+
+  // handle hover
+  const handleProductHover = (product, index, section = "homepage") => {
+    // Send hover event
+    const eventPayload = buildProductHoverEvent({ product, index, section });
+    homeService.createProductEvent(eventPayload);
+  };
+
   return (
-    <Box minH="100vh" bg="gray.50">
+    <Box minH="100vh" bg="rgba(252, 252, 253, 1)">
       {/* Header matching Wish design but with AS Solutions branding */}
       <Navbar />
 
       {/* Main Content with Container */}
-      <Container maxW="8xl" py={6}>
+      <Container maxW="8xl" py={6} px={4}>
         {/* Hero Promotional Section - Walmart Style */}
         <Grid
           templateColumns={{ base: "1fr", lg: "300px 1fr 300px" }}
@@ -294,62 +678,24 @@ function Home() {
             rowSpan={{ base: 1, lg: 2 }}
             bg="#F8E7A1"
             borderRadius="12px"
-            p={6}
+            p={0}
             position="relative"
             overflow="hidden"
             display="flex"
             flexDirection="column"
             justifyContent="space-between"
+            as="a"
+            href="/flash-deals"
           >
-            <VStack align="start" spacing={3}>
-              <Heading
-                size="lg"
-                color="gray.800"
-                fontWeight="bold"
-                lineHeight="1.2"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Everything for July 4th
-              </Heading>
-              <Text
-                color="gray.700"
-                fontSize="sm"
-                textDecoration="underline"
-                cursor="pointer"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Shop now
-              </Text>
-            </VStack>
-
-            {/* Decorative elements */}
-            <Box position="absolute" top="20px" right="20px">
-              <Box
-                w="40px"
-                h="40px"
-                bg="red.500"
-                borderRadius="full"
-                opacity="0.8"
-              />
-            </Box>
-            <Box position="absolute" bottom="60px" right="40px">
-              <Box
-                w="60px"
-                h="60px"
-                bg="blue.500"
-                borderRadius="full"
-                opacity="0.6"
-              />
-            </Box>
-            <Box position="absolute" bottom="20px" left="20px">
-              <Box
-                w="30px"
-                h="30px"
-                bg="white"
-                borderRadius="full"
-                opacity="0.9"
-              />
-            </Box>
+            <Image
+              src={useBreakpointValue({
+                base: JasquaMobile,
+                lg: FlashSalePromo,
+              })}
+              h="full"
+              w="full"
+              objectFit="fill"
+            />
           </GridItem>
 
           {/* Center Column - Carousel */}
@@ -371,61 +717,22 @@ function Home() {
                 display="flex"
                 alignItems="center"
                 justifyContent="space-between"
-                p={6}
+                p={0}
                 transition="all 0.5s ease-in-out"
+                as="a"
+                href={promoSlides[currentPromoSlide].link}
               >
-                <VStack align="start" spacing={3} flex="1">
-                  <Text
-                    fontSize="sm"
-                    fontWeight="bold"
-                    color={promoSlides[currentPromoSlide].subtitleColor}
-                    letterSpacing="wide"
-                  >
-                    {promoSlides[currentPromoSlide].subtitle}
-                  </Text>
-                  <Heading
-                    size="xl"
-                    color={promoSlides[currentPromoSlide].textColor}
-                    fontWeight="black"
-                    lineHeight="1.1"
-                    fontFamily={"Bricolage Grotesque"}
-                  >
-                    {promoSlides[currentPromoSlide].title}
-                  </Heading>
-                  <Button
-                    bg={promoSlides[currentPromoSlide].buttonBg}
-                    color="white"
-                    size="md"
-                    borderRadius="full"
-                    px={6}
-                    _hover={{
-                      bg: promoSlides[currentPromoSlide].buttonHoverBg,
-                      transform: "translateY(-1px)",
-                    }}
-                    transition="all 0.2s"
-                  >
-                    {promoSlides[currentPromoSlide].buttonText}
-                  </Button>
-                </VStack>
-
-                {/* Product showcase */}
-                <Box
-                  flex="1"
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  <Image
-                    src={promoSlides[currentPromoSlide].image}
-                    alt="Promotional item"
-                    borderRadius="xl"
-                    w="160px"
-                    h="160px"
-                    objectFit="cover"
-                    shadow="lg"
-                    transition="all 0.5s ease-in-out"
-                  />
-                </Box>
+                <Image
+                  src={promoSlides[currentPromoSlide].image}
+                  alt={`Promotional slide ${currentPromoSlide + 1}`}
+                  w="full"
+                  h="full"
+                  objectFit="cover" // Changed from "contain" to "cover" for full coverage
+                  transition="all 0.5s ease-in-out"
+                  _hover={{
+                    transform: "scale(1.02)",
+                  }}
+                />
               </Box>
 
               {/* Carousel indicators */}
@@ -502,49 +809,15 @@ function Home() {
           {/* Right Column - Only at AS Solutions */}
           <GridItem
             rowSpan={{ base: 1, lg: 1 }}
-            bg="#A7F3D0"
+            bg="#fdd844"
             borderRadius="12px"
-            p={6}
+            p={0}
             position="relative"
             overflow="hidden"
+            as="a"
+            href="/category/enfants-bb"
           >
-            <VStack align="start" spacing={3} h="full" justify="space-between">
-              <Box>
-                <Text fontSize="sm" fontWeight="bold" color="green.800" mb={2}>
-                  Only at AS Solutions
-                </Text>
-                <Heading
-                  size="md"
-                  color="green.900"
-                  fontWeight="bold"
-                  lineHeight="1.2"
-                  fontFamily={"Bricolage Grotesque"}
-                >
-                  Baby Evie toys & more
-                </Heading>
-                <Text
-                  fontSize="sm"
-                  color="green.800"
-                  textDecoration="underline"
-                  cursor="pointer"
-                  mt={2}
-                  fontFamily={"Bricolage Grotesque"}
-                >
-                  Shop new arrivals
-                </Text>
-              </Box>
-            </VStack>
-
-            {/* Cute character illustration placeholder */}
-            <Box position="absolute" bottom="10px" right="10px">
-              <Box
-                w="80px"
-                h="80px"
-                bg="pink.200"
-                borderRadius="full"
-                opacity="0.8"
-              />
-            </Box>
+            <Image src={BabySalePromo} h="full" w="full" objectFit="fill" />
           </GridItem>
 
           {/* Bottom Left - Summer home trends */}
@@ -552,34 +825,19 @@ function Home() {
             colSpan={{ base: 1, lg: 1 }}
             bg="#FDE68A"
             borderRadius="12px"
-            p={4}
+            p={0}
             position="relative"
             overflow="hidden"
+            display={{ base: "none", md: "block" }}
+            as="a"
+            href="/category/mobilier"
           >
-            <VStack align="start" spacing={2} h="full" justify="center">
-              <Heading
-                size="md"
-                color="orange.900"
-                fontWeight="bold"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Summer home trends from €6
-              </Heading>
-              <Text
-                fontSize="sm"
-                color="orange.800"
-                textDecoration="underline"
-                cursor="pointer"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Shop home
-              </Text>
-            </VStack>
-
-            {/* Home icon */}
-            <Box position="absolute" top="15px" right="15px">
-              <Icon as={FaHome} color="orange.600" boxSize="24px" />
-            </Box>
+            <Image
+              src={FournitureSalePromo}
+              h="full"
+              w="full"
+              objectFit="fill"
+            />
           </GridItem>
 
           {/* Bottom Right - Scoop exclusive */}
@@ -587,78 +845,55 @@ function Home() {
             colSpan={{ base: 1, lg: 1 }}
             bg="white"
             borderRadius="12px"
-            p={4}
+            p={0}
             position="relative"
             overflow="hidden"
             border="2px"
             borderColor="gray.200"
+            as="a"
+            href="/category/mobilier"
           >
-            <VStack align="start" spacing={2} h="full" justify="center">
-              <Heading
-                size="md"
-                color="gray.800"
-                fontWeight="bold"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Scoop—only at AS Solutions
-              </Heading>
-              <Text
-                fontSize="sm"
-                color="gray.600"
-                textDecoration="underline"
-                cursor="pointer"
-                fontFamily={"Bricolage Grotesque"}
-              >
-                Shop now
-              </Text>
-            </VStack>
-
-            {/* Fashion model image */}
-            <Box position="absolute" bottom="10px" right="10px">
-              <Image
-                src="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=60&h=60&fit=crop"
-                alt="Fashion"
-                borderRadius="full"
-                w="50px"
-                h="50px"
-                objectFit="cover"
-              />
-            </Box>
+            <Image
+              src={FourniturePromoSlide}
+              h="full"
+              w="full"
+              objectFit="fill"
+            />
           </GridItem>
         </Grid>
 
         {/* Flash Deals Section - Updated to use real data */}
         <Box mb={8}>
-          <Flex align="center" justify="space-between" mb={6}>
+          <Flex align="center" justify="space-between" mb={4}>
             <HStack spacing={3}>
-              <Icon as={FaFire} color="red.500" fontSize="xl" />
+              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
               <Heading
-                size="md"
-                color="gray.800"
-                fontWeight="bold"
-                fontFamily={"Bricolage Grotesque"}
+                color="black"
+                fontSize={{ base: "xl", md: "20px" }}
+                fontFamily={"Airbnb Cereal VF"}
+                fontWeight="600"
               >
-                Flash Deals
+                Forfait offres flash
               </Heading>
             </HStack>
             <Button
-              variant="outline"
+              bg="transparent"
               size="sm"
-              colorScheme="red"
-              borderColor="red.300"
-              color="red.600"
+              borderColor="none"
+              borderWidth={"0px"}
+              color="black"
               _hover={{
-                bg: "red.500",
-                color: "white",
-                borderColor: "red.500",
+                bg: "transparent",
+                color: "gray.400",
+                borderColor: "none",
               }}
-              fontFamily={"Bricolage Grotesque"}
+              fontFamily={"Airbnb Cereal VF"}
               rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
               onClick={() => {
                 navigate("/flash-deals");
               }}
             >
-              View All Deals
+              Voir tout
             </Button>
           </Flex>
 
@@ -672,8 +907,6 @@ function Home() {
               right: 0,
               bottom: 0,
               width: "40px",
-              background:
-                "linear-gradient(to left, rgba(249,250,251,0.9), transparent)",
               zIndex: 1,
               pointerEvents: "none",
               display: { base: "block", md: "none" },
@@ -733,19 +966,24 @@ function Home() {
                   flashDeals.map((apiProduct, index) => {
                     const product = transformFlashDealData(apiProduct);
                     const productId = `flash-${index}-${product.id}`;
+
                     return (
                       <Card
                         key={productId}
-                        bg="white"
-                        borderRadius="12px"
+                        bg="rgba(255,255,255,1)"
                         overflow="hidden"
-                        shadow="md"
-                        transition="all 0.3s ease"
+                        shadow="sm"
+                        // transition="all 0.3s ease"
                         cursor="pointer"
-                        border="0px"
+                        border="1px solid rgba(145, 158, 171, 0.2)"
                         position="relative"
-                        minW={{ base: "150px", sm: "180px", md: "200px" }}
-                        maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                        rounded="12px"
+                        minW={{ base: "200px", sm: "240px", md: "240px" }}
+                        maxW={{ base: "200px", sm: "240px", md: "240px" }}
+                        _hover={{
+                          shadow: "md",
+                          transform: "translateY(-6px)",
+                        }}
                         flexShrink={0}
                         _before={{
                           content: '""',
@@ -758,94 +996,55 @@ function Home() {
                           pointerEvents: "none",
                           zIndex: 0,
                         }}
+                        ref={(el) =>
+                          (flashDealsImpressionRefs.current[index] = el)
+                        }
+                        data-index={index}
                       >
                         <Box
                           position="relative"
                           zIndex={1}
                           as="a"
                           href={`/product/${product.slug}`}
+                          bg="white"
                         >
-                          <Image
+                          <ProductImage
                             src={product.image}
                             alt={product.title}
-                            w="full"
-                            h={{ base: "150px", sm: "180px", md: "200px" }}
-                            objectFit="cover"
-                            fallback={
-                              <Box
-                                w="full"
-                                h={{ base: "150px", sm: "180px", md: "200px" }}
-                                bg="gray.200"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                              >
-                                <VStack spacing={2}>
-                                  <Icon
-                                    as={FaFire}
-                                    fontSize="2xl"
-                                    color="red.400"
-                                  />
-                                  <Text
-                                    fontSize="xs"
-                                    color="gray.500"
-                                    textAlign="center"
-                                  >
-                                    Deal Image
-                                  </Text>
-                                </VStack>
-                              </Box>
-                            }
+                            height={{ base: "150px", sm: "180px", md: "200px" }}
+                            bg="rgba(255,255,255,1)"
                           />
 
-                          {/* Discount Badge - Top Left */}
-                          {product.discountPercentage > 0 && (
-                            <Badge
+                          {product.isLimitedStock && (
+                            <Box
                               position="absolute"
-                              top="2"
-                              left="2"
-                              bg="red.500"
-                              color="white"
-                              fontSize="xs"
-                              fontWeight="bold"
-                              px="2"
-                              py="1"
-                              borderRadius="md"
-                              textTransform="uppercase"
+                              top="0"
+                              left="0"
+                              right="0"
+                              bottom="0"
+                              bg="blackAlpha.600"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              borderRadius="12px"
+                              zIndex={2}
                             >
-                              -{Math.round(product.discountPercentage)}% OFF
-                            </Badge>
-                          )}
-
-                          {/* Deal Type Badge - Top Right Corner */}
-                          {(product.isMegaDeal ||
-                            product.isHotDeal ||
-                            product.isSpecialOffer) && (
-                            <Badge
-                              position="absolute"
-                              top="2"
-                              right="12"
-                              bg={
-                                product.isMegaDeal
-                                  ? "purple.500"
-                                  : product.isHotDeal
-                                  ? "red.600"
-                                  : "blue.500"
-                              }
-                              color="white"
-                              fontSize="2xs"
-                              fontWeight="bold"
-                              px="1"
-                              py="0.5"
-                              borderRadius="sm"
-                              textTransform="uppercase"
-                            >
-                              {product.isMegaDeal
-                                ? "MEGA"
-                                : product.isHotDeal
-                                ? "HOT"
-                                : "SPECIAL"}
-                            </Badge>
+                              <VStack spacing={2}>
+                                <Text
+                                  color="white"
+                                  fontSize="xs"
+                                  textAlign="center"
+                                  fontWeight="medium"
+                                  bg="blackAlpha.700"
+                                  px={2}
+                                  py={1}
+                                  borderRadius="sm"
+                                  maxW="70%"
+                                >
+                                  Actuellement indisponible (Rupture de stock)
+                                </Text>
+                              </VStack>
+                            </Box>
                           )}
 
                           {/* Heart Icon */}
@@ -854,123 +1053,97 @@ function Home() {
                             top="2"
                             right="2"
                             size="sm"
-                            icon={<FaHeart />}
+                            icon={<FaRegHeart size="20px" />}
                             bg="white"
-                            color="gray.400"
-                            _hover={{ color: "red.500", bg: "red.50" }}
+                            color="black"
+                            _hover={{
+                              color: "white",
+                              bg: "rgba(255, 0, 0, 1)",
+                              fontWeight: "bold",
+                            }}
                             borderRadius="full"
                             aria-label="Add to wishlist"
                             shadow="sm"
                             onClick={(e) => {
                               e.stopPropagation();
+                              e.preventDefault();
+                              handleAddToWishlist(product.id);
                             }}
                           />
                         </Box>
 
                         <CardBody p={3} position="relative" zIndex={1}>
                           <VStack align="start" spacing={2}>
-                            <Text
-                              fontSize="sm"
-                              color="gray.800"
-                              noOfLines={2}
-                              lineHeight="short"
-                              minH="40px"
-                              title={product.title}
-                              fontWeight="medium"
-                              as="a"
-                              href={`/product/${product.slug}`}
-                            >
-                              {product.title}
-                            </Text>
-
                             <VStack align="start" spacing={1} w="full">
+                              <Text
+                                fontSize="md"
+                                color="rgba(42, 42, 42, 1)"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Airbnb Cereal VF"
+                              >
+                                {product.title}
+                              </Text>
+
                               {/* Pricing Section */}
-                              <HStack spacing={2} w="full" align="center">
+                              <HStack
+                                spacing={1}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
                                 <Text
-                                  fontSize="lg"
-                                  fontWeight="bold"
-                                  color="red.600"
+                                  fontSize={{ base: "lg", sm: "xl", md: "xl" }}
+                                  fontWeight="600"
+                                  color="gray.800"
+                                  fontFamily="Airbnb Cereal VF"
                                 >
-                                  €{product.price.toFixed(2)}
+                                  {product.price.toFixed(2)} €
                                 </Text>
 
                                 {product.originalPrice &&
                                   product.originalPrice > product.price && (
-                                    <Text
-                                      fontSize="sm"
-                                      color="gray.500"
-                                      textDecoration="line-through"
-                                    >
-                                      €{product.originalPrice.toFixed(2)}
-                                    </Text>
+                                    <>
+                                      {/* Responsive discount badge */}
+                                      <Badge
+                                        bg="rgba(0, 76, 255, 0.29)"
+                                        fontFamily="Airbnb Cereal VF"
+                                        color="blue"
+                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="500"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.originalPrice -
+                                            product.price) /
+                                            product.originalPrice) *
+                                            100
+                                        )}
+                                        %
+                                      </Badge>
+
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.700"
+                                        textDecoration="line-through"
+                                        fontFamily="Airbnb Cereal VF"
+                                        fontWeight="500"
+                                      >
+                                        €{product.originalPrice.toFixed(2)}
+                                      </Text>
+                                    </>
                                   )}
-                              </HStack>
-
-                              {/* Savings Display */}
-                              {product.savingsAmount > 0 && (
-                                <HStack spacing={1}>
-                                  <Icon
-                                    as={FaTags}
-                                    color="green.500"
-                                    fontSize="xs"
-                                  />
-                                  <Text
-                                    fontSize="xs"
-                                    color="green.600"
-                                    fontWeight="semibold"
-                                  >
-                                    Save €{product.savingsAmount.toFixed(2)}
-                                  </Text>
-                                </HStack>
-                              )}
-
-                              {/* Company name */}
-                              {product.company && (
-                                <Text
-                                  fontSize="xs"
-                                  color="gray.500"
-                                  noOfLines={1}
-                                >
-                                  by{" "}
-                                  {product.company.business_name ||
-                                    product.company.market_name}
-                                </Text>
-                              )}
-
-                              {/* Category */}
-                              {product.category && (
-                                <Text
-                                  fontSize="xs"
-                                  color="blue.500"
-                                  noOfLines={1}
-                                >
-                                  {product.category.name}
-                                </Text>
-                              )}
-
-                              {/* Deal Features */}
-                              <HStack spacing={1} flexWrap="wrap">
-                                {product.badges?.free_shipping && (
-                                  <Badge
-                                    size="sm"
-                                    colorScheme="green"
-                                    variant="subtle"
-                                    fontSize="2xs"
-                                  >
-                                    Free Ship
-                                  </Badge>
-                                )}
-
-                                {product.dealType === "flash_sale" && (
-                                  <Badge
-                                    size="sm"
-                                    colorScheme="purple"
-                                    variant="subtle"
-                                    fontSize="2xs"
-                                  >
-                                    Flash Sale
-                                  </Badge>
-                                )}
                               </HStack>
                             </VStack>
                           </VStack>
@@ -979,52 +1152,8 @@ function Home() {
                     );
                   })
                 ) : (
-                  // No flash deals found - Empty state
-                  <Box
-                    minW="full"
-                    p={8}
-                    textAlign="center"
-                    color="gray.500"
-                    bg="transparent"
-                    borderRadius="12px"
-                    border="0px"
-                    borderColor="red.200"
-                  >
-                    <VStack spacing={4}>
-                      <Box
-                        w="16"
-                        h="16"
-                        bg="red.100"
-                        borderRadius="full"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        <Icon as={FaFire} boxSize="8" color="red.400" />
-                      </Box>
-                      <VStack spacing={2}>
-                        <Text
-                          fontSize="lg"
-                          fontWeight="medium"
-                          color="gray.600"
-                        >
-                          No flash deals available
-                        </Text>
-                        <Text fontSize="sm" color="gray.400">
-                          Check back soon for amazing deals!
-                        </Text>
-                      </VStack>
-                      {/* <Button
-                        size="sm"
-                        variant="outline"
-                        colorScheme="red"
-                        onClick={() => fetchFlashDeals()}
-                        leftIcon={<Icon as={FaFire} />}
-                      >
-                        Refresh Deals
-                      </Button> */}
-                    </VStack>
-                  </Box>
+                  // Empty state
+                  <></>
                 )}
               </HStack>
             </Box>
@@ -1033,34 +1162,15 @@ function Home() {
 
         {/* New Arrivals Section */}
         <Box mb={8}>
-          <Flex align="center" justify="space-between" mb={6}>
+          <Flex align="center" justify="space-between" mb={4}>
             <Heading
-              size="md"
-              color="gray.800"
-              fontWeight="bold"
-              fontFamily={"Bricolage Grotesque"}
+              color="black"
+              fontSize={{ base: "xl", md: "20px" }}
+              fontFamily={"Airbnb Cereal VF"}
+              fontWeight="600"
             >
-              New arrivals
+              Nouveaux arrivages
             </Heading>
-            {/* <Button
-              variant="outline"
-              size="sm"
-              colorScheme="gray"
-              borderColor="gray.300"
-              color="gray.600"
-              _hover={{
-                bg: "rgb(239,48,84)",
-                color: "white",
-                borderColor: "rgb(239,48,84)",
-              }}
-              fontFamily={"Bricolage Grotesque"}
-              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
-              onClick={() => {
-                // Navigate to all new arrivals page
-              }}
-            >
-              View All
-            </Button> */}
           </Flex>
 
           {/* Horizontal Scrollable Product Row */}
@@ -1073,8 +1183,6 @@ function Home() {
               right: 0,
               bottom: 0,
               width: "40px",
-              background:
-                "linear-gradient(to left, rgba(249,250,251,0.9), transparent)",
               zIndex: 1,
               pointerEvents: "none",
               display: { base: "block", md: "none" },
@@ -1137,95 +1245,81 @@ function Home() {
                     return (
                       <Card
                         key={productId}
-                        bg="white"
-                        borderRadius="12px"
+                        bg="rgba(255,255,255,1)"
                         overflow="hidden"
-                        shadow="4xl"
+                        shadow="sm"
+                        // transition="all 0.3s ease"
+                        cursor="pointer"
+                        border="1px solid rgba(145, 158, 171, 0.2)"
+                        position="relative"
+                        rounded="12px"
+                        minW={{ base: "200px", sm: "240px", md: "240px" }}
+                        maxW={{ base: "200px", sm: "240px", md: "240px" }}
                         _hover={{
                           shadow: "md",
-                          transform: "translateY(-2px)",
+                          transform: "translateY(-6px)",
                         }}
-                        transition="all 0.2s"
-                        cursor="pointer"
-                        border="1px"
-                        borderColor="gray.100"
-                        minW={{ base: "150px", sm: "180px", md: "200px" }}
-                        maxW={{ base: "150px", sm: "180px", md: "200px" }}
                         flexShrink={0}
-                        onClick={handleProductClick(product?.slug)}
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          opacity: 0.3,
+                          pointerEvents: "none",
+                          zIndex: 0,
+                        }}
+                        ref={(el) =>
+                          (newArrivalsImpressionRefs.current[index] = el)
+                        }
+                        data-index={index}
                       >
-                        <Box position="relative">
-                          <Image
+                        <Box
+                          position="relative"
+                          zIndex={1}
+                          as="a"
+                          href={`/product/${product.slug}`}
+                          bg="white"
+                        >
+                          <ProductImage
                             src={product.image}
                             alt={product.title}
-                            w="full"
-                            h={{ base: "150px", sm: "180px", md: "200px" }}
-                            objectFit="cover"
-                            fallback={
-                              <Box
-                                w="full"
-                                h={{ base: "150px", sm: "180px", md: "200px" }}
-                                bg="gray.200"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                              >
-                                <VStack spacing={2}>
-                                  <Icon
-                                    as={FaBox}
-                                    fontSize="2xl"
-                                    color="gray.400"
-                                  />
-                                  <Text
-                                    fontSize="xs"
-                                    color="gray.500"
-                                    textAlign="center"
-                                  >
-                                    No Image
-                                  </Text>
-                                </VStack>
-                              </Box>
-                            }
+                            height={{ base: "150px", sm: "180px", md: "200px" }}
+                            bg="rgba(255,255,255,1)"
                           />
 
-                          {/* Top Badge */}
-                          {product.tag && (
-                            <Badge
+                          {product.isLimitedStock && (
+                            <Box
                               position="absolute"
-                              top="2"
-                              left="2"
-                              bg={
-                                product.badges?.is_new
-                                  ? "green.500"
-                                  : "rgb(239,48,84)"
-                              }
-                              color="white"
-                              fontSize="xs"
-                              fontWeight="bold"
-                              px="2"
-                              py="1"
-                              borderRadius="md"
+                              top="0"
+                              left="0"
+                              right="0"
+                              bottom="0"
+                              bg="blackAlpha.600"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              borderRadius="12px"
+                              zIndex={2}
                             >
-                              {product.tag}
-                            </Badge>
-                          )}
-
-                          {/* Recently Added Indicator */}
-                          {product.is_recently_added && (
-                            <Badge
-                              position="absolute"
-                              top="2"
-                              right="12"
-                              bg="blue.500"
-                              color="white"
-                              fontSize="2xs"
-                              fontWeight="bold"
-                              px="1"
-                              py="0.5"
-                              borderRadius="sm"
-                            >
-                              RECENT
-                            </Badge>
+                              <VStack spacing={2}>
+                                <Text
+                                  color="white"
+                                  fontSize="xs"
+                                  textAlign="center"
+                                  fontWeight="medium"
+                                  bg="blackAlpha.700"
+                                  px={2}
+                                  py={1}
+                                  borderRadius="sm"
+                                  maxW="70%"
+                                >
+                                  Actuellement indisponible (Rupture de stock)
+                                </Text>
+                              </VStack>
+                            </Box>
                           )}
 
                           {/* Heart Icon */}
@@ -1234,89 +1328,98 @@ function Home() {
                             top="2"
                             right="2"
                             size="sm"
-                            icon={<FaHeart />}
+                            icon={<FaRegHeart size="20px" />}
                             bg="white"
-                            color="gray.400"
-                            _hover={{ color: "rgb(239,48,84)" }}
+                            color="black"
+                            _hover={{
+                              color: "white",
+                              bg: "rgba(255, 0, 0, 1)",
+                              fontWeight: "bold",
+                            }}
                             borderRadius="full"
                             aria-label="Add to wishlist"
                             shadow="sm"
                             onClick={(e) => {
                               e.stopPropagation();
+                              e.preventDefault();
+                              handleAddToWishlist(product.id);
                             }}
                           />
                         </Box>
 
-                        <CardBody p={3}>
+                        <CardBody p={3} position="relative" zIndex={1}>
                           <VStack align="start" spacing={2}>
-                            <Text
-                              fontSize="sm"
-                              color="gray.800"
-                              noOfLines={2}
-                              lineHeight="short"
-                              minH="40px"
-                              title={product.title}
-                            >
-                              {product.title}
-                            </Text>
-
                             <VStack align="start" spacing={1} w="full">
-                              <HStack spacing={2} w="full" align="center">
+                              <Text
+                                fontSize="md"
+                                color="rgba(42, 42, 42, 1)"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Airbnb Cereal VF"
+                              >
+                                {product.title}
+                              </Text>
+
+                              {/* Pricing Section */}
+                              <HStack
+                                spacing={1}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
                                 <Text
-                                  fontSize="lg"
-                                  fontWeight="bold"
-                                  color="rgb(239,48,84)"
+                                  fontSize={{ base: "lg", sm: "xl", md: "xl" }}
+                                  fontWeight="600"
+                                  color="gray.800"
+                                  fontFamily="Airbnb Cereal VF"
                                 >
-                                  €{product.price.toFixed(2)}
+                                  {product.price.toFixed(2)} €
                                 </Text>
 
                                 {product.originalPrice &&
                                   product.originalPrice > product.price && (
-                                    <Text
-                                      fontSize="sm"
-                                      color="gray.500"
-                                      textDecoration="line-through"
-                                    >
-                                      €{product.originalPrice.toFixed(2)}
-                                    </Text>
+                                    <>
+                                      {/* Responsive discount badge */}
+                                      <Badge
+                                        bg="rgba(0, 76, 255, 0.29)"
+                                        fontFamily="Airbnb Cereal VF"
+                                        color="blue"
+                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="500"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.originalPrice -
+                                            product.price) /
+                                            product.originalPrice) *
+                                            100
+                                        )}
+                                        %
+                                      </Badge>
+
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.700"
+                                        textDecoration="line-through"
+                                        fontFamily="Airbnb Cereal VF"
+                                        fontWeight="500"
+                                      >
+                                        €{product.originalPrice.toFixed(2)}
+                                      </Text>
+                                    </>
                                   )}
                               </HStack>
-
-                              {/* Company name */}
-                              {product.company && (
-                                <Text
-                                  fontSize="xs"
-                                  color="gray.500"
-                                  noOfLines={1}
-                                >
-                                  by{" "}
-                                  {product.company.business_name ||
-                                    product.company.market_name}
-                                </Text>
-                              )}
-
-                              {/* Category */}
-                              {product.category && (
-                                <Text
-                                  fontSize="xs"
-                                  color="blue.500"
-                                  noOfLines={1}
-                                >
-                                  {product.category.name}
-                                </Text>
-                              )}
-
-                              {/* Free shipping badge */}
-                              {product.badges?.free_shipping && (
-                                <Badge
-                                  size="sm"
-                                  colorScheme="green"
-                                  variant="subtle"
-                                  fontSize="2xs"
-                                >
-                                  Free Shipping
-                                </Badge>
-                              )}
                             </VStack>
                           </VStack>
                         </CardBody>
@@ -1325,51 +1428,7 @@ function Home() {
                   })
                 ) : (
                   // No products found - Empty state
-                  <Box
-                    minW="full"
-                    p={8}
-                    textAlign="center"
-                    color="gray.500"
-                    bg="transparent"
-                    borderRadius="12px"
-                    border="0px"
-                    borderColor="gray.200"
-                  >
-                    <VStack spacing={4}>
-                      <Box
-                        w="16"
-                        h="16"
-                        bg="gray.100"
-                        borderRadius="full"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        <Icon as={FaBox} boxSize="8" color="gray.300" />
-                      </Box>
-                      <VStack spacing={2}>
-                        <Text
-                          fontSize="lg"
-                          fontWeight="medium"
-                          color="gray.600"
-                        >
-                          No new arrivals yet
-                        </Text>
-                        <Text fontSize="sm" color="gray.400">
-                          Check back soon for the latest products!
-                        </Text>
-                      </VStack>
-                      {/* <Button
-                        size="sm"
-                        variant="outline"
-                        colorScheme="gray"
-                        onClick={() => fetchNewArrivals()}
-                        leftIcon={<Icon as={FaChevronRight} />}
-                      >
-                        Refresh
-                      </Button> */}
-                    </VStack>
-                  </Box>
+                  <></>
                 )}
               </HStack>
             </Box>
@@ -1378,37 +1437,18 @@ function Home() {
 
         {/* Furniture Flash Deals Section Save */}
         <Box mb={8}>
-          <Flex align="center" justify="space-between" mb={6}>
+          <Flex align="center" justify="space-between" mb={4}>
             <HStack spacing={3}>
               {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
               <Heading
-                size="md"
-                color="gray.800"
-                fontWeight="bold"
-                fontFamily={"Bricolage Grotesque"}
+                color="black"
+                fontWeight="600"
+                fontFamily={"Airbnb Cereal VF"}
+                fontSize={{ base: "xl", md: "20px" }}
               >
-                Save on Furniture
+                Offres flash de meubles
               </Heading>
             </HStack>
-            {/* <Button
-              variant="outline"
-              size="sm"
-              colorScheme="red"
-              borderColor="red.300"
-              color="red.600"
-              _hover={{
-                bg: "red.500",
-                color: "white",
-                borderColor: "red.500",
-              }}
-              fontFamily={"Bricolage Grotesque"}
-              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
-              onClick={() => {
-                // Navigate to furniture flash deals page
-              }}
-            >
-              View All Furniture Deals
-            </Button> */}
           </Flex>
 
           {/* Horizontal Scrollable Flash Deals Row */}
@@ -1421,8 +1461,6 @@ function Home() {
               right: 0,
               bottom: 0,
               width: "40px",
-              background:
-                "linear-gradient(to left, rgba(249,250,251,0.9), transparent)",
               zIndex: 1,
               pointerEvents: "none",
               display: { base: "block", md: "none" },
@@ -1448,7 +1486,7 @@ function Home() {
                 px={{ base: 2, md: 0 }}
               >
                 {/* Display furniture flash deals or loading skeleton */}
-                {flashDealsLoading ? (
+                {flashDealsFurnitureLoading ? (
                   // Loading skeleton with furniture theme
                   [...Array(6)].map((_, index) => (
                     <Card
@@ -1477,30 +1515,30 @@ function Home() {
                       </CardBody>
                     </Card>
                   ))
-                ) : flashDeals && flashDeals.length > 0 ? (
+                ) : flashDealsFurniture && flashDealsFurniture.length > 0 ? (
                   // Real furniture flash deals data
-                  flashDeals.map((apiProduct, index) => {
+                  flashDealsFurniture.map((apiProduct, index) => {
                     const product = transformFlashDealData(apiProduct);
                     const productId = `furniture-flash-${index}-${product.id}`;
 
                     return (
                       <Card
                         key={productId}
-                        bg="white"
-                        borderRadius="12px"
+                        bg="rgba(255,255,255,1)"
                         overflow="hidden"
-                        shadow="md"
-                        _hover={{
-                          shadow: "xl",
-                          transform: "translateY(-4px)",
-                        }}
-                        transition="all 0.3s ease"
+                        shadow="sm"
+                        // transition="all 0.3s ease"
                         cursor="pointer"
+                        border="1px solid rgba(145, 158, 171, 0.2)"
                         position="relative"
-                        minW={{ base: "150px", sm: "180px", md: "200px" }}
-                        maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                        rounded="12px"
+                        minW={{ base: "200px", sm: "240px", md: "240px" }}
+                        maxW={{ base: "200px", sm: "240px", md: "240px" }}
+                        _hover={{
+                          shadow: "md",
+                          transform: "translateY(-6px)",
+                        }}
                         flexShrink={0}
-                        onClick={handleProductClick(product?.slug)}
                         _before={{
                           content: '""',
                           position: "absolute",
@@ -1512,110 +1550,57 @@ function Home() {
                           pointerEvents: "none",
                           zIndex: 0,
                         }}
+                        ref={(el) =>
+                          (bigSaveOnFurnitureImpressionRefs.current[index] = el)
+                        }
+                        data-index={index}
                       >
-                        <Box position="relative" zIndex={1}>
-                          <Image
+                        <Box
+                          position="relative"
+                          zIndex={1}
+                          as="a"
+                          href={`/product/${product.slug}`}
+                          bg="white"
+                          rounded="lg"
+                        >
+                          <ProductImage
                             src={product.image}
                             alt={product.title}
-                            w="full"
-                            h={{ base: "150px", sm: "180px", md: "200px" }}
-                            objectFit="cover"
-                            fallback={
-                              <Box
-                                w="full"
-                                h={{ base: "150px", sm: "180px", md: "200px" }}
-                                bg="brown.100"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
-                              >
-                                <VStack spacing={2}>
-                                  <Icon
-                                    as={FaHome}
-                                    fontSize="2xl"
-                                    color="brown.500"
-                                  />
-                                  <Text
-                                    fontSize="xs"
-                                    color="brown.600"
-                                    textAlign="center"
-                                  >
-                                    Furniture Deal
-                                  </Text>
-                                </VStack>
-                              </Box>
-                            }
+                            height={{ base: "150px", sm: "180px", md: "200px" }}
+                            bg="rgba(255,255,255,1)"
                           />
 
-                          {/* Discount Badge - Top Left */}
-                          {product.discountPercentage > 0 && (
-                            <Badge
+                          {product.isLimitedStock && (
+                            <Box
                               position="absolute"
-                              top="2"
-                              left="2"
-                              bg="red.500"
-                              color="white"
-                              fontSize="xs"
-                              fontWeight="bold"
-                              px="2"
-                              py="1"
-                              borderRadius="md"
-                              textTransform="uppercase"
+                              top="0"
+                              left="0"
+                              right="0"
+                              bottom="0"
+                              bg="blackAlpha.600"
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              borderRadius="12px"
+                              zIndex={2}
                             >
-                              -{Math.round(product.discountPercentage)}% OFF
-                            </Badge>
+                              <VStack spacing={2}>
+                                <Text
+                                  color="white"
+                                  fontSize="xs"
+                                  textAlign="center"
+                                  fontWeight="medium"
+                                  bg="blackAlpha.700"
+                                  px={2}
+                                  py={1}
+                                  borderRadius="sm"
+                                  maxW="70%"
+                                >
+                                  Actuellement indisponible (Rupture de stock)
+                                </Text>
+                              </VStack>
+                            </Box>
                           )}
-
-                          {/* Deal Type Badge - Top Right Corner */}
-                          {(product.isMegaDeal ||
-                            product.isHotDeal ||
-                            product.isSpecialOffer) && (
-                            <Badge
-                              position="absolute"
-                              top="2"
-                              right="12"
-                              bg={
-                                product.isMegaDeal
-                                  ? "purple.500"
-                                  : product.isHotDeal
-                                  ? "red.600"
-                                  : "blue.500"
-                              }
-                              color="white"
-                              fontSize="2xs"
-                              fontWeight="bold"
-                              px="1"
-                              py="0.5"
-                              borderRadius="sm"
-                              textTransform="uppercase"
-                            >
-                              {product.isMegaDeal
-                                ? "MEGA"
-                                : product.isHotDeal
-                                ? "HOT"
-                                : "SPECIAL"}
-                            </Badge>
-                          )}
-
-                          {/* Furniture Badge - Bottom Left */}
-                          <Badge
-                            position="absolute"
-                            bottom="2"
-                            left="2"
-                            bg="brown.500"
-                            color="white"
-                            fontSize="2xs"
-                            fontWeight="bold"
-                            px="2"
-                            py="1"
-                            borderRadius="full"
-                            display="flex"
-                            alignItems="center"
-                            gap={1}
-                          >
-                            <Icon as={FaHome} fontSize="2xs" />
-                            FURNITURE
-                          </Badge>
 
                           {/* Heart Icon */}
                           <IconButton
@@ -1623,132 +1608,97 @@ function Home() {
                             top="2"
                             right="2"
                             size="sm"
-                            icon={<FaHeart />}
+                            icon={<FaRegHeart size="20px" />}
                             bg="white"
-                            color="gray.400"
-                            _hover={{ color: "red.500", bg: "red.50" }}
+                            color="black"
+                            _hover={{
+                              color: "white",
+                              bg: "rgba(255, 0, 0, 1)",
+                              fontWeight: "bold",
+                            }}
                             borderRadius="full"
                             aria-label="Add to wishlist"
                             shadow="sm"
                             onClick={(e) => {
                               e.stopPropagation();
+                              e.preventDefault();
+                              handleAddToWishlist(product.id);
                             }}
                           />
                         </Box>
 
                         <CardBody p={3} position="relative" zIndex={1}>
                           <VStack align="start" spacing={2}>
-                            <Text
-                              fontSize="sm"
-                              color="gray.800"
-                              noOfLines={2}
-                              lineHeight="short"
-                              minH="40px"
-                              title={product.title}
-                              fontWeight="medium"
-                            >
-                              {product.title}
-                            </Text>
-
                             <VStack align="start" spacing={1} w="full">
+                              <Text
+                                fontSize="md"
+                                color="rgba(42, 42, 42, 1)"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Airbnb Cereal VF"
+                              >
+                                {product.title}
+                              </Text>
+
                               {/* Pricing Section */}
-                              <HStack spacing={2} w="full" align="center">
+                              <HStack
+                                spacing={1}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
                                 <Text
-                                  fontSize="lg"
-                                  fontWeight="bold"
-                                  color="red.600"
+                                  fontSize={{ base: "lg", sm: "xl" }}
+                                  fontWeight="600"
+                                  color="gray.800"
+                                  fontFamily="Airbnb Cereal VF"
                                 >
-                                  €{product.price.toFixed(2)}
+                                  {product.price.toFixed(2)} €
                                 </Text>
 
                                 {product.originalPrice &&
                                   product.originalPrice > product.price && (
-                                    <Text
-                                      fontSize="sm"
-                                      color="gray.500"
-                                      textDecoration="line-through"
-                                    >
-                                      €{product.originalPrice.toFixed(2)}
-                                    </Text>
+                                    <>
+                                      {/* Responsive discount badge */}
+                                      <Badge
+                                        bg="rgba(0, 76, 255, 0.29)"
+                                        fontFamily="Airbnb Cereal VF"
+                                        color="blue"
+                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="500"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.originalPrice -
+                                            product.price) /
+                                            product.originalPrice) *
+                                            100
+                                        )}
+                                        %
+                                      </Badge>
+
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.700"
+                                        textDecoration="line-through"
+                                        fontFamily="Airbnb Cereal VF"
+                                        fontWeight="500"
+                                      >
+                                        €{product.originalPrice.toFixed(2)}
+                                      </Text>
+                                    </>
                                   )}
-                              </HStack>
-
-                              {/* Savings Display */}
-                              {product.savingsAmount > 0 && (
-                                <HStack spacing={1}>
-                                  <Icon
-                                    as={FaTags}
-                                    color="green.500"
-                                    fontSize="xs"
-                                  />
-                                  <Text
-                                    fontSize="xs"
-                                    color="green.600"
-                                    fontWeight="semibold"
-                                  >
-                                    Save €{product.savingsAmount.toFixed(2)}
-                                  </Text>
-                                </HStack>
-                              )}
-
-                              {/* Company name */}
-                              {product.company && (
-                                <Text
-                                  fontSize="xs"
-                                  color="gray.500"
-                                  noOfLines={1}
-                                >
-                                  by{" "}
-                                  {product.company.business_name ||
-                                    product.company.market_name}
-                                </Text>
-                              )}
-
-                              {/* Category - Should show furniture category */}
-                              {product.category && (
-                                <Text
-                                  fontSize="xs"
-                                  color="brown.500"
-                                  noOfLines={1}
-                                  fontWeight="semibold"
-                                >
-                                  {product.category.name}
-                                </Text>
-                              )}
-
-                              {/* Deal Features */}
-                              <HStack spacing={1} flexWrap="wrap">
-                                {product.badges?.free_shipping && (
-                                  <Badge
-                                    size="sm"
-                                    colorScheme="green"
-                                    variant="subtle"
-                                    fontSize="2xs"
-                                  >
-                                    Free Ship
-                                  </Badge>
-                                )}
-
-                                {product.dealType === "flash_sale" && (
-                                  <Badge
-                                    size="sm"
-                                    colorScheme="purple"
-                                    variant="subtle"
-                                    fontSize="2xs"
-                                  >
-                                    Flash Sale
-                                  </Badge>
-                                )}
-
-                                {/* Furniture specific badge */}
-                                <Badge
-                                  size="sm"
-                                  colorScheme="brown"
-                                  variant="subtle"
-                                  fontSize="2xs"
-                                >
-                                  Furniture
-                                </Badge>
                               </HStack>
                             </VStack>
                           </VStack>
@@ -1758,453 +1708,1614 @@ function Home() {
                   })
                 ) : (
                   // No furniture flash deals found - Empty state
-                  <Box
-                    minW="full"
-                    p={8}
-                    textAlign="center"
-                    color="gray.500"
-                    bg="transparent"
-                    borderRadius="12px"
-                    border="0px"
-                    borderColor="brown.200"
-                  >
-                    <VStack spacing={4}>
-                      <Box
-                        w="16"
-                        h="16"
-                        bg="brown.100"
-                        borderRadius="full"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        <Icon as={FaHome} boxSize="8" color="brown.400" />
-                      </Box>
-                      <VStack spacing={2}>
-                        <Text
-                          fontSize="lg"
-                          fontWeight="medium"
-                          color="gray.600"
-                        >
-                          No furniture deals available
-                        </Text>
-                        <Text fontSize="sm" color="gray.400">
-                          Check back soon for amazing furniture deals!
-                        </Text>
-                      </VStack>
-                      {/* <Button
-                        size="sm"
-                        variant="outline"
-                        colorScheme="brown"
-                        onClick={() => fetchFurnitureFlashDeals()}
-                        leftIcon={<Icon as={FaHome} />}
-                      >
-                        Refresh Furniture Deals
-                      </Button> */}
-                    </VStack>
-                  </Box>
+                  <></>
                 )}
               </HStack>
             </Box>
           </Box>
         </Box>
 
-        {/* Best Selling in Furniture */}
-
-        {/* Trending products */}
-
-        {/* Best Selling in Furniture */}
-
-        {/* Promotions Cards */}
+        {/* Categories TOP Products */}
+        {/* Portes */}
         <Box mb={8}>
-          <Grid
-            templateColumns={{
-              base: "1fr",
-              md: "repeat(2, 1fr)",
-              lg: "repeat(4, 1fr)",
+          <Flex align="center" justify="space-between" mb={6}>
+            <HStack spacing={3}>
+              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
+              <Heading
+                color="black"
+                fontSize={{ base: "xl", md: "20px" }}
+                fontFamily={"Airbnb Cereal VF"}
+                fontWeight="600"
+              >
+                Portes
+              </Heading>
+            </HStack>
+            <Button
+              bg="transparent"
+              size="sm"
+              borderColor="none"
+              borderWidth={"0px"}
+              color="black"
+              _hover={{
+                bg: "transparent",
+                color: "gray.400",
+                borderColor: "none",
+              }}
+              fontFamily={"Airbnb Cereal VF"}
+              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
+              onClick={() => {
+                navigate("/category/portes");
+              }}
+            >
+              Voir tout
+            </Button>
+          </Flex>
+
+          <Box
+            position="relative"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: "40px",
+              zIndex: 1,
+              pointerEvents: "none",
+              display: { base: "block", md: "none" },
             }}
-            gap={4}
-            mb={8}
           >
-            {/* HBCU Pride Box */}
-            <GridItem colSpan={{ base: 1, lg: 1 }}>
-              <Box
-                position="relative"
-                h="300px"
-                borderRadius="12px"
-                overflow="hidden"
-                cursor="pointer"
-                transition="all 0.3s ease"
-                _hover={{ transform: "translateY(-2px)", shadow: "xl" }}
-                backgroundImage="url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=300&fit=crop')"
-                backgroundSize="cover"
-                backgroundPosition="center"
-                backgroundRepeat="no-repeat"
+            <Box
+              overflowX="auto"
+              overflowY="hidden"
+              pb={2}
+              css={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+                scrollBehavior: "smooth",
+              }}
+            >
+              <HStack
+                spacing={4}
+                align="stretch"
+                minW="max-content"
+                px={{ base: 2, md: 0 }}
               >
-                {/* Overlay for better text readability */}
-                <Box
-                  position="absolute"
-                  top="0"
-                  left="0"
-                  right="0"
-                  bottom="0"
-                  bg="linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.6))"
-                  borderRadius="12px"
-                />
-
-                <Box
-                  position="relative"
-                  h="full"
-                  p={6}
-                  display="flex"
-                  flexDirection="column"
-                  justifyContent="space-between"
-                  zIndex={1}
-                >
-                  <VStack align="start" spacing={3}>
-                    <Heading
-                      size="lg"
-                      color="white"
-                      fontWeight="bold"
-                      lineHeight="1.2"
-                      fontFamily="Bricolage Grotesque"
+                {topDoorsLoading ? (
+                  [...Array(6)].map((_, index) => (
+                    <Card
+                      key={`top-doors-skeleton-${index}`}
+                      bg="white"
+                      borderRadius="12px"
+                      overflow="hidden"
+                      shadow="sm"
+                      minW={{ base: "150px", sm: "180px", md: "200px" }}
+                      maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                      flexShrink={0}
                     >
-                      Show off your HBCU pride
-                    </Heading>
-                  </VStack>
-
-                  <Button
-                    bg="white"
-                    color="blue.600"
-                    size="md"
-                    borderRadius="full"
-                    px={6}
-                    fontWeight="bold"
-                    _hover={{
-                      bg: "gray.100",
-                      transform: "translateY(-1px)",
-                    }}
-                    alignSelf="flex-start"
-                    fontFamily="Bricolage Grotesque"
-                  >
-                    Shop now
-                  </Button>
-                </Box>
-              </Box>
-            </GridItem>
-
-            {/* Accessibility Box */}
-            <GridItem colSpan={{ base: 1, lg: 1 }}>
-              <Box
-                position="relative"
-                h="300px"
-                borderRadius="12px"
-                overflow="hidden"
-                cursor="pointer"
-                transition="all 0.3s ease"
-                _hover={{ transform: "translateY(-2px)", shadow: "xl" }}
-                backgroundImage="url('https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop')"
-                backgroundSize="cover"
-                backgroundPosition="center"
-                backgroundRepeat="no-repeat"
-              >
-                {/* Overlay */}
-                <Box
-                  position="absolute"
-                  top="0"
-                  left="0"
-                  right="0"
-                  bottom="0"
-                  bg="linear-gradient(135deg, rgba(34, 197, 94, 0.7), rgba(22, 163, 74, 0.6))"
-                  borderRadius="12px"
-                />
-
-                <Box
-                  position="relative"
-                  h="full"
-                  p={6}
-                  display="flex"
-                  flexDirection="column"
-                  justifyContent="space-between"
-                  zIndex={1}
-                >
-                  <VStack align="start" spacing={3}>
-                    <Heading
-                      size="md"
-                      color="white"
-                      fontWeight="bold"
-                      lineHeight="1.2"
-                      fontFamily="Bricolage Grotesque"
-                    >
-                      Accessibility for all
-                    </Heading>
-                    <Text
-                      color="white"
-                      fontSize="lg"
-                      fontWeight="semibold"
-                      fontFamily="Bricolage Grotesque"
-                    >
-                      Adaptive at AS Solutions
-                    </Text>
-                  </VStack>
-
-                  <Text
-                    color="white"
-                    fontSize="sm"
-                    textDecoration="underline"
-                    cursor="pointer"
-                    fontFamily="Bricolage Grotesque"
-                    _hover={{ opacity: 0.8 }}
-                  >
-                    Shop now
-                  </Text>
-                </Box>
-              </Box>
-            </GridItem>
-
-            {/* Summer Music Box */}
-            <GridItem colSpan={{ base: 1, lg: 1 }}>
-              <VStack spacing={4} h="300px">
-                {/* Adaptive School Essentials */}
-                <Box
-                  position="relative"
-                  h="140px"
-                  w="full"
-                  borderRadius="12px"
-                  overflow="hidden"
-                  cursor="pointer"
-                  transition="all 0.3s ease"
-                  _hover={{ transform: "translateY(-1px)", shadow: "lg" }}
-                  backgroundImage="url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=140&fit=crop')"
-                  backgroundSize="cover"
-                  backgroundPosition="center"
-                  backgroundRepeat="no-repeat"
-                >
-                  {/* Overlay */}
-                  <Box
-                    position="absolute"
-                    top="0"
-                    left="0"
-                    right="0"
-                    bottom="0"
-                    bg="linear-gradient(135deg, rgba(168, 85, 247, 0.7), rgba(147, 51, 234, 0.6))"
-                    borderRadius="12px"
-                  />
-
-                  <Box
-                    position="relative"
-                    h="full"
-                    p={4}
-                    display="flex"
-                    flexDirection="column"
-                    justifyContent="space-between"
-                    zIndex={1}
-                  >
-                    <Heading
-                      size="sm"
-                      color="white"
-                      fontWeight="bold"
-                      lineHeight="1.2"
-                      fontFamily="Bricolage Grotesque"
-                    >
-                      Adaptive school essentials
-                    </Heading>
-
-                    <Text
-                      color="white"
-                      fontSize="xs"
-                      textDecoration="underline"
-                      cursor="pointer"
-                      fontFamily="Bricolage Grotesque"
-                      _hover={{ opacity: 0.8 }}
-                    >
-                      Shop now
-                    </Text>
-                  </Box>
-                </Box>
-
-                {/* Summer's Hottest Hits */}
-                <Box
-                  position="relative"
-                  h="140px"
-                  w="full"
-                  borderRadius="12px"
-                  overflow="hidden"
-                  cursor="pointer"
-                  transition="all 0.3s ease"
-                  _hover={{ transform: "translateY(-1px)", shadow: "lg" }}
-                  backgroundImage="url('https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=140&fit=crop')"
-                  backgroundSize="cover"
-                  backgroundPosition="center"
-                  backgroundRepeat="no-repeat"
-                >
-                  {/* Overlay */}
-                  <Box
-                    position="absolute"
-                    top="0"
-                    left="0"
-                    right="0"
-                    bottom="0"
-                    bg="linear-gradient(135deg, rgba(251, 191, 36, 0.8), rgba(245, 158, 11, 0.7))"
-                    borderRadius="12px"
-                  />
-
-                  <Box
-                    position="relative"
-                    h="full"
-                    p={4}
-                    display="flex"
-                    flexDirection="column"
-                    justifyContent="space-between"
-                    zIndex={1}
-                  >
-                    <VStack align="start" spacing={1}>
-                      <Heading
-                        size="sm"
-                        color="gray.800"
-                        fontWeight="bold"
-                        lineHeight="1.2"
-                        fontFamily="Bricolage Grotesque"
+                      <Skeleton
+                        h={{ base: "150px", sm: "180px", md: "200px" }}
+                        w="full"
+                      />
+                      <CardBody p={3}>
+                        <VStack align="start" spacing={2}>
+                          <SkeletonText noOfLines={2} spacing={2} w="full" />
+                          <Skeleton h="6" w="20" />
+                          <SkeletonText noOfLines={1} w="60%" />
+                        </VStack>
+                      </CardBody>
+                    </Card>
+                  ))
+                ) : topDoorsProducts && topDoorsProducts?.length > 0 ? (
+                  topDoorsProducts?.map((product, index) => {
+                    const productId = `top-doors-${index}-${product?.id}`;
+                    return (
+                      <Card
+                        key={productId}
+                        bg="rgba(255,255,255,1)"
+                        overflow="hidden"
+                        shadow="sm"
+                        // transition="all 0.3s ease"
+                        cursor="pointer"
+                        border="1px solid rgba(145, 158, 171, 0.2)"
+                        position="relative"
+                        rounded="12px"
+                        minW={{ base: "200px", sm: "240px", md: "240px" }}
+                        maxW={{ base: "200px", sm: "240px", md: "240px" }}
+                        _hover={{
+                          shadow: "md",
+                          transform: "translateY(-6px)",
+                        }}
+                        flexShrink={0}
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          opacity: 0.3,
+                          pointerEvents: "none",
+                          zIndex: 0,
+                        }}
+                        ref={(el) =>
+                          (topDoorsImpressionRefs.current[index] = el)
+                        }
+                        data-index={index}
                       >
-                        Summer's hottest hits
-                      </Heading>
-                      <Text
-                        color="gray.700"
-                        fontSize="xs"
-                        fontFamily="Bricolage Grotesque"
-                      >
-                        Black & Unlimited music legends.
-                      </Text>
-                    </VStack>
+                        <Box
+                          position="relative"
+                          zIndex={1}
+                          as="a"
+                          href={`/product/${product.slug}`}
+                          bg="white"
+                        >
+                          <ProductImage
+                            src={
+                              product.main_image_url ||
+                              (product.images?.[0].url ?? "")
+                            }
+                            alt={product.title}
+                            height={{ base: "150px", sm: "180px", md: "200px" }}
+                            bg="rgba(255,255,255,1)"
+                          />
 
-                    <Text
-                      color="gray.800"
-                      fontSize="xs"
-                      textDecoration="underline"
-                      cursor="pointer"
-                      fontFamily="Bricolage Grotesque"
-                      _hover={{ opacity: 0.8 }}
-                    >
-                      Shop now
-                    </Text>
-                  </Box>
-                </Box>
-              </VStack>
-            </GridItem>
+                          <IconButton
+                            position="absolute"
+                            top="2"
+                            right="2"
+                            size="sm"
+                            icon={<FaRegHeart size="20px" />}
+                            bg="white"
+                            color="black"
+                            _hover={{
+                              color: "white",
+                              bg: "rgba(255, 0, 0, 1)",
+                              fontWeight: "bold",
+                            }}
+                            borderRadius="full"
+                            aria-label="Add to wishlist"
+                            shadow="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleAddToWishlist(product.id);
+                            }}
+                          />
+                        </Box>
+                        <CardBody p={3}>
+                          <VStack align="start" spacing={2}>
+                            <VStack align="start" spacing={1} w="full">
+                              <Text
+                                fontSize="sm"
+                                color="black"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Airbnb Cereal VF"
+                              >
+                                {product.title}
+                              </Text>
 
-            {/* Black & Unlimited Summer Box */}
-            <GridItem colSpan={{ base: 1, lg: 1 }}>
-              <Box
-                position="relative"
-                h="300px"
-                borderRadius="12px"
-                overflow="hidden"
-                cursor="pointer"
-                transition="all 0.3s ease"
-                _hover={{ transform: "translateY(-2px)", shadow: "xl" }}
-                backgroundImage="url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=300&fit=crop')"
-                backgroundSize="cover"
-                backgroundPosition="center"
-                backgroundRepeat="no-repeat"
-              >
-                {/* Overlay */}
-                <Box
-                  position="absolute"
-                  top="0"
-                  left="0"
-                  right="0"
-                  bottom="0"
-                  bg="linear-gradient(135deg, rgba(29, 78, 216, 0.8), rgba(30, 58, 138, 0.7))"
-                  borderRadius="12px"
-                />
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
+                                <Text
+                                  fontSize={{ base: "lg", sm: "xl" }}
+                                  fontWeight="600"
+                                  color="black"
+                                  fontFamily="Airbnb Cereal VF"
+                                >
+                                  {product?.final_price_gross.toFixed(2) ??
+                                    product?.regular_price_gross.toFixed(2) ??
+                                    0}{" "}
+                                  €
+                                </Text>
 
-                <Box
-                  position="relative"
-                  h="full"
-                  p={6}
-                  display="flex"
-                  flexDirection="column"
-                  justifyContent="space-between"
-                  zIndex={1}
-                >
-                  <VStack align="start" spacing={3}>
-                    <Heading
-                      size="lg"
-                      color="white"
-                      fontWeight="bold"
-                      lineHeight="1.2"
-                      fontFamily="Bricolage Grotesque"
-                    >
-                      Black & Unlimited summer favorites
-                    </Heading>
-                  </VStack>
+                                {product.regular_price_gross &&
+                                  product.regular_price_gross >
+                                    product.final_price_gross && (
+                                    <>
+                                      <Badge
+                                        bg="rgba(0, 0, 0, 1)"
+                                        fontFamily="Airbnb Cereal VF"
+                                        color="white"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="500"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="full"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.regular_price_gross -
+                                            product.final_price_gross) /
+                                            product.regular_price_gross) *
+                                            100
+                                        )}
+                                        %
+                                      </Badge>
 
-                  <VStack align="start" spacing={2}>
-                    <HStack spacing={2} align="baseline">
-                      <Text
-                        color="white"
-                        fontSize="sm"
-                        fontFamily="Bricolage Grotesque"
-                      >
-                        From
-                      </Text>
-                      <Text
-                        color="white"
-                        fontSize="3xl"
-                        fontWeight="bold"
-                        fontFamily="Bricolage Grotesque"
-                        lineHeight="1"
-                      >
-                        €8
-                        <Text as="span" fontSize="lg" verticalAlign="super">
-                          97
-                        </Text>
-                      </Text>
-                    </HStack>
-
-                    <Text
-                      color="white"
-                      fontSize="sm"
-                      textDecoration="underline"
-                      cursor="pointer"
-                      fontFamily="Bricolage Grotesque"
-                      _hover={{ opacity: 0.8 }}
-                    >
-                      Shop now
-                    </Text>
-                  </VStack>
-                </Box>
-              </Box>
-            </GridItem>
-          </Grid>
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.700"
+                                        textDecoration="line-through"
+                                        fontFamily="Airbnb Cereal VF"
+                                        fontWeight="500"
+                                      >
+                                        €
+                                        {product.regular_price_gross.toFixed(2)}{" "}
+                                      </Text>
+                                    </>
+                                  )}
+                              </HStack>
+                            </VStack>
+                          </VStack>
+                        </CardBody>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <></>
+                )}
+              </HStack>
+            </Box>
+          </Box>
         </Box>
 
-        {/* Explore All */}
+        {/* Fenetres */}
         <Box mb={8}>
-          <VStack align="start" spacing={2} mb={6}>
-            <Heading
-              size="md"
-              color="gray.800"
-              fontWeight="bold"
-              fontFamily={"Bricolage Grotesque"}
+          <Flex align="center" justify="space-between" mb={6}>
+            <HStack spacing={3}>
+              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
+              <Heading
+                color="black"
+                fontSize={{ base: "xl", md: "20px" }}
+                fontFamily={"Airbnb Cereal VF"}
+                fontWeight="600"
+              >
+                Fenetres
+              </Heading>
+            </HStack>
+            <Button
+              bg="transparent"
+              size="sm"
+              borderColor="none"
+              borderWidth={"0px"}
+              color="black"
+              _hover={{
+                bg: "transparent",
+                color: "gray.400",
+                borderColor: "none",
+              }}
+              fontFamily={"Airbnb Cereal VF"}
+              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
+              onClick={() => {
+                navigate("/category/fentres");
+              }}
             >
-              Explore All Products
-            </Heading>
-            <Text fontSize="sm" color="gray.600">
-              Discover our entire collection
-            </Text>
-          </VStack>
-
-          <ExploreAll
-            initialFilters={{
-              limit: 30,
-              sort_by: "created_at",
-              sort_order: "DESC",
+              Voir tout
+            </Button>
+          </Flex>
+          <Box
+            position="relative"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: "40px",
+              zIndex: 1,
+              pointerEvents: "none",
+              display: { base: "block", md: "none" },
             }}
-          />
+          >
+            <Box
+              overflowX="auto"
+              overflowY="hidden"
+              pb={2}
+              css={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+                scrollBehavior: "smooth",
+              }}
+            >
+              <HStack
+                spacing={4}
+                align="stretch"
+                minW="max-content"
+                px={{ base: 2, md: 0 }}
+              >
+                {topFetresLoading ? (
+                  [...Array(6)].map((_, index) => (
+                    <Card
+                      key={`top-fetres-skeleton-${index}`}
+                      bg="white"
+                      borderRadius="12px"
+                      overflow="hidden"
+                      shadow="sm"
+                      minW={{ base: "150px", sm: "180px", md: "200px" }}
+                      maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                      flexShrink={0}
+                    >
+                      <Skeleton
+                        h={{ base: "150px", sm: "180px", md: "200px" }}
+                        w="full"
+                      />
+                      <CardBody p={3}>
+                        <VStack align="start" spacing={2}>
+                          <SkeletonText noOfLines={2} spacing={2} w="full" />
+                          <Skeleton h="6" w="20" />
+                          <SkeletonText noOfLines={1} w="60%" />
+                        </VStack>
+                      </CardBody>
+                    </Card>
+                  ))
+                ) : topFetresProducts && topFetresProducts?.length > 0 ? (
+                  topFetresProducts?.map((product, index) => {
+                    const productId = `top-fetres-${index}-${product?.id}`;
+                    return (
+                      <Card
+                        key={productId}
+                        bg="rgba(255,255,255,1)"
+                        overflow="hidden"
+                        shadow="sm"
+                        // transition="all 0.3s ease"
+                        cursor="pointer"
+                        border="1px solid rgba(145, 158, 171, 0.2)"
+                        position="relative"
+                        rounded="12px"
+                        minW={{ base: "200px", sm: "240px", md: "240px" }}
+                        maxW={{ base: "200px", sm: "240px", md: "240px" }}
+                        _hover={{
+                          shadow: "md",
+                          transform: "translateY(-6px)",
+                        }}
+                        flexShrink={0}
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          opacity: 0.3,
+                          pointerEvents: "none",
+                          zIndex: 0,
+                        }}
+                        ref={(el) =>
+                          (topWindowsImpressionRefs.current[index] = el)
+                        }
+                        data-index={index}
+                      >
+                        <Box
+                          position="relative"
+                          zIndex={1}
+                          as="a"
+                          href={`/product/${product.slug}`}
+                          bg="white"
+                        >
+                          <ProductImage
+                            src={
+                              product.main_image_url ||
+                              (product.images?.[0]?.url ?? "")
+                            }
+                            alt={product.title}
+                            height={{ base: "150px", sm: "180px", md: "200px" }}
+                            bg="rgba(255,255,255,1)"
+                          />
+
+                          <IconButton
+                            position="absolute"
+                            top="2"
+                            right="2"
+                            size="sm"
+                            icon={<FaRegHeart size="20px" />}
+                            bg="white"
+                            color="black"
+                            _hover={{
+                              color: "white",
+                              bg: "rgba(255, 0, 0, 1)",
+                              fontWeight: "bold",
+                            }}
+                            borderRadius="full"
+                            aria-label="Add to wishlist"
+                            shadow="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleAddToWishlist(product.id);
+                            }}
+                          />
+                        </Box>
+
+                        <CardBody p={3}>
+                          <VStack align="start" spacing={2}>
+                            <VStack align="start" spacing={1} w="full">
+                              <Text
+                                fontSize="sm"
+                                color="rgba(42, 42, 42, 1)"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Airbnb Cereal VF"
+                              >
+                                {product.title}
+                              </Text>
+
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
+                                <Text
+                                  fontSize={{ base: "lg", sm: "xl" }}
+                                  fontWeight="600"
+                                  color="gray.800"
+                                  fontFamily="Airbnb Cereal VF"
+                                >
+                                  {product?.final_price_gross.toFixed(2) ??
+                                    product?.regular_price_gross.toFixed(2) ??
+                                    0}{" "}
+                                  €
+                                </Text>
+
+                                {product.regular_price_gross &&
+                                  product.regular_price_gross >
+                                    product.final_price_gross && (
+                                    <>
+                                      <Badge
+                                        bg="rgba(0, 76, 255, 0.29)"
+                                        fontFamily="Airbnb Cereal VF"
+                                        color="blue"
+                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="500"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.regular_price_gross -
+                                            product.final_price_gross) /
+                                            product.regular_price_gross) *
+                                            100
+                                        )}
+                                        %
+                                      </Badge>
+
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.700"
+                                        textDecoration="line-through"
+                                        fontFamily="Airbnb Cereal VF"
+                                        fontWeight="500"
+                                      >
+                                        €
+                                        {product.regular_price_gross.toFixed(2)}{" "}
+                                      </Text>
+                                    </>
+                                  )}
+                              </HStack>
+                            </VStack>
+                          </VStack>
+                        </CardBody>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <></>
+                )}
+              </HStack>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Auto moto */}
+        <Box mb={8}>
+          <Flex align="center" justify="space-between" mb={6}>
+            <HStack spacing={3}>
+              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
+              <Heading
+                color="black"
+                fontSize={{ base: "xl", md: "20px" }}
+                fontFamily={"Airbnb Cereal VF"}
+                fontWeight="600"
+              >
+                Auto moto
+              </Heading>
+            </HStack>
+            <Button
+              bg="transparent"
+              size="sm"
+              borderColor="none"
+              borderWidth={"0px"}
+              color="black"
+              _hover={{
+                bg: "transparent",
+                color: "gray.400",
+                borderColor: "none",
+              }}
+              fontFamily={"Airbnb Cereal VF"}
+              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
+              onClick={() => {
+                navigate("/category/automoto");
+              }}
+            >
+              Voir tout
+            </Button>
+          </Flex>
+          <Box
+            position="relative"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: "40px",
+              zIndex: 1,
+              pointerEvents: "none",
+              display: { base: "block", md: "none" },
+            }}
+          >
+            <Box
+              overflowX="auto"
+              overflowY="hidden"
+              pb={2}
+              css={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+                scrollBehavior: "smooth",
+              }}
+            >
+              <HStack
+                spacing={4}
+                align="stretch"
+                minW="max-content"
+                px={{ base: 2, md: 0 }}
+              >
+                {topAutoMotoLoading ? (
+                  [...Array(6)].map((_, index) => (
+                    <Card
+                      key={`top-auto-moto-skeleton-${index}`}
+                      bg="white"
+                      borderRadius="12px"
+                      overflow="hidden"
+                      shadow="sm"
+                      minW={{ base: "150px", sm: "180px", md: "200px" }}
+                      maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                      flexShrink={0}
+                    >
+                      <Skeleton
+                        h={{ base: "150px", sm: "180px", md: "200px" }}
+                        w="full"
+                      />
+                      <CardBody p={3}>
+                        <VStack align="start" spacing={2}>
+                          <SkeletonText noOfLines={2} spacing={2} w="full" />
+                          <Skeleton h="6" w="20" />
+                          <SkeletonText noOfLines={1} w="60%" />
+                        </VStack>
+                      </CardBody>
+                    </Card>
+                  ))
+                ) : topAutoMotoProducts && topAutoMotoProducts?.length > 0 ? (
+                  topAutoMotoProducts?.map((product, index) => {
+                    const productId = `top-auto-moto-${index}-${product?.id}`;
+                    return (
+                      <Card
+                        key={productId}
+                        bg="rgba(255,255,255,1)"
+                        overflow="hidden"
+                        shadow="sm"
+                        // transition="all 0.3s ease"
+                        cursor="pointer"
+                        border="1px solid rgba(145, 158, 171, 0.2)"
+                        position="relative"
+                        rounded="12px"
+                        minW={{ base: "200px", sm: "240px", md: "240px" }}
+                        maxW={{ base: "200px", sm: "240px", md: "240px" }}
+                        _hover={{
+                          shadow: "md",
+                          transform: "translateY(-6px)",
+                        }}
+                        flexShrink={0}
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          opacity: 0.3,
+                          pointerEvents: "none",
+                          zIndex: 0,
+                        }}
+                        ref={(el) =>
+                          (topAutoMotoImpressionRefs.current[index] = el)
+                        }
+                        data-index={index}
+                      >
+                        <Box
+                          position="relative"
+                          zIndex={1}
+                          as="a"
+                          href={`/product/${product.slug}`}
+                          bg="white"
+                        >
+                          <ProductImage
+                            src={
+                              product.main_image_url ||
+                              (product.images?.[0]?.url ?? "")
+                            }
+                            alt={product.title}
+                            height={{ base: "150px", sm: "180px", md: "200px" }}
+                            bg="rgba(255,255,255,1)"
+                          />
+
+                          <IconButton
+                            position="absolute"
+                            top="2"
+                            right="2"
+                            size="sm"
+                            icon={<FaRegHeart size="20px" />}
+                            bg="white"
+                            color="black"
+                            _hover={{
+                              color: "white",
+                              bg: "rgba(255, 0, 0, 1)",
+                              fontWeight: "bold",
+                            }}
+                            borderRadius="full"
+                            aria-label="Add to wishlist"
+                            shadow="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleAddToWishlist(product.id);
+                            }}
+                          />
+                        </Box>
+                        <CardBody p={3}>
+                          <VStack align="start" spacing={2}>
+                            <VStack align="start" spacing={1} w="full">
+                              <Text
+                                fontSize="sm"
+                                color="rgba(42, 42, 42, 1)"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Airbnb Cereal VF"
+                              >
+                                {product.title}
+                              </Text>
+
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
+                                <Text
+                                  fontSize={{ base: "lg", sm: "xl" }}
+                                  fontWeight="600"
+                                  color="gray.800"
+                                  fontFamily="Airbnb Cereal VF"
+                                >
+                                  {product?.final_price_gross.toFixed(2) ??
+                                    product?.regular_price_gross.toFixed(2) ??
+                                    0}{" "}
+                                  €
+                                </Text>
+
+                                {product.regular_price_gross &&
+                                  product.regular_price_gross >
+                                    product.final_price_gross && (
+                                    <>
+                                      <Badge
+                                        bg="rgba(0, 76, 255, 0.29)"
+                                        fontFamily="Airbnb Cereal VF"
+                                        color="blue"
+                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="500"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.regular_price_gross -
+                                            product.final_price_gross) /
+                                            product.regular_price_gross) *
+                                            100
+                                        )}
+                                        %
+                                      </Badge>
+
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.700"
+                                        textDecoration="line-through"
+                                        fontFamily="Airbnb Cereal VF"
+                                        fontWeight="500"
+                                      >
+                                        €
+                                        {product.regular_price_gross.toFixed(2)}{" "}
+                                      </Text>
+                                    </>
+                                  )}
+                              </HStack>
+                            </VStack>
+                          </VStack>
+                        </CardBody>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <></>
+                )}
+              </HStack>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Baby */}
+        <Box mb={8}>
+          <Flex align="center" justify="space-between" mb={6}>
+            <HStack spacing={3}>
+              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
+              <Heading
+                color="black"
+                fontSize={{ base: "xl", md: "20px" }}
+                fontFamily={"Airbnb Cereal VF"}
+                fontWeight="600"
+              >
+                Bébé
+              </Heading>
+            </HStack>
+            <Button
+              bg="transparent"
+              size="sm"
+              borderColor="none"
+              borderWidth={"0px"}
+              color="black"
+              _hover={{
+                bg: "transparent",
+                color: "gray.400",
+                borderColor: "none",
+              }}
+              fontFamily={"Airbnb Cereal VF"}
+              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
+              onClick={() => {
+                navigate("/category/enfants-bb");
+              }}
+            >
+              Voir tout
+            </Button>
+          </Flex>
+          <Box
+            position="relative"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: "40px",
+              zIndex: 1,
+              pointerEvents: "none",
+              display: { base: "block", md: "none" },
+            }}
+          >
+            <Box
+              overflowX="auto"
+              overflowY="hidden"
+              pb={2}
+              css={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+                scrollBehavior: "smooth",
+              }}
+            >
+              <HStack
+                spacing={4}
+                align="stretch"
+                minW="max-content"
+                px={{ base: 2, md: 0 }}
+              >
+                {topBabyLoading ? (
+                  [...Array(6)].map((_, index) => (
+                    <Card
+                      key={`top-baby-skeleton-${index}`}
+                      bg="white"
+                      borderRadius="12px"
+                      overflow="hidden"
+                      shadow="sm"
+                      minW={{ base: "150px", sm: "180px", md: "200px" }}
+                      maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                      flexShrink={0}
+                    >
+                      <Skeleton
+                        h={{ base: "150px", sm: "180px", md: "200px" }}
+                        w="full"
+                      />
+                      <CardBody p={3}>
+                        <VStack align="start" spacing={2}>
+                          <SkeletonText noOfLines={2} spacing={2} w="full" />
+                          <Skeleton h="6" w="20" />
+                          <SkeletonText noOfLines={1} w="60%" />
+                        </VStack>
+                      </CardBody>
+                    </Card>
+                  ))
+                ) : topBabyProducts && topBabyProducts?.length > 0 ? (
+                  topBabyProducts?.map((product, index) => {
+                    const productId = `top-baby-${index}-${product?.id}`;
+                    return (
+                      <Card
+                        key={productId}
+                        bg="rgba(255,255,255,1)"
+                        overflow="hidden"
+                        shadow="sm"
+                        // transition="all 0.3s ease"
+                        cursor="pointer"
+                        border="1px solid rgba(145, 158, 171, 0.2)"
+                        position="relative"
+                        rounded="12px"
+                        minW={{ base: "200px", sm: "240px", md: "240px" }}
+                        maxW={{ base: "200px", sm: "240px", md: "240px" }}
+                        _hover={{
+                          shadow: "md",
+                          transform: "translateY(-6px)",
+                        }}
+                        flexShrink={0}
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          opacity: 0.3,
+                          pointerEvents: "none",
+                          zIndex: 0,
+                        }}
+                        ref={(el) =>
+                          (topBabyImpressionRefs.current[index] = el)
+                        }
+                        data-index={index}
+                      >
+                        <Box
+                          position="relative"
+                          zIndex={1}
+                          as="a"
+                          href={`/product/${product.slug}`}
+                          bg="white"
+                        >
+                          <ProductImage
+                            src={
+                              product.main_image_url ||
+                              (product.images?.[0]?.url ?? "")
+                            }
+                            alt={product.title}
+                            height={{ base: "150px", sm: "180px", md: "200px" }}
+                            bg="rgba(255,255,255,1)"
+                          />
+
+                          <IconButton
+                            position="absolute"
+                            top="2"
+                            right="2"
+                            size="sm"
+                            icon={<FaRegHeart size="20px" />}
+                            bg="white"
+                            color="black"
+                            _hover={{
+                              color: "white",
+                              bg: "rgba(255, 0, 0, 1)",
+                              fontWeight: "bold",
+                            }}
+                            borderRadius="full"
+                            aria-label="Add to wishlist"
+                            shadow="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleAddToWishlist(product.id);
+                            }}
+                          />
+                        </Box>
+                        <CardBody p={3}>
+                          <VStack align="start" spacing={2}>
+                            <VStack align="start" spacing={1} w="full">
+                              <Text
+                                fontSize="md"
+                                color="rgba(42, 42, 42, 1)"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Airbnb Cereal VF"
+                              >
+                                {product.title}
+                              </Text>
+
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
+                                <Text
+                                  fontSize={{ base: "lg", sm: "xl" }}
+                                  fontWeight="600"
+                                  color="gray.800"
+                                  fontFamily="Airbnb Cereal VF"
+                                >
+                                  {product?.final_price_gross.toFixed(2) ??
+                                    product?.regular_price_gross.toFixed(2) ??
+                                    0}{" "}
+                                  €
+                                </Text>
+
+                                {product.regular_price_gross &&
+                                  product.regular_price_gross >
+                                    product.final_price_gross && (
+                                    <>
+                                      <Badge
+                                        bg="rgba(0, 76, 255, 0.29)"
+                                        fontFamily="Airbnb Cereal VF"
+                                        color="blue"
+                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="500"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.regular_price_gross -
+                                            product.final_price_gross) /
+                                            product.regular_price_gross) *
+                                            100
+                                        )}
+                                        %
+                                      </Badge>
+
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.700"
+                                        textDecoration="line-through"
+                                        fontFamily="Airbnb Cereal VF"
+                                        fontWeight="500"
+                                      >
+                                        €
+                                        {product.regular_price_gross.toFixed(2)}{" "}
+                                      </Text>
+                                    </>
+                                  )}
+                              </HStack>
+                            </VStack>
+                          </VStack>
+                        </CardBody>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <></>
+                )}
+              </HStack>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Constructions */}
+        <Box mb={8}>
+          <Flex align="center" justify="space-between" mb={6}>
+            <HStack spacing={3}>
+              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
+              <Heading
+                color="black"
+                fontSize={{ base: "xl", md: "20px" }}
+                fontFamily={"Airbnb Cereal VF"}
+                fontWeight="600"
+              >
+                Construction
+              </Heading>
+            </HStack>
+            <Button
+              bg="transparent"
+              size="sm"
+              borderColor="none"
+              borderWidth={"0px"}
+              color="black"
+              _hover={{
+                bg: "transparent",
+                color: "gray.400",
+                borderColor: "none",
+              }}
+              fontFamily={"Airbnb Cereal VF"}
+              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
+              onClick={() => {
+                navigate("/category/enfants-bb");
+              }}
+            >
+              Voir tout
+            </Button>
+          </Flex>
+          <Box
+            position="relative"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: "40px",
+              zIndex: 1,
+              pointerEvents: "none",
+              display: { base: "block", md: "none" },
+            }}
+          >
+            <Box
+              overflowX="auto"
+              overflowY="hidden"
+              pb={2}
+              css={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+                scrollBehavior: "smooth",
+              }}
+            >
+              <HStack
+                spacing={4}
+                align="stretch"
+                minW="max-content"
+                px={{ base: 2, md: 0 }}
+              >
+                {constructionProductsLoading ? (
+                  [...Array(6)].map((_, index) => (
+                    <Card
+                      key={`top-baby-skeleton-${index}`}
+                      bg="white"
+                      borderRadius="12px"
+                      overflow="hidden"
+                      shadow="sm"
+                      minW={{ base: "150px", sm: "180px", md: "200px" }}
+                      maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                      flexShrink={0}
+                    >
+                      <Skeleton
+                        h={{ base: "150px", sm: "180px", md: "200px" }}
+                        w="full"
+                      />
+                      <CardBody p={3}>
+                        <VStack align="start" spacing={2}>
+                          <SkeletonText noOfLines={2} spacing={2} w="full" />
+                          <Skeleton h="6" w="20" />
+                          <SkeletonText noOfLines={1} w="60%" />
+                        </VStack>
+                      </CardBody>
+                    </Card>
+                  ))
+                ) : constructionProducts && constructionProducts?.length > 0 ? (
+                  constructionProducts?.map((product, index) => {
+                    const productId = `top-construction-${index}-${product?.id}`;
+                    return (
+                      <Card
+                        key={productId}
+                        bg="rgba(255,255,255,1)"
+                        overflow="hidden"
+                        shadow="sm"
+                        // transition="all 0.3s ease"
+                        cursor="pointer"
+                        border="1px solid rgba(145, 158, 171, 0.2)"
+                        position="relative"
+                        rounded="12px"
+                        minW={{ base: "200px", sm: "240px", md: "240px" }}
+                        maxW={{ base: "200px", sm: "240px", md: "240px" }}
+                        _hover={{
+                          shadow: "md",
+                          transform: "translateY(-6px)",
+                        }}
+                        flexShrink={0}
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          opacity: 0.3,
+                          pointerEvents: "none",
+                          zIndex: 0,
+                        }}
+                        ref={(el) =>
+                          (topConstructionImpressionRefs.current[index] = el)
+                        }
+                        data-index={index}
+                      >
+                        <Box
+                          position="relative"
+                          zIndex={1}
+                          as="a"
+                          href={`/product/${product.slug}`}
+                          bg="white"
+                        >
+                          <ProductImage
+                            src={
+                              product.main_image_url ||
+                              (product.images?.[0]?.url ?? "")
+                            }
+                            alt={product.title}
+                            height={{ base: "150px", sm: "180px", md: "200px" }}
+                            bg="rgba(255,255,255,1)"
+                          />
+
+                          <IconButton
+                            position="absolute"
+                            top="2"
+                            right="2"
+                            size="sm"
+                            icon={<FaRegHeart size="20px" />}
+                            bg="white"
+                            color="black"
+                            _hover={{
+                              color: "white",
+                              bg: "rgba(255, 0, 0, 1)",
+                              fontWeight: "bold",
+                            }}
+                            borderRadius="full"
+                            aria-label="Add to wishlist"
+                            shadow="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleAddToWishlist(product.id);
+                            }}
+                          />
+                        </Box>
+                        <CardBody p={3}>
+                          <VStack align="start" spacing={2}>
+                            <VStack align="start" spacing={1} w="full">
+                              <Text
+                                fontSize="sm"
+                                color="rgba(42, 42, 42, 1)"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Airbnb Cereal VF"
+                              >
+                                {product.title}
+                              </Text>
+
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
+                                <Text
+                                  fontSize={{ base: "lg", sm: "xl" }}
+                                  fontWeight="600"
+                                  color="gray.800"
+                                  fontFamily="Airbnb Cereal VF"
+                                >
+                                  {product?.final_price_gross.toFixed(2) ??
+                                    product?.regular_price_gross.toFixed(2) ??
+                                    0}{" "}
+                                  €
+                                </Text>
+
+                                {product.regular_price_gross &&
+                                  product.regular_price_gross >
+                                    product.final_price_gross && (
+                                    <>
+                                      <Badge
+                                        bg="rgba(0, 76, 255, 0.29)"
+                                        fontFamily="Airbnb Cereal VF"
+                                        color="blue"
+                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="500"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.regular_price_gross -
+                                            product.final_price_gross) /
+                                            product.regular_price_gross) *
+                                            100
+                                        )}
+                                        %
+                                      </Badge>
+
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.700"
+                                        textDecoration="line-through"
+                                        fontFamily="Airbnb Cereal VF"
+                                        fontWeight="500"
+                                      >
+                                        €
+                                        {product.regular_price_gross.toFixed(2)}{" "}
+                                      </Text>
+                                    </>
+                                  )}
+                              </HStack>
+                            </VStack>
+                          </VStack>
+                        </CardBody>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <></>
+                )}
+              </HStack>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Sanitaires */}
+        <Box mb={8}>
+          <Flex align="center" justify="space-between" mb={6}>
+            <HStack spacing={3}>
+              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
+              <Heading
+                color="black"
+                fontSize={{ base: "xl", md: "20px" }}
+                fontFamily={"Airbnb Cereal VF"}
+                fontWeight="600"
+              >
+                Sanitaires
+              </Heading>
+            </HStack>
+            <Button
+              bg="transparent"
+              size="sm"
+              borderColor="none"
+              borderWidth={"0px"}
+              color="black"
+              _hover={{
+                bg: "transparent",
+                color: "gray.400",
+                borderColor: "none",
+              }}
+              fontFamily={"Airbnb Cereal VF"}
+              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
+              onClick={() => {
+                navigate("/category/enfants-bb");
+              }}
+            >
+              Voir tout
+            </Button>
+          </Flex>
+          <Box
+            position="relative"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: "40px",
+              zIndex: 1,
+              pointerEvents: "none",
+              display: { base: "block", md: "none" },
+            }}
+          >
+            <Box
+              overflowX="auto"
+              overflowY="hidden"
+              pb={2}
+              css={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
+                scrollBehavior: "smooth",
+              }}
+            >
+              <HStack
+                spacing={4}
+                align="stretch"
+                minW="max-content"
+                px={{ base: 2, md: 0 }}
+              >
+                {sanitaryProductsLoading ? (
+                  [...Array(6)].map((_, index) => (
+                    <Card
+                      key={`top-baby-skeleton-${index}`}
+                      bg="white"
+                      borderRadius="12px"
+                      overflow="hidden"
+                      shadow="sm"
+                      minW={{ base: "150px", sm: "180px", md: "200px" }}
+                      maxW={{ base: "150px", sm: "180px", md: "200px" }}
+                      flexShrink={0}
+                    >
+                      <Skeleton
+                        h={{ base: "150px", sm: "180px", md: "200px" }}
+                        w="full"
+                      />
+                      <CardBody p={3}>
+                        <VStack align="start" spacing={2}>
+                          <SkeletonText noOfLines={2} spacing={2} w="full" />
+                          <Skeleton h="6" w="20" />
+                          <SkeletonText noOfLines={1} w="60%" />
+                        </VStack>
+                      </CardBody>
+                    </Card>
+                  ))
+                ) : sanitaryProducts && sanitaryProducts?.length > 0 ? (
+                  sanitaryProducts?.map((product, index) => {
+                    const productId = `top-sanitary-${index}-${product?.id}`;
+                    return (
+                      <Card
+                        key={productId}
+                        bg="rgba(255,255,255,1)"
+                        overflow="hidden"
+                        shadow="sm"
+                        // transition="all 0.3s ease"
+                        cursor="pointer"
+                        border="1px solid rgba(145, 158, 171, 0.2)"
+                        position="relative"
+                        rounded="12px"
+                        minW={{ base: "200px", sm: "240px", md: "240px" }}
+                        maxW={{ base: "200px", sm: "240px", md: "240px" }}
+                        _hover={{
+                          shadow: "md",
+                          transform: "translateY(-6px)",
+                        }}
+                        flexShrink={0}
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          opacity: 0.3,
+                          pointerEvents: "none",
+                          zIndex: 0,
+                        }}
+                        ref={(el) =>
+                          (topSanitaryImpressionRefs.current[index] = el)
+                        }
+                        data-index={index}
+                      >
+                        <Box
+                          position="relative"
+                          zIndex={1}
+                          as="a"
+                          href={`/product/${product.slug}`}
+                          bg="white"
+                        >
+                          <ProductImage
+                            src={
+                              product.main_image_url ||
+                              (product.images?.[0]?.url ?? "")
+                            }
+                            alt={product.title}
+                            height={{ base: "150px", sm: "180px", md: "200px" }}
+                            bg="rgba(255,255,255,1)"
+                          />
+
+                          <IconButton
+                            position="absolute"
+                            top="2"
+                            right="2"
+                            size="sm"
+                            icon={<FaRegHeart size="20px" />}
+                            bg="white"
+                            color="black"
+                            _hover={{
+                              color: "white",
+                              bg: "rgba(255, 0, 0, 1)",
+                              fontWeight: "bold",
+                            }}
+                            borderRadius="full"
+                            aria-label="Add to wishlist"
+                            shadow="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              handleAddToWishlist(product.id);
+                            }}
+                          />
+                        </Box>
+                        <CardBody p={3}>
+                          <VStack align="start" spacing={2}>
+                            <VStack align="start" spacing={1} w="full">
+                              <Text
+                                fontSize="sm"
+                                color="rgba(42, 42, 42, 1)"
+                                noOfLines={2}
+                                lineHeight="short"
+                                minH="40px"
+                                title={product.title}
+                                fontWeight="500"
+                                as="a"
+                                href={`/product/${product.slug}`}
+                                fontFamily="Airbnb Cereal VF"
+                              >
+                                {product.title}
+                              </Text>
+
+                              <HStack
+                                spacing={2}
+                                w="full"
+                                align="center"
+                                flexWrap="wrap"
+                              >
+                                <Text
+                                  fontSize={{ base: "lg", sm: "xl" }}
+                                  fontWeight="600"
+                                  color="gray.800"
+                                  fontFamily="Airbnb Cereal VF"
+                                >
+                                  {product?.final_price_gross.toFixed(2) ??
+                                    product?.regular_price_gross.toFixed(2) ??
+                                    0}{" "}
+                                  €
+                                </Text>
+
+                                {product.regular_price_gross &&
+                                  product.regular_price_gross >
+                                    product.final_price_gross && (
+                                    <>
+                                      <Badge
+                                        bg="rgba(0, 76, 255, 0.29)"
+                                        fontFamily="Airbnb Cereal VF"
+                                        color="blue"
+                                        border="1px solid rgba(72, 0, 255, 0.43)"
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        fontWeight="500"
+                                        px={{ base: "1", sm: "2" }}
+                                        py="0"
+                                        borderRadius="md"
+                                        textTransform="uppercase"
+                                        flexShrink={0}
+                                      >
+                                        -
+                                        {Math.round(
+                                          ((product.regular_price_gross -
+                                            product.final_price_gross) /
+                                            product.regular_price_gross) *
+                                            100
+                                        )}
+                                        %
+                                      </Badge>
+
+                                      <Text
+                                        fontSize={{ base: "xs", sm: "sm" }}
+                                        color="gray.700"
+                                        textDecoration="line-through"
+                                        fontFamily="Airbnb Cereal VF"
+                                        fontWeight="500"
+                                      >
+                                        €
+                                        {product.regular_price_gross.toFixed(2)}{" "}
+                                      </Text>
+                                    </>
+                                  )}
+                              </HStack>
+                            </VStack>
+                          </VStack>
+                        </CardBody>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <></>
+                )}
+              </HStack>
+            </Box>
+          </Box>
         </Box>
       </Container>
       <Footer />
+    </Box>
+  );
+}
+
+
+function ProductImage({
+  src,
+  alt,
+  height = { base: "150px", sm: "180px", md: "200px" },
+  bg = "transparent",
+  ...props
+}) {
+  return (
+    <Box
+      w="full"
+      h={height}
+      bg={bg}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      overflow="hidden"
+      pl={2}
+      pr={2}
+      pt={2}
+      {...props}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        w="full"
+        h="full"
+        objectFit="contain"
+        objectPosition="center"
+        fallback={
+          <Box
+            w="full"
+            h={height}
+            bg="#fff"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          />
+        }
+      />
     </Box>
   );
 }

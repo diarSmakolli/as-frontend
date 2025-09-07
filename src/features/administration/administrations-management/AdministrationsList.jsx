@@ -37,6 +37,7 @@ import { customToastContainerStyle } from "../../../commons/toastStyles";
 import CreateAccountModal from "./components/CreateAccountModal";
 import Loader from "../../../commons/Loader";
 import { useNavigate } from "react-router-dom";
+import EditPercentageModal from "./components/EditPercentageModal";
 
 const fontName = "Inter";
 
@@ -78,6 +79,12 @@ export default function AdministrationsList() {
   const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] =
     useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isEditPercentageModalOpen, setIsEditPercentageModalOpen] = useState(false);
+  const [isProcessRewardsModalOpen, setIsProcessRewardsModalOpen] = useState(false);
+  const [isProcessingRewards, setIsProcessingRewards] = useState(false);
+
+
 
   const handleCreateAccountSuccess = () => {
     fetchUsers(currentPage);
@@ -355,8 +362,25 @@ export default function AdministrationsList() {
   return (
     <>
       <chakra.Box minH="100vh" bg={"rgb(241,241,241)"}>
-        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
-        <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
+        <chakra.Box display={{ base: "none", md: "block" }}>
+          <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+        </chakra.Box>
+        {/* Mobile Sidebar: shown when menu is open */}
+        <chakra.Box
+          display={{ base: isSidebarOpen ? "block" : "none", md: "none" }}
+          position="fixed"
+          zIndex={999}
+        >
+          <SidebarContent
+            onSettingsOpen={() => setIsSettingsOpen(true)}
+            onClose={() => setIsSidebarOpen(false)}
+          />
+        </chakra.Box>
+        {/* MobileNav: always visible, passes menu toggle */}
+        <MobileNav
+          onSettingsOpen={() => setIsSettingsOpen(true)}
+          onOpen={() => setIsSidebarOpen(true)}
+        />
 
         <SettingsModal
           isOpen={isSettingsOpen}
@@ -392,6 +416,14 @@ export default function AdministrationsList() {
           onSuccess={handleCreateAccountSuccess}
         />
 
+        <EditPercentageModal
+          isOpen={isEditPercentageModalOpen}
+          onClose={() => setIsEditPercentageModalOpen(false)}
+          user={selectedUser}
+          onSuccess={fetchUsers}
+          administrationService={administrationService}
+        />
+
         <chakra.Box
           ml={{ base: 0, md: 60 }}
           p={{ base: 3, md: 5 }}
@@ -400,7 +432,7 @@ export default function AdministrationsList() {
           <chakra.Flex
             direction={{ base: "column", md: "row" }}
             justify="space-between"
-            align={{ base: "flex-start", md: "center" }}
+            align={{ base: "flex-start", md: "flex-end" }}
             mb={6}
           >
             <chakra.Text
@@ -412,18 +444,31 @@ export default function AdministrationsList() {
               Administrations Console
             </chakra.Text>
 
-            <chakra.Button
-              leftIcon={<FaPlus />}
-              size="sm"
-              mt={{ base: 3, md: 0 }}
-              bg="black"
-              _hover={{ bg: "black" }}
-              transition="all 0.2s"
-              onClick={() => setIsCreateModalOpen(true)}
-              color="white"
-            >
-              Create Account
-            </chakra.Button>
+            <chakra.Box>
+              <chakra.Button
+                leftIcon={<FaPlus />}
+                size="sm"
+                mt={{ base: 3, md: 0 }}
+                bg="black"
+                _hover={{ bg: "black" }}
+                transition="all 0.2s"
+                onClick={() => setIsCreateModalOpen(true)}
+                color="white"
+              >
+                Create Account
+              </chakra.Button>
+
+              <chakra.Button
+                colorScheme="green"
+                variant="solid"
+                size="sm"
+                ml={{ base: 0, md: 4 }}
+                mt={{ base: 3, md: 0 }}
+                onClick={() => setIsProcessRewardsModalOpen(true)}
+              >
+                Process Reward Payments
+              </chakra.Button>
+            </chakra.Box>
           </chakra.Flex>
 
           <chakra.Grid
@@ -1198,6 +1243,15 @@ export default function AdministrationsList() {
                                         user.is_verified ? "red" : "green"
                                       }
                                     />
+                                    <ActionMenuItem
+                                      label="Edit Commission"
+                                      icon={<FaEdit />}
+                                      onClick={() => {
+                                        setSelectedUser(user);
+                                        setIsEditPercentageModalOpen(true);
+                                      }}
+                                      colorScheme="blue"
+                                    />
                                   </chakra.Stack>
                                 </chakra.PopoverBody>
                               </chakra.PopoverContent>
@@ -1235,6 +1289,62 @@ export default function AdministrationsList() {
             </>
           )}
         </chakra.Box>
+
+        {/* Modal for Processing Rewards */}
+        <chakra.Modal
+          isOpen={isProcessRewardsModalOpen}
+          onClose={() => setIsProcessRewardsModalOpen(false)}
+          isCentered
+        >
+          <chakra.ModalOverlay />
+          <chakra.ModalContent>
+            <chakra.ModalHeader>Process Reward Payments</chakra.ModalHeader>
+            <chakra.ModalCloseButton />
+            <chakra.ModalBody>
+              <chakra.Text>
+                Are you sure you want to process reward payments for all agents
+                with a reward balance greater than 0? This will reset their
+                reward balance, add a payout history, and notify them.
+              </chakra.Text>
+            </chakra.ModalBody>
+            <chakra.ModalFooter>
+              <chakra.Button
+                colorScheme="gray"
+                mr={3}
+                onClick={() => setIsProcessRewardsModalOpen(false)}
+                disabled={isProcessingRewards}
+              >
+                Cancel
+              </chakra.Button>
+              <chakra.Button
+                colorScheme="green"
+                onClick={async () => {
+                  setIsProcessingRewards(true);
+                  try {
+                    await administrationService.processRewardPaymentsForAllAgents();
+                    toast({
+                      description: "Reward payments processed successfully.",
+                      status: "success",
+                      duration: 4000,
+                      isClosable: true,
+                      variant: "custom",
+                      containerStyle: customToastContainerStyle,
+                    });
+                    fetchUsers(currentPage);
+                  } catch (err) {
+                    handleApiError(err, toast);
+                  } finally {
+                    setIsProcessingRewards(false);
+                    setIsProcessRewardsModalOpen(false);
+                  }
+                }}
+                isLoading={isProcessingRewards}
+              >
+                Confirm & Process
+              </chakra.Button>
+            </chakra.ModalFooter>
+          </chakra.ModalContent>
+        </chakra.Modal>
       </chakra.Box>
     </>
   );

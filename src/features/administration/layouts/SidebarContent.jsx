@@ -33,6 +33,10 @@ const SidebarContent = ({ onClose, onSettingsOpen, ...rest }) => {
     { name: "Taxes", icon: AiOutlineUsergroupAdd, href: "/taxes-console" },
     { name: "Category", icon: AiOutlineUsergroupAdd, href: "/category-console" },
     { name: "Products", icon: AiOutlineUsergroupAdd, href: "/products-console" },
+    { name: "Promotion Codes", icon: AiOutlineUsergroupAdd, href: "/promotions" },
+    { name: "Gift Cards", icon: AiOutlineUsergroupAdd, href: "/gift-cards" },
+    { name: "Customers", icon: AiOutlineUsergroupAdd, href: "/customers" },
+    { name: "Orders", icon: AiOutlineUsergroupAdd, href: "/orders" },
     { name: "Reports", icon: AiOutlineUsergroupAdd, href: "/dashboard" },
   ];
 

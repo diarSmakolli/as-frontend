@@ -159,6 +159,8 @@ const AdministrationDetails = () => {
   const [hasMoreActivities, setHasMoreActivities] = useState(true);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
   const [totalActivities, setTotalActivities] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
 
   const {
     isOpen: isEditModalOpen,
@@ -596,8 +598,26 @@ const AdministrationDetails = () => {
 
   return (
     <Box minH="100vh" bg="rgb(241,241,241)">
-      <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
-      <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
+      <Box display={{ base: "none", md: "block" }}>
+        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+      </Box>
+      {/* Mobile Sidebar: shown when menu is open */}
+      <Box
+        display={{ base: isSidebarOpen ? "block" : "none", md: "none" }}
+        position="fixed"
+        zIndex={999}
+      >
+        <SidebarContent
+          onSettingsOpen={() => setIsSettingsOpen(true)}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+      </Box>
+      {/* MobileNav: always visible, passes menu toggle */}
+      <MobileNav
+        onSettingsOpen={() => setIsSettingsOpen(true)}
+        onOpen={() => setIsSidebarOpen(true)}
+      />
+
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -894,6 +914,18 @@ const AdministrationDetails = () => {
                           : "green"
                       }
                     />
+                    <StatCard
+                      label="Commission"
+                      value={`${userDetails?.commission} %`}
+                      icon={FiActivity}
+                      color="black"
+                    />
+                    <StatCard
+                      label="Reward Balance"
+                      value={`${userDetails?.reward_balance} EUR`}
+                      icon={FiActivity}
+                      color="black"
+                    />
                   </SimpleGrid>
 
                   {/* User details info */}
@@ -1065,6 +1097,15 @@ const AdministrationDetails = () => {
                     </Badge>
                   )}
                 </Tab>
+                <Tab
+                  color="gray.300"
+                  _selected={{ color: "black", bg: "blue.500" }}
+                  fontWeight="medium"
+                  px={5}
+                >
+                  <Icon as={FiActivity} mr={2} />
+                  Reward histories
+                </Tab>
               </TabList>
 
               <TabPanels>
@@ -1122,8 +1163,8 @@ const AdministrationDetails = () => {
                             <Button
                               onClick={() => fetchSessions(true)}
                               leftIcon={<FiRefreshCw />}
-                              bg='black'
-                              color='white'
+                              bg="black"
+                              color="white"
                               _hover={{ bg: "black" }}
                             >
                               Refresh
@@ -1536,6 +1577,55 @@ const AdministrationDetails = () => {
                       )}
                     </CardBody>
                   </MotionCard>
+                </TabPanel>
+
+                {/* Reward histories Tab */}
+                <TabPanel>
+                  <Box p={4}>
+                    <Text fontSize="lg" fontWeight="bold" mb={2}>
+                      Reward Histories
+                    </Text>
+                    <Table variant="simple">
+                      <Thead>
+                        <Tr>
+                          <Th>Type</Th>
+                          <Th>Commission amount</Th>
+                          <Th>Status</Th>
+                          <Th>Order number</Th>
+                          <Th>Order Total amount</Th>
+                          <Th>Commission rate</Th>
+                          <Th>Date</Th>
+                        </Tr>
+                      </Thead>
+                      <Tbody>
+                        {userDetails.histories.map((history) => (
+                          <Tr key={history.id}>
+                            <Td>{history.type}</Td>
+                            <Td>{history.amount}</Td>
+                            <Td>{history.status}</Td>
+                            <Td>{history.order_number}</Td>
+                            <Td>{history.order_total}</Td>
+                            <Td>{history.commission_rate} %</Td>
+                            <Td color="gray.900" borderColor="gray.200">
+                              <Tooltip
+                                label={formatWithTimezone(
+                                  history.created_at,
+                                  formatOptions.FULL_DATE_TIME,
+                                  currentTimezone
+                                )}
+                                placement="top"
+                                hasArrow
+                              >
+                                <Text>
+                                  {formatRelativeTime(history.created_at)}
+                                </Text>
+                              </Tooltip>
+                            </Td>
+                          </Tr>
+                        ))}
+                      </Tbody>
+                    </Table>
+                  </Box>
                 </TabPanel>
               </TabPanels>
             </Tabs>

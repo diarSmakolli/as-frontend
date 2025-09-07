@@ -30,3 +30,10 @@
 660308
 660666
 777770
+
+
+Look on our product module and product entity, we have these custom options. but these can only has price, we have some products like windows, doors etc, which needs calculation of m2, m3.
+
+we need to have a min width, max width, min height, max height to make the calculation dynamically on frontend, price of m2, price of m3, is calculation with m2, is price with m3, price of m2, price of m3, premium_price_m2, premium_price_m3, premium width from, premium height from, premium width to, premium width from.
+
+Please build the best solution for our problem at the products, we need to do this while we creating product, and it need to get a price approximately like a standard

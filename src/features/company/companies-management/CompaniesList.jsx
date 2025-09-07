@@ -42,6 +42,7 @@ export default function CompaniesList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isTableLoading, setIsTableLoading] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -149,8 +150,25 @@ export default function CompaniesList() {
   return (
     <>
       <chakra.Box minH="100vh" bg={secondaryBg}>
-        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
-        <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
+        <chakra.Box display={{ base: "none", md: "block" }}>
+          <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+        </chakra.Box>
+        {/* Mobile Sidebar: shown when menu is open */}
+        <chakra.Box
+          display={{ base: isSidebarOpen ? "block" : "none", md: "none" }}
+          position="fixed"
+          zIndex={999}
+        >
+          <SidebarContent
+            onSettingsOpen={() => setIsSettingsOpen(true)}
+            onClose={() => setIsSidebarOpen(false)}
+          />
+        </chakra.Box>
+        {/* MobileNav: always visible, passes menu toggle */}
+        <MobileNav
+          onSettingsOpen={() => setIsSettingsOpen(true)}
+          onOpen={() => setIsSidebarOpen(true)}
+        />
 
         <SettingsModal
           isOpen={isSettingsOpen}
@@ -162,10 +180,10 @@ export default function CompaniesList() {
           <chakra.Flex
             flexDirection={{ base: "column", md: "row" }}
             justifyContent="space-between"
-            alignItems={{ base: "center", md: "flex-start" }}
+            alignItems={{ base: "left", md: "flex-start" }}
             mb={6}
           >
-            <chakra.Box textAlign={{ base: "center", md: "left" }}>
+            <chakra.Box textAlign={{ base: "left", md: "left" }}>
               <chakra.Text
                 color="gray.900"
                 fontSize={{ base: "xl", md: "2xl" }}
@@ -180,8 +198,8 @@ export default function CompaniesList() {
 
             <chakra.Button
               leftIcon={<FiPlus />}
-              bg='black'
-              color='white'
+              bg="black"
+              color="white"
               size="sm"
               onClick={handleOpenCreateModal}
               mt={{ base: 4, md: 0 }}
@@ -209,11 +227,11 @@ export default function CompaniesList() {
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 bg={`rgb(255,255,255)`}
                 color="black"
-                borderColor={'gray.400'}
-                size='md'
-                width='400px'
-                maxW='600px'
-                rounded='xl'
+                borderColor={"gray.400"}
+                size="md"
+                width="400px"
+                maxW="600px"
+                rounded="xl"
                 _focus={{ boxShadow: "0 0 0 1px #63B3ED" }}
                 _hover={{ bg: "rgb(255,255,255)" }}
               />
@@ -224,8 +242,8 @@ export default function CompaniesList() {
                 onClick={handleSearch}
                 size="sm"
                 shadow="sm"
-                bg='black'
-                color='white'
+                bg="black"
+                color="white"
                 _hover={{ bg: "gray.800" }}
                 leftIcon={<FiSearch />}
               >
@@ -238,8 +256,8 @@ export default function CompaniesList() {
                 onClick={toggleFilters}
                 size="sm"
                 shadow="sm"
-                bg='black'
-                color='white'
+                bg="black"
+                color="white"
                 _hover={{ bg: "gray.800" }}
               >
                 Filters{" "}
@@ -264,7 +282,7 @@ export default function CompaniesList() {
                   setTimeout(() => fetchCompanies(true), 0);
                 }}
                 size="sm"
-                bg='black'
+                bg="black"
                 _hover={{ bg: "gray.800" }}
                 color="white"
               >
@@ -275,7 +293,7 @@ export default function CompaniesList() {
 
           {/* Filters Section */}
           <chakra.Box
-            bg={'rgb(255,255,255)'}
+            bg={"rgb(255,255,255)"}
             borderRadius="lg"
             p={4}
             mb={6}
@@ -296,13 +314,13 @@ export default function CompaniesList() {
                   Status
                 </chakra.FormLabel>
                 <CommonSelect
-                   name="is_inactive"
-                   value={filters.is_inactive}
-                   onChange={handleFilterChange}
-                   options={statusFilterOptions}
-                   placeholder="All Companies"
-                   size="md"
-                   color='gray.900'
+                  name="is_inactive"
+                  value={filters.is_inactive}
+                  onChange={handleFilterChange}
+                  options={statusFilterOptions}
+                  placeholder="All Companies"
+                  size="md"
+                  color="gray.900"
                 />
               </chakra.FormControl>
 
@@ -321,7 +339,7 @@ export default function CompaniesList() {
                   options={verificationFilterOptions}
                   placeholder="All Verification Status"
                   size="md"
-                  color='gray.900'
+                  color="gray.900"
                 />
               </chakra.FormControl>
 
@@ -341,7 +359,7 @@ export default function CompaniesList() {
                   placeholder="All Types"
                   size="md"
                   isSearchable={true}
-                  color='gray.900'
+                  color="gray.900"
                 />
               </chakra.FormControl>
 
@@ -363,7 +381,7 @@ export default function CompaniesList() {
                   _focus={{ boxShadow: "0 0 0 1px #63B3ED" }}
                   _hover={{ bg: "rgb(241,241,241)" }}
                   size="md"
-                  borderColor={'gray.400'}
+                  borderColor={"gray.400"}
                 />
               </chakra.FormControl>
             </chakra.Grid>
@@ -374,34 +392,64 @@ export default function CompaniesList() {
             borderRadius="lg"
             overflow="hidden"
             shadow="lg"
-            bg={'rgb(255,255,255)'}
+            bg={"rgb(255,255,255)"}
             mb={6}
           >
             <chakra.Box overflowX="auto">
-              <chakra.Table variant="simple" size="md" colorScheme="whiteAlpha" rounded='2xl'>
-                <chakra.Thead bg={'rgb(255,255,255)'}>
+              <chakra.Table
+                variant="simple"
+                size="md"
+                colorScheme="whiteAlpha"
+                rounded="2xl"
+              >
+                <chakra.Thead bg={"rgb(255,255,255)"}>
                   <chakra.Tr>
-                    <chakra.Th color="gray.900" borderColor={'gray.200'} textTransform={'none'}>
+                    <chakra.Th
+                      color="gray.900"
+                      borderColor={"gray.200"}
+                      textTransform={"none"}
+                    >
                       Business Name
                     </chakra.Th>
-                    <chakra.Th color="gray.900" borderColor={'gray.200'} textTransform={'none'}>
+                    <chakra.Th
+                      color="gray.900"
+                      borderColor={"gray.200"}
+                      textTransform={"none"}
+                    >
                       Market Name
                     </chakra.Th>
-                    <chakra.Th color="gray.900" borderColor={'gray.200'} textTransform={'none'}>
+                    <chakra.Th
+                      color="gray.900"
+                      borderColor={"gray.200"}
+                      textTransform={"none"}
+                    >
                       Business Type
                     </chakra.Th>
-                    <chakra.Th color="gray.900" borderColor={'gray.200'} textTransform={'none'}>
+                    <chakra.Th
+                      color="gray.900"
+                      borderColor={"gray.200"}
+                      textTransform={"none"}
+                    >
                       Country
                     </chakra.Th>
-                    <chakra.Th color="gray.900" borderColor={'gray.200'} textTransform={'none'}>
+                    <chakra.Th
+                      color="gray.900"
+                      borderColor={"gray.200"}
+                      textTransform={"none"}
+                    >
                       Status
                     </chakra.Th>
-                    <chakra.Th color="gray.900" borderColor={'gray.200'} textTransform={'none'}>
+                    <chakra.Th
+                      color="gray.900"
+                      borderColor={"gray.200"}
+                      textTransform={"none"}
+                    >
                       Verified
                     </chakra.Th>
                     <chakra.Th
-                      color="gray.900" borderColor={'gray.200'}
-                      textTransform={'none'}
+                      color="gray.900"
+                      borderColor={"gray.200"}
+                      textTransform={"none"}
                       isNumeric
                     >
                       Actions
@@ -415,7 +463,7 @@ export default function CompaniesList() {
                         colSpan={7}
                         textAlign="center"
                         py={8}
-                        borderColor={'gray.200'}
+                        borderColor={"gray.200"}
                       >
                         <chakra.Flex
                           justifyContent="center"
@@ -442,7 +490,7 @@ export default function CompaniesList() {
                         textAlign="center"
                         py={8}
                         color="gray.900"
-                        borderColor={'gray.200'}
+                        borderColor={"gray.200"}
                       >
                         <chakra.Box>
                           <chakra.Text fontSize="lg" mb={2}>
@@ -458,33 +506,39 @@ export default function CompaniesList() {
                     companies.map((company) => (
                       <chakra.Tr
                         key={company.id}
-                        _hover={{ bg: 'rgb(241,241,241)' }}
+                        _hover={{ bg: "rgb(241,241,241)" }}
                         transition="background-color 0.2s"
                         cursor="pointer"
                       >
                         <chakra.Td
                           color="gray.900"
                           fontWeight="400"
-                          borderColor={'gray.200'}
+                          borderColor={"gray.200"}
                         >
                           {company.business_name}
                         </chakra.Td>
-                        <chakra.Td color="gray.900"
+                        <chakra.Td
+                          color="gray.900"
                           fontWeight="400"
-                          borderColor={'gray.200'}>
+                          borderColor={"gray.200"}
+                        >
                           {company.market_name}
                         </chakra.Td>
-                        <chakra.Td color="gray.900"
+                        <chakra.Td
+                          color="gray.900"
                           fontWeight="400"
-                          borderColor={'gray.200'}>
+                          borderColor={"gray.200"}
+                        >
                           {company.type_of_business || "N/A"}
                         </chakra.Td>
-                        <chakra.Td color="gray.900"
+                        <chakra.Td
+                          color="gray.900"
                           fontWeight="400"
-                          borderColor={'gray.200'}>
+                          borderColor={"gray.200"}
+                        >
                           {company.country || "N/A"}
                         </chakra.Td>
-                        <chakra.Td borderColor={'gray.200'}>
+                        <chakra.Td borderColor={"gray.200"}>
                           <chakra.Badge
                             colorScheme={company.is_inactive ? "red" : "green"}
                             borderRadius="full"
@@ -497,7 +551,7 @@ export default function CompaniesList() {
                             {company.is_inactive ? "Inactive" : "Active"}
                           </chakra.Badge>
                         </chakra.Td>
-                        <chakra.Td borderColor={'gray.200'}>
+                        <chakra.Td borderColor={"gray.200"}>
                           <chakra.Badge
                             colorScheme={company.is_verified ? "blue" : "gray"}
                             borderRadius="full"
@@ -510,7 +564,7 @@ export default function CompaniesList() {
                             {company.is_verified ? "Verified" : "Not Verified"}
                           </chakra.Badge>
                         </chakra.Td>
-                        <chakra.Td isNumeric borderColor={'gray.200'}>
+                        <chakra.Td isNumeric borderColor={"gray.200"}>
                           <chakra.ButtonGroup size="sm" spacing={1}>
                             <chakra.IconButton
                               aria-label="View details"

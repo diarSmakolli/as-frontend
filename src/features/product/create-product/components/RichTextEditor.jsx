@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import {
   Box,
   VStack,
@@ -22,7 +22,7 @@ import {
   useDisclosure,
   FormControl,
   FormLabel,
-} from '@chakra-ui/react';
+} from "@chakra-ui/react";
 import {
   FiBold,
   FiItalic,
@@ -37,15 +37,25 @@ import {
   FiType,
   FiRotateCcw,
   FiRotateCw,
-} from 'react-icons/fi';
+} from "react-icons/fi";
+import { customToastContainerStyle } from "../../../../commons/toastStyles";
 
-const RichTextEditor = ({ value, onChange, placeholder = "Enter description...", minHeight = "200px" }) => {
+const RichTextEditor = ({
+  value,
+  onChange,
+  placeholder = "Enter description...",
+  minHeight = "200px",
+}) => {
   const editorRef = useRef(null);
   const fileInputRef = useRef(null);
   const toast = useToast();
-  const { isOpen: isLinkModalOpen, onOpen: onLinkModalOpen, onClose: onLinkModalClose } = useDisclosure();
-  const [linkUrl, setLinkUrl] = useState('');
-  const [linkText, setLinkText] = useState('');
+  const {
+    isOpen: isLinkModalOpen,
+    onOpen: onLinkModalOpen,
+    onClose: onLinkModalClose,
+  } = useDisclosure();
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkText, setLinkText] = useState("");
   const [savedSelection, setSavedSelection] = useState(null);
 
   const bgColor = useColorModeValue("white", "gray.800");
@@ -54,7 +64,7 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
 
   useEffect(() => {
     if (editorRef.current && value !== editorRef.current.innerHTML) {
-      editorRef.current.innerHTML = value || '';
+      editorRef.current.innerHTML = value || "";
     }
   }, [value]);
 
@@ -75,33 +85,33 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
     // Handle common shortcuts
     if (e.ctrlKey || e.metaKey) {
       switch (e.key) {
-        case 'b':
+        case "b":
           e.preventDefault();
-          executeCommand('bold');
+          executeCommand("bold");
           break;
-        case 'i':
+        case "i":
           e.preventDefault();
-          executeCommand('italic');
+          executeCommand("italic");
           break;
-        case 'u':
+        case "u":
           e.preventDefault();
-          executeCommand('underline');
+          executeCommand("underline");
           break;
-        case 'z':
+        case "z":
           e.preventDefault();
-          executeCommand('undo');
+          executeCommand("undo");
           break;
-        case 'y':
+        case "y":
           e.preventDefault();
-          executeCommand('redo');
+          executeCommand("redo");
           break;
       }
     }
 
     // Handle Enter key for better line breaks
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      executeCommand('insertHTML', '<br><br>');
+      executeCommand("insertHTML", "<br><br>");
     }
   };
 
@@ -123,8 +133,8 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
   const handleLinkInsert = () => {
     saveSelection();
     const selectedText = window.getSelection().toString();
-    setLinkText(selectedText || '');
-    setLinkUrl('');
+    setLinkText(selectedText || "");
+    setLinkUrl("");
     onLinkModalOpen();
   };
 
@@ -132,14 +142,17 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
     if (linkUrl) {
       restoreSelection();
       if (linkText) {
-        executeCommand('insertHTML', `<a href="${linkUrl}" target="_blank" style="color: #3182ce; text-decoration: underline;">${linkText}</a>`);
+        executeCommand(
+          "insertHTML",
+          `<a href="${linkUrl}" target="_blank" style="color: #3182ce; text-decoration: underline;">${linkText}</a>`
+        );
       } else {
-        executeCommand('createLink', linkUrl);
+        executeCommand("createLink", linkUrl);
       }
     }
     onLinkModalClose();
-    setLinkUrl('');
-    setLinkText('');
+    setLinkUrl("");
+    setLinkText("");
   };
 
   const handleImageInsert = () => {
@@ -148,26 +161,31 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        executeCommand('insertHTML', `<img src="${event.target.result}" style="max-width: 100%; height: auto; margin: 10px 0;" alt="Uploaded image" />`);
+        executeCommand(
+          "insertHTML",
+          `<img src="${event.target.result}" style="max-width: 100%; height: auto; margin: 10px 0;" alt="Uploaded image" />`
+        );
       };
       reader.readAsDataURL(file);
     } else {
       toast({
-        title: 'Invalid file',
-        description: 'Please select an image file',
-        status: 'error',
+        title: "Invalid file",
+        description: "Please select an image file",
+        status: "error",
         duration: 3000,
         isClosable: true,
+        variant: "custom",
+        containerStyle: customToastContainerStyle,
       });
     }
   };
 
   const handleHeadingChange = (heading) => {
     if (heading) {
-      executeCommand('formatBlock', heading);
+      executeCommand("formatBlock", heading);
     }
   };
 
@@ -184,7 +202,7 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
         </tr>
       </table>
     `;
-    executeCommand('insertHTML', tableHTML);
+    executeCommand("insertHTML", tableHTML);
   };
 
   return (
@@ -205,21 +223,21 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
               <Tooltip label="Bold (Ctrl+B)">
                 <IconButton
                   icon={<FiBold />}
-                  onClick={() => executeCommand('bold')}
+                  onClick={() => executeCommand("bold")}
                   aria-label="Bold"
                 />
               </Tooltip>
               <Tooltip label="Italic (Ctrl+I)">
                 <IconButton
                   icon={<FiItalic />}
-                  onClick={() => executeCommand('italic')}
+                  onClick={() => executeCommand("italic")}
                   aria-label="Italic"
                 />
               </Tooltip>
               <Tooltip label="Underline (Ctrl+U)">
                 <IconButton
                   icon={<FiUnderline />}
-                  onClick={() => executeCommand('underline')}
+                  onClick={() => executeCommand("underline")}
                   aria-label="Underline"
                 />
               </Tooltip>
@@ -248,14 +266,14 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
               <Tooltip label="Bullet List">
                 <IconButton
                   icon={<FiList />}
-                  onClick={() => executeCommand('insertUnorderedList')}
+                  onClick={() => executeCommand("insertUnorderedList")}
                   aria-label="Bullet List"
                 />
               </Tooltip>
               <Tooltip label="Numbered List">
                 <IconButton
                   icon={<FiType />}
-                  onClick={() => executeCommand('insertOrderedList')}
+                  onClick={() => executeCommand("insertOrderedList")}
                   aria-label="Numbered List"
                 />
               </Tooltip>
@@ -268,21 +286,21 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
               <Tooltip label="Align Left">
                 <IconButton
                   icon={<FiAlignLeft />}
-                  onClick={() => executeCommand('justifyLeft')}
+                  onClick={() => executeCommand("justifyLeft")}
                   aria-label="Align Left"
                 />
               </Tooltip>
               <Tooltip label="Align Center">
                 <IconButton
                   icon={<FiAlignCenter />}
-                  onClick={() => executeCommand('justifyCenter')}
+                  onClick={() => executeCommand("justifyCenter")}
                   aria-label="Align Center"
                 />
               </Tooltip>
               <Tooltip label="Align Right">
                 <IconButton
                   icon={<FiAlignRight />}
-                  onClick={() => executeCommand('justifyRight')}
+                  onClick={() => executeCommand("justifyRight")}
                   aria-label="Align Right"
                 />
               </Tooltip>
@@ -315,7 +333,7 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
               <IconButton
                 size="sm"
                 icon={<FiCode />}
-                onClick={() => executeCommand('formatBlock', 'pre')}
+                onClick={() => executeCommand("formatBlock", "pre")}
                 aria-label="Code Block"
                 variant="outline"
               />
@@ -328,14 +346,14 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
               <Tooltip label="Undo (Ctrl+Z)">
                 <IconButton
                   icon={<FiRotateCcw />}
-                  onClick={() => executeCommand('undo')}
+                  onClick={() => executeCommand("undo")}
                   aria-label="Undo"
                 />
               </Tooltip>
               <Tooltip label="Redo (Ctrl+Y)">
                 <IconButton
                   icon={<FiRotateCw />}
-                  onClick={() => executeCommand('redo')}
+                  onClick={() => executeCommand("redo")}
                   aria-label="Redo"
                 />
               </Tooltip>
@@ -379,32 +397,56 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
           },
         }}
         sx={{
-          '& h1': { fontSize: '2xl', fontWeight: 'bold', margin: '16px 0 8px 0' },
-          '& h2': { fontSize: 'xl', fontWeight: 'bold', margin: '14px 0 7px 0' },
-          '& h3': { fontSize: 'lg', fontWeight: 'bold', margin: '12px 0 6px 0' },
-          '& h4': { fontSize: 'md', fontWeight: 'bold', margin: '10px 0 5px 0' },
-          '& p': { margin: '8px 0' },
-          '& ul': { paddingLeft: '20px', margin: '8px 0' },
-          '& ol': { paddingLeft: '20px', margin: '8px 0' },
-          '& li': { margin: '4px 0' },
-          '& pre': { 
-            backgroundColor: 'gray.100', 
-            padding: '12px', 
-            borderRadius: 'md', 
-            fontFamily: 'monospace',
-            margin: '8px 0',
-            overflow: 'auto'
+          "& h1": {
+            fontSize: "2xl",
+            fontWeight: "bold",
+            margin: "16px 0 8px 0",
           },
-          '& blockquote': { 
-            borderLeft: '4px solid #3182ce', 
-            paddingLeft: '12px', 
-            margin: '8px 0',
-            fontStyle: 'italic',
-            color: 'gray.600'
+          "& h2": {
+            fontSize: "xl",
+            fontWeight: "bold",
+            margin: "14px 0 7px 0",
           },
-          '& table': { borderCollapse: 'collapse', width: '100%', margin: '10px 0' },
-          '& td, & th': { border: '1px solid #ddd', padding: '8px', textAlign: 'left' },
-          '& th': { backgroundColor: 'gray.100', fontWeight: 'bold' },
+          "& h3": {
+            fontSize: "lg",
+            fontWeight: "bold",
+            margin: "12px 0 6px 0",
+          },
+          "& h4": {
+            fontSize: "md",
+            fontWeight: "bold",
+            margin: "10px 0 5px 0",
+          },
+          "& p": { margin: "8px 0" },
+          "& ul": { paddingLeft: "20px", margin: "8px 0" },
+          "& ol": { paddingLeft: "20px", margin: "8px 0" },
+          "& li": { margin: "4px 0" },
+          "& pre": {
+            backgroundColor: "gray.100",
+            padding: "12px",
+            borderRadius: "md",
+            fontFamily: "monospace",
+            margin: "8px 0",
+            overflow: "auto",
+          },
+          "& blockquote": {
+            borderLeft: "4px solid #3182ce",
+            paddingLeft: "12px",
+            margin: "8px 0",
+            fontStyle: "italic",
+            color: "gray.600",
+          },
+          "& table": {
+            borderCollapse: "collapse",
+            width: "100%",
+            margin: "10px 0",
+          },
+          "& td, & th": {
+            border: "1px solid #ddd",
+            padding: "8px",
+            textAlign: "left",
+          },
+          "& th": { backgroundColor: "gray.100", fontWeight: "bold" },
         }}
       />
 
@@ -414,7 +456,7 @@ const RichTextEditor = ({ value, onChange, placeholder = "Enter description...",
         type="file"
         accept="image/*"
         onChange={handleFileSelect}
-        style={{ display: 'none' }}
+        style={{ display: "none" }}
       />
 
       {/* Link Modal */}

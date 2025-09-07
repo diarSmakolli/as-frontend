@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Flex,
@@ -88,7 +88,7 @@ import {
   FiXCircle,
   FiCopy,
 } from "react-icons/fi";
-import { productService } from './services/productService';
+import { productService } from "./services/productService";
 import { handleApiError } from "../../commons/handleApiError";
 import SidebarContent from "../administration/layouts/SidebarContent";
 import MobileNav from "../administration/layouts/MobileNav";
@@ -96,6 +96,8 @@ import SettingsModal from "../administration/components/settings/SettingsModal";
 import Loader from "../../commons/Loader";
 import { formatWithTimezone, formatOptions } from "../../commons/formatOptions";
 import { usePreferences } from "../administration/authContext/preferencesProvider";
+import { customToastContainerStyle } from "../../commons/toastStyles";
+import { debounce } from "lodash";
 
 const MotionBox = motion.create(Box);
 const MotionCard = motion.create(Card);
@@ -107,27 +109,33 @@ const ProductsPage = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [viewMode, setViewMode] = useState('table'); // 'table' or 'grid'
+  const [viewMode, setViewMode] = useState("table");
   const [filters, setFilters] = useState({
-    search: '',
-    category_id: '',
-    is_published: '',
-    is_active: '',
+    search: "",
+    category_id: "",
+    is_published: "",
+    is_active: "",
     page: 1,
     limit: 12,
-    sortBy: 'score',
-    sortOrder: 'DESC'
+    sortBy: "score",
+    sortOrder: "DESC",
   });
   const [pagination, setPagination] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure();
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure();
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
     published: 0,
-    draft: 0
+    draft: 0,
   });
   const [duplicating, setDuplicating] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Color mode values
   const bgColor = useColorModeValue("gray.50", "gray.900");
@@ -146,31 +154,82 @@ const ProductsPage = () => {
     transition: { duration: 0.3 },
   };
 
-  const fetchProducts = useCallback(async (resetPage = false) => {
+  const isInitialMount = useRef(true);
+
+  // const fetchProducts = useCallback(
+  //   async (resetPage = false) => {
+  //     setLoading(true);
+  //     try {
+  //       const params = {
+  //         ...filters,
+  //         page: resetPage ? 1 : filters.page,
+  //       };
+
+  //       const response = await productService.getAllProducts(params);
+
+  //       if (response.data?.status === "success") {
+  //         setProducts(response.data.data.products);
+  //         setPagination(response.data.data.pagination);
+
+  //         // Calculate stats
+  //         const allProducts = response.data.data.products;
+  //         setStats({
+  //           total: pagination?.total_items || allProducts.length,
+  //           active: allProducts.filter((p) => p.is_active).length,
+  //           published: allProducts.filter((p) => p.is_published).length,
+  //           draft: allProducts.filter((p) => !p.is_published).length,
+  //         });
+
+  //         if (resetPage) {
+  //           setFilters((prev) => ({ ...prev, page: 1 }));
+  //         }
+  //       }
+  //     } catch (error) {
+  //       handleApiError(error, toast);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   },
+  //   [filters, toast, pagination?.total_items]
+  // );
+
+  // debouncing
+
+  // v2
+
+  //v2
+
+  // v2
+  const fetchProducts = useCallback(
+  async (resetPage = false) => {
     setLoading(true);
     try {
       const params = {
         ...filters,
-        page: resetPage ? 1 : filters.page
+        page: resetPage ? 1 : filters.page,
       };
 
+      // Log the params to debug
+      console.log('Fetching products with params:', params);
+
       const response = await productService.getAllProducts(params);
-      
-      if (response.data?.status === 'success') {
+
+      if (response.data?.status === "success") {
         setProducts(response.data.data.products);
         setPagination(response.data.data.pagination);
-        
+
         // Calculate stats
         const allProducts = response.data.data.products;
         setStats({
-          total: pagination?.total_items || allProducts.length,
-          active: allProducts.filter(p => p.is_active).length,
-          published: allProducts.filter(p => p.is_published).length,
-          draft: allProducts.filter(p => !p.is_published).length,
+          total:
+            response.data.data.pagination?.total_items || allProducts.length,
+          active: allProducts.filter((p) => p.is_active).length,
+          published: allProducts.filter((p) => p.is_published).length,
+          draft: allProducts.filter((p) => !p.is_published).length,
         });
-        
+
         if (resetPage) {
-          setFilters(prev => ({ ...prev, page: 1 }));
+          setFilters((prev) => ({ ...prev, page: 1 }));
         }
       }
     } catch (error) {
@@ -178,16 +237,64 @@ const ProductsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters, toast, pagination?.total_items]);
+  },
+  [filters, toast] // Include all filters in dependencies
+);
+
+  const debouncedFetchProducts = useCallback(
+  debounce(async () => {
+    setSearchLoading(true);
+    try {
+      await fetchProducts(true); // Always reset to page 1 for search
+    } finally {
+      setSearchLoading(false);
+    }
+  }, 500),
+  [fetchProducts]
+);
+
+  const handleSearchChange = (e) => {
+  const value = e.target.value;
+  setFilters((prev) => ({
+    ...prev,
+    search: value,
+    page: 1, // Reset page when searching
+  }));
+  
+  // Only debounce if there's a search value or we're clearing the search
+  debouncedFetchProducts();
+};
+
+  // useEffect(() => {
+  //   fetchProducts();
+  // }, [fetchProducts]);
 
   useEffect(() => {
+  if (isInitialMount.current) {
     fetchProducts();
-  }, [fetchProducts]);
+    isInitialMount.current = false;
+  } else {
+    // For non-search filters, fetch immediately
+    if (filters.search === "") {
+      fetchProducts();
+    }
+    // Search is handled by debouncedFetchProducts in handleSearchChange
+  }
+  // eslint-disable-next-line
+}, [
+  filters.category_id,
+  filters.is_published,
+  filters.is_active,
+  filters.page,
+  filters.limit,
+  viewMode,
+  // Include search in dependencies but handle it differently
+]);
 
   const handleFilterChange = (name, value) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -197,21 +304,25 @@ const ProductsPage = () => {
 
   const resetFilters = () => {
     setFilters({
-      search: '',
-      category_id: '',
-      is_published: '',
-      is_active: '',
+      search: "",
+      category_id: "",
+      is_published: "",
+      is_active: "",
       page: 1,
-      limit: viewMode === 'grid' ? 12 : 10,
+      limit: viewMode === "grid" ? 12 : 10,
     });
   };
 
   const handlePageChange = (newPage) => {
-    setFilters(prev => ({ ...prev, page: newPage }));
+    setFilters((prev) => ({ ...prev, page: newPage }));
   };
 
   const handleViewProduct = (productId) => {
-    navigate(`/products-console/${productId}`);
+    window.open(
+      `${window.location.origin}/products-console/${productId}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
   };
 
   const handleEditProduct = (productId) => {
@@ -231,6 +342,8 @@ const ProductsPage = () => {
         status: "success",
         duration: 3000,
         isClosable: true,
+        variant: "custom",
+        containerStyle: customToastContainerStyle,
       });
       onDeleteClose();
       fetchProducts();
@@ -240,62 +353,64 @@ const ProductsPage = () => {
   };
 
   const handleDuplicateProduct = async (product) => {
-    if (!window.confirm(`Are you sure you want to duplicate "${product.title}"? A copy will be created with " - Duplicate1" added to the name.`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to duplicate "${product.title}"? A copy will be created with " - Duplicate1" added to the name.`
+      )
+    ) {
       return;
     }
 
     setDuplicating(product.id);
     try {
       const response = await productService.duplicateProduct(product.id);
-      
-      if (response.data?.status === 'success') {
+
+      if (response.data?.status === "success") {
         toast({
           title: "Product Duplicated",
           description: `"${product.title}" has been duplicated successfully as "${response.data.data.new_product_title}"`,
           status: "success",
           duration: 5000,
           isClosable: true,
+          variant: "custom",
+          containerStyle: customToastContainerStyle,
         });
 
         // Refresh the product list
         fetchProducts(true);
 
         // Optionally navigate to the new product
-        const shouldNavigate = window.confirm('Would you like to view the duplicated product?');
+        const shouldNavigate = window.confirm(
+          "Would you like to view the duplicated product?"
+        );
+
         if (shouldNavigate) {
           navigate(`/products-console/${response.data.data.new_product_id}`);
         }
       }
     } catch (error) {
-      console.error('Error duplicating product:', error);
-      toast({
-        title: "Duplication Failed",
-        description: error.message || "Failed to duplicate product. Please try again.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      handleApiError(error);
     } finally {
       setDuplicating(null);
     }
   };
 
   const getStatusColor = (product) => {
-    if (!product.is_active) return 'red';
-    if (!product.is_published) return 'yellow';
-    return 'green';
+    if (!product.is_active) return "red";
+    if (!product.is_published) return "yellow";
+    return "green";
   };
 
   const getStatusText = (product) => {
-    if (!product.is_active) return 'Inactive';
-    if (!product.is_published) return 'Draft';
-    return 'Published';
+    if (!product.is_active) return "Inactive";
+    if (!product.is_published) return "Draft";
+    return "Published";
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(price);
@@ -307,10 +422,10 @@ const ProductsPage = () => {
 
   const handleViewModeChange = (mode) => {
     setViewMode(mode);
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      limit: mode === 'grid' ? 12 : 10,
-      page: 1
+      limit: mode === "grid" ? 12 : 10,
+      page: 1,
     }));
   };
 
@@ -331,10 +446,10 @@ const ProductsPage = () => {
       overflow="hidden"
       cursor="pointer"
       onClick={() => handleViewProduct(product.id)}
-      _hover={{ 
-        transform: "translateY(-2px)", 
+      _hover={{
+        transform: "translateY(-2px)",
         boxShadow: "lg",
-        borderColor: "blue.300"
+        borderColor: "blue.300",
       }}
       position="relative"
       h="100%"
@@ -353,7 +468,7 @@ const ProductsPage = () => {
             }
           />
         </AspectRatio>
-        
+
         {/* Status Badge */}
         <Badge
           position="absolute"
@@ -443,29 +558,51 @@ const ProductsPage = () => {
         <VStack align="start" spacing={2} h="100%">
           {/* Title and SKU */}
           <Box w="100%">
-            <Text fontWeight="600" fontSize="sm" color="gray.900" noOfLines={2} lineHeight="1.3">
+            <Text
+              fontWeight="600"
+              fontSize="sm"
+              color="gray.900"
+              noOfLines={2}
+              lineHeight="1.3"
+            >
               {product.title}
             </Text>
             <HStack justify="space-between" align="center" mt={1}>
-              <Text fontSize="10px" color="gray.500" fontFamily="mono" fontWeight="500">
+              <Text
+                fontSize="10px"
+                color="gray.500"
+                fontFamily="mono"
+                fontWeight="500"
+              >
                 {product.sku}
               </Text>
               {product.is_available_on_stock ? (
                 <HStack spacing={1}>
                   <Icon as={FiCheckCircle} color="green.500" fontSize="10px" />
-                  <Text fontSize="10px" color="green.600" fontWeight="500">In Stock</Text>
+                  <Text fontSize="10px" color="green.600" fontWeight="500">
+                    In Stock
+                  </Text>
                 </HStack>
               ) : (
                 <HStack spacing={1}>
                   <Icon as={FiXCircle} color="red.500" fontSize="10px" />
-                  <Text fontSize="10px" color="red.600" fontWeight="500">Out</Text>
+                  <Text fontSize="10px" color="red.600" fontWeight="500">
+                    Out
+                  </Text>
                 </HStack>
               )}
             </HStack>
           </Box>
 
           {/* Enhanced Pricing */}
-          <Box w="100%" bg="blue.50" p={2} borderRadius="md" border="1px" borderColor="blue.100">
+          <Box
+            w="100%"
+            bg="blue.50"
+            p={2}
+            borderRadius="md"
+            border="1px"
+            borderColor="blue.100"
+          >
             <VStack align="start" spacing={1}>
               <HStack justify="space-between" w="100%" align="baseline">
                 <VStack align="start" spacing={0}>
@@ -476,22 +613,38 @@ const ProductsPage = () => {
                     Final Net
                   </Text>
                 </VStack>
-                
+
                 {product.is_discounted && (
                   <VStack align="end" spacing={0}>
-                    <Text fontSize="11px" color="gray.500" textDecoration="line-through" fontWeight="500">
+                    <Text
+                      fontSize="11px"
+                      color="gray.500"
+                      textDecoration="line-through"
+                      fontWeight="500"
+                    >
                       {formatPrice(product.regular_price_nett)}
                     </Text>
                     <Text fontSize="9px" color="green.600" fontWeight="600">
-                      Save ${calculateSavings(product.regular_price_nett, product.final_price_nett)}
+                      Save $
+                      {calculateSavings(
+                        product.regular_price_nett,
+                        product.final_price_nett
+                      )}
                     </Text>
                   </VStack>
                 )}
               </HStack>
-              
+
               {/* Gross Price Info */}
-              <HStack justify="space-between" w="100%" fontSize="9px" color="blue.600">
-                <Text fontWeight="500">Gross: {formatPrice(product.final_price_gross)}</Text>
+              <HStack
+                justify="space-between"
+                w="100%"
+                fontSize="9px"
+                color="blue.600"
+              >
+                <Text fontWeight="500">
+                  Gross: {formatPrice(product.final_price_gross)}
+                </Text>
                 {product.tax?.rate && (
                   <Text fontWeight="500">Tax: {product.tax.rate}%</Text>
                 )}
@@ -504,7 +657,14 @@ const ProductsPage = () => {
             <Wrap spacing={1}>
               {product.shipping_free && (
                 <WrapItem>
-                  <Badge colorScheme="green" variant="outline" fontSize="9px" px={1} py={0.5} borderRadius="sm">
+                  <Badge
+                    colorScheme="green"
+                    variant="outline"
+                    fontSize="9px"
+                    px={1}
+                    py={0.5}
+                    borderRadius="sm"
+                  >
                     <Icon as={FiTruck} mr={0.5} />
                     Free
                   </Badge>
@@ -512,7 +672,14 @@ const ProductsPage = () => {
               )}
               {product.mark_as_featured && (
                 <WrapItem>
-                  <Badge colorScheme="purple" variant="outline" fontSize="9px" px={1} py={0.5} borderRadius="sm">
+                  <Badge
+                    colorScheme="purple"
+                    variant="outline"
+                    fontSize="9px"
+                    px={1}
+                    py={0.5}
+                    borderRadius="sm"
+                  >
                     <Icon as={FiAward} mr={0.5} />
                     Featured
                   </Badge>
@@ -520,7 +687,14 @@ const ProductsPage = () => {
               )}
               {product.mark_as_new && (
                 <WrapItem>
-                  <Badge colorScheme="orange" variant="outline" fontSize="9px" px={1} py={0.5} borderRadius="sm">
+                  <Badge
+                    colorScheme="orange"
+                    variant="outline"
+                    fontSize="9px"
+                    px={1}
+                    py={0.5}
+                    borderRadius="sm"
+                  >
                     <Icon as={FiZap} mr={0.5} />
                     New
                   </Badge>
@@ -528,7 +702,14 @@ const ProductsPage = () => {
               )}
               {product.mark_as_top_seller && (
                 <WrapItem>
-                  <Badge colorScheme="red" variant="outline" fontSize="9px" px={1} py={0.5} borderRadius="sm">
+                  <Badge
+                    colorScheme="red"
+                    variant="outline"
+                    fontSize="9px"
+                    px={1}
+                    py={0.5}
+                    borderRadius="sm"
+                  >
                     <Icon as={FiStar} mr={0.5} />
                     Bestseller
                   </Badge>
@@ -536,7 +717,14 @@ const ProductsPage = () => {
               )}
               {product.has_services && (
                 <WrapItem>
-                  <Badge colorScheme="blue" variant="outline" fontSize="9px" px={1} py={0.5} borderRadius="sm">
+                  <Badge
+                    colorScheme="blue"
+                    variant="outline"
+                    fontSize="9px"
+                    px={1}
+                    py={0.5}
+                    borderRadius="sm"
+                  >
                     <Icon as={FiTool} mr={0.5} />
                     Services
                   </Badge>
@@ -547,7 +735,11 @@ const ProductsPage = () => {
 
           {/* Created Date */}
           <Text fontSize="9px" color="gray.400" w="100%" mt="auto">
-            {formatWithTimezone(product.created_at, formatOptions.SHORT_DATE, currentTimezone)}
+            {formatWithTimezone(
+              product.created_at,
+              formatOptions.SHORT_DATE,
+              currentTimezone
+            )}
           </Text>
         </VStack>
       </CardBody>
@@ -556,9 +748,30 @@ const ProductsPage = () => {
 
   return (
     <Box minH="100vh" bg={bgColor}>
-      <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
-      <MobileNav onSettingsOpen={() => setIsSettingsOpen(true)} />
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <Box display={{ base: "none", md: "block" }}>
+        <SidebarContent onSettingsOpen={() => setIsSettingsOpen(true)} />
+      </Box>
+      {/* Mobile Sidebar: shown when menu is open */}
+      <Box
+        display={{ base: isSidebarOpen ? "block" : "none", md: "none" }}
+        position="fixed"
+        zIndex={999}
+      >
+        <SidebarContent
+          onSettingsOpen={() => setIsSettingsOpen(true)}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+      </Box>
+      {/* MobileNav: always visible, passes menu toggle */}
+      <MobileNav
+        onSettingsOpen={() => setIsSettingsOpen(true)}
+        onOpen={() => setIsSidebarOpen(true)}
+      />
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
 
       <Box ml={{ base: 0, md: 60 }}>
         <Container maxW="8xl" px={{ base: 3, md: 6 }} py={6}>
@@ -566,11 +779,17 @@ const ProductsPage = () => {
             {/* Clean Breadcrumb */}
             <HStack spacing={1} mb={4} fontSize="xs" color="gray.500">
               <Icon as={FiHome} fontSize="xs" />
-              <Text cursor="pointer" onClick={() => navigate("/")} _hover={{ color: "blue.500" }}>
+              <Text
+                cursor="pointer"
+                onClick={() => navigate("/")}
+                _hover={{ color: "blue.500" }}
+              >
                 Home
               </Text>
               <Text>•</Text>
-              <Text color="blue.500" fontWeight="600">Products</Text>
+              <Text color="blue.500" fontWeight="600">
+                Products
+              </Text>
             </HStack>
 
             {/* Clean Header */}
@@ -589,7 +808,7 @@ const ProductsPage = () => {
               <HStack spacing={2}>
                 <Button
                   leftIcon={<FiArrowLeft />}
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => navigate("/dashboard")}
                   variant="outline"
                   colorScheme="gray"
                   size="sm"
@@ -599,7 +818,7 @@ const ProductsPage = () => {
                 </Button>
                 <Button
                   leftIcon={<FiPlus />}
-                  onClick={() => navigate('/create-product')}
+                  onClick={() => navigate("/create-product")}
                   colorScheme="blue"
                   size="sm"
                   fontSize="xs"
@@ -631,17 +850,21 @@ const ProductsPage = () => {
                       {pagination?.total_items || 0}
                     </StatNumber>
                   </Stat>
-                  
+
                   <Stat textAlign="center">
                     <StatLabel color="gray.600" fontWeight="600" fontSize="xs">
                       <Icon as={FiCheckCircle} mr={1} fontSize="xs" />
                       Active
                     </StatLabel>
-                    <StatNumber fontSize="xl" fontWeight="800" color="green.500">
+                    <StatNumber
+                      fontSize="xl"
+                      fontWeight="800"
+                      color="green.500"
+                    >
                       {stats.active}
                     </StatNumber>
                   </Stat>
-                  
+
                   <Stat textAlign="center">
                     <StatLabel color="gray.600" fontWeight="600" fontSize="xs">
                       <Icon as={FiEye} mr={1} fontSize="xs" />
@@ -651,13 +874,17 @@ const ProductsPage = () => {
                       {stats.published}
                     </StatNumber>
                   </Stat>
-                  
+
                   <Stat textAlign="center">
                     <StatLabel color="gray.600" fontWeight="600" fontSize="xs">
                       <Icon as={FiEdit} mr={1} fontSize="xs" />
                       Drafts
                     </StatLabel>
-                    <StatNumber fontSize="xl" fontWeight="800" color="yellow.500">
+                    <StatNumber
+                      fontSize="xl"
+                      fontWeight="800"
+                      color="yellow.500"
+                    >
                       {stats.draft}
                     </StatNumber>
                   </Stat>
@@ -688,9 +915,9 @@ const ProductsPage = () => {
                       <IconButton
                         icon={<FiList />}
                         size="xs"
-                        variant={viewMode === 'table' ? "solid" : "outline"}
+                        variant={viewMode === "table" ? "solid" : "outline"}
                         colorScheme="blue"
-                        onClick={() => handleViewModeChange('table')}
+                        onClick={() => handleViewModeChange("table")}
                         aria-label="Table view"
                       />
                     </Tooltip>
@@ -698,9 +925,9 @@ const ProductsPage = () => {
                       <IconButton
                         icon={<FiGrid />}
                         size="xs"
-                        variant={viewMode === 'grid' ? "solid" : "outline"}
+                        variant={viewMode === "grid" ? "solid" : "outline"}
                         colorScheme="blue"
-                        onClick={() => handleViewModeChange('grid')}
+                        onClick={() => handleViewModeChange("grid")}
                         aria-label="Grid view"
                       />
                     </Tooltip>
@@ -723,20 +950,24 @@ const ProductsPage = () => {
                       <Box position="relative" flex={1}>
                         <Input
                           value={filters.search}
-                          onChange={(e) => handleFilterChange('search', e.target.value)}
+                          onChange={handleSearchChange}
                           placeholder="Search products..."
                           size="sm"
                           pl={8}
+                          pr={searchLoading ? 8 : 0}
                           bg="gray.50"
                           border="1px"
                           borderColor="gray.200"
                           _hover={{ borderColor: "gray.300" }}
-                          _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
+                          _focus={{
+                            borderColor: "blue.400",
+                            boxShadow: "0 0 0 1px #3182ce",
+                          }}
                           borderRadius="md"
                           fontSize="xs"
                         />
-                        <Icon 
-                          as={FiSearch} 
+                        <Icon
+                          as={FiSearch}
                           position="absolute"
                           left={2}
                           top="50%"
@@ -744,9 +975,19 @@ const ProductsPage = () => {
                           color="gray.400"
                           fontSize="sm"
                         />
+                        {searchLoading && (
+                          <Spinner
+                            size="xs"
+                            position="absolute"
+                            right={2}
+                            top="50%"
+                            transform="translateY(-50%)"
+                            color="blue.400"
+                          />
+                        )}
                       </Box>
                       <Button
-                        onClick={applyFilters}
+                        onClick={() => fetchProducts(true)}
                         colorScheme="blue"
                         size="sm"
                         px={4}
@@ -762,10 +1003,18 @@ const ProductsPage = () => {
                   {/* Compact Filter Controls */}
                   <HStack spacing={4} w="100%" flexWrap="wrap">
                     <FormControl maxW="140px">
-                      <FormLabel color="gray.700" fontWeight="600" fontSize="xs">Status</FormLabel>
+                      <FormLabel
+                        color="gray.700"
+                        fontWeight="600"
+                        fontSize="xs"
+                      >
+                        Status
+                      </FormLabel>
                       <Select
                         value={filters.is_published}
-                        onChange={(e) => handleFilterChange('is_published', e.target.value)}
+                        onChange={(e) =>
+                          handleFilterChange("is_published", e.target.value)
+                        }
                         placeholder="All"
                         bg="gray.50"
                         borderRadius="md"
@@ -778,10 +1027,18 @@ const ProductsPage = () => {
                     </FormControl>
 
                     <FormControl maxW="140px">
-                      <FormLabel color="gray.700" fontWeight="600" fontSize="xs">Active</FormLabel>
+                      <FormLabel
+                        color="gray.700"
+                        fontWeight="600"
+                        fontSize="xs"
+                      >
+                        Active
+                      </FormLabel>
                       <Select
                         value={filters.is_active}
-                        onChange={(e) => handleFilterChange('is_active', e.target.value)}
+                        onChange={(e) =>
+                          handleFilterChange("is_active", e.target.value)
+                        }
                         placeholder="All"
                         bg="gray.50"
                         borderRadius="md"
@@ -794,18 +1051,32 @@ const ProductsPage = () => {
                     </FormControl>
 
                     <FormControl maxW="100px">
-                      <FormLabel color="gray.700" fontWeight="600" fontSize="xs">Per Page</FormLabel>
+                      <FormLabel
+                        color="gray.700"
+                        fontWeight="600"
+                        fontSize="xs"
+                      >
+                        Per Page
+                      </FormLabel>
                       <Select
                         value={filters.limit}
-                        onChange={(e) => handleFilterChange('limit', parseInt(e.target.value))}
+                        onChange={(e) =>
+                          handleFilterChange("limit", parseInt(e.target.value))
+                        }
                         bg="gray.50"
                         borderRadius="md"
                         size="sm"
                         fontSize="xs"
                       >
-                        <option value={viewMode === 'grid' ? 12 : 10}>{viewMode === 'grid' ? 12 : 10}</option>
-                        <option value={viewMode === 'grid' ? 24 : 25}>{viewMode === 'grid' ? 24 : 25}</option>
-                        <option value={viewMode === 'grid' ? 48 : 50}>{viewMode === 'grid' ? 48 : 50}</option>
+                        <option value={viewMode === "grid" ? 12 : 10}>
+                          {viewMode === "grid" ? 12 : 10}
+                        </option>
+                        <option value={viewMode === "grid" ? 24 : 25}>
+                          {viewMode === "grid" ? 24 : 25}
+                        </option>
+                        <option value={viewMode === "grid" ? 48 : 50}>
+                          {viewMode === "grid" ? 48 : 50}
+                        </option>
                       </Select>
                     </FormControl>
 
@@ -862,11 +1133,18 @@ const ProductsPage = () => {
                     ))}
                   </VStack>
                 ) : products.length > 0 ? (
-                  viewMode === 'grid' ? (
+                  viewMode === "grid" ? (
                     <Box>
-                      <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }} spacing={4}>
+                      <SimpleGrid
+                        columns={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }}
+                        spacing={4}
+                      >
                         {products.map((product, index) => (
-                          <ProductGridItem key={product.id} product={product} index={index} />
+                          <ProductGridItem
+                            key={product.id}
+                            product={product}
+                            index={index}
+                          />
                         ))}
                       </SimpleGrid>
                     </Box>
@@ -875,197 +1153,301 @@ const ProductsPage = () => {
                       <Table variant="simple" size="sm">
                         <Thead>
                           <Tr bg="gray.50">
-                            <Th width="60px" borderColor={borderColor} fontSize="xs">Image</Th>
-                            <Th borderColor={borderColor} fontSize="xs">Product</Th>
-                            <Th borderColor={borderColor} fontSize="xs">SKU</Th>
-                            <Th borderColor={borderColor} fontSize="xs">Pricing</Th>
-                            <Th borderColor={borderColor} fontSize="xs">Status</Th>
-                            <Th borderColor={borderColor} fontSize="xs">Features</Th>
-                            <Th borderColor={borderColor} fontSize="xs">Created</Th>
-                            <Th width="80px" borderColor={borderColor} fontSize="xs">Actions</Th>
+                            <Th
+                              width="60px"
+                              borderColor={borderColor}
+                              fontSize="xs"
+                            >
+                              Image
+                            </Th>
+                            <Th borderColor={borderColor} fontSize="xs">
+                              Product
+                            </Th>
+                            <Th borderColor={borderColor} fontSize="xs">
+                              SKU
+                            </Th>
+                            <Th borderColor={borderColor} fontSize="xs">
+                              Pricing
+                            </Th>
+                            <Th borderColor={borderColor} fontSize="xs">
+                              Status
+                            </Th>
+                            <Th borderColor={borderColor} fontSize="xs">
+                              Features
+                            </Th>
+                            <Th borderColor={borderColor} fontSize="xs">
+                              Created
+                            </Th>
+                            <Th
+                              width="80px"
+                              borderColor={borderColor}
+                              fontSize="xs"
+                            >
+                              Actions
+                            </Th>
                           </Tr>
                         </Thead>
                         <Tbody>
                           {products.map((product, index) => (
-                            <Tr
-                              key={product.id}
-                              _hover={{ bg: "gray.50" }}
-                              cursor="pointer"
-                              onClick={() => handleViewProduct(product.id)}
-                              transition="background-color 0.2s"
-                            >
-                              <Td borderColor={borderColor} p={2}>
-                                <AspectRatio ratio={1} w="40px" h="40px">
-                                  <Image
-                                    src={product.main_image_url}
-                                    alt={product.title}
-                                    borderRadius="md"
-                                    objectFit="cover"
-                                    fallback={
-                                      <Center bg="gray.100" borderRadius="md">
-                                        <Icon as={FiPackage} color="gray.400" fontSize="sm" />
-                                      </Center>
-                                    }
-                                  />
-                                </AspectRatio>
-                              </Td>
-                              <Td borderColor={borderColor} p={2}>
-                                <VStack align="start" spacing={1}>
-                                  <Text fontWeight="600" color="gray.900" noOfLines={1} fontSize="xs">
-                                    {product.title}
-                                  </Text>
-                                  {/* {product.short_description && (
+                            <React.Fragment key={product.id}>
+                              <Tr
+                                key={product?.id}
+                                _hover={{ bg: "gray.50" }}
+                                cursor="pointer"
+                                onClick={() => handleViewProduct(product?.id)}
+                                transition="background-color 0.2s"
+                              >
+                                <Td borderColor={borderColor} p={2}>
+                                  <AspectRatio ratio={1} w="40px" h="40px">
+                                    <Image
+                                      src={product.main_image_url}
+                                      alt={product.title}
+                                      borderRadius="md"
+                                      objectFit="cover"
+                                      fallback={
+                                        <Center bg="gray.100" borderRadius="md">
+                                          <Icon
+                                            as={FiPackage}
+                                            color="gray.400"
+                                            fontSize="sm"
+                                          />
+                                        </Center>
+                                      }
+                                    />
+                                  </AspectRatio>
+                                </Td>
+                                <Td borderColor={borderColor} p={2}>
+                                  <VStack align="start" spacing={1}>
+                                    <Text
+                                      fontWeight="600"
+                                      color="gray.900"
+                                      noOfLines={1}
+                                      fontSize="xs"
+                                    >
+                                      {product.title}
+                                    </Text>
+                                    {/* {product.short_description && (
                                     <Text fontSize="10px" color="gray.600" noOfLines={1}>
                                       {product.short_description}
                                     </Text>
                                   )} */}
-                                </VStack>
-                              </Td>
-                              <Td borderColor={borderColor} p={2}>
-                                <Text fontSize="10px" fontFamily="mono" fontWeight="600">
-                                  {product.sku}
-                                </Text>
-                              </Td>
-                              <Td borderColor={borderColor} p={2}>
-                                <VStack align="start" spacing={1}>
-                                  <HStack>
-                                    <Text fontWeight="700" color="blue.600" fontSize="xs">
-                                      {formatPrice(product.final_price_nett)}
-                                    </Text>
-                                    {product.is_discounted && (
-                                      <Badge colorScheme="red" variant="solid" fontSize="9px">
-                                        -{product.discount_percentage_nett}%
-                                      </Badge>
-                                    )}
-                                  </HStack>
-                                  {product.is_discounted && (
-                                    <Text fontSize="9px" color="gray.500" textDecoration="line-through">
-                                      {formatPrice(product.regular_price_nett)}
-                                    </Text>
-                                  )}
-                                </VStack>
-                              </Td>
-                              <Td borderColor={borderColor} p={2}>
-                                <VStack align="start" spacing={1}>
-                                  <Badge
-                                    colorScheme={getStatusColor(product)}
-                                    variant="solid"
-                                    fontSize="9px"
-                                    px={2}
-                                    py={1}
-                                    borderRadius="md"
+                                  </VStack>
+                                </Td>
+                                <Td borderColor={borderColor} p={2}>
+                                  <Text
+                                    fontSize="10px"
+                                    fontFamily="mono"
+                                    fontWeight="600"
                                   >
-                                    {getStatusText(product)}
-                                  </Badge>
-                                  {product.is_available_on_stock ? (
-                                    <HStack spacing={1}>
-                                      <Icon as={FiCheckCircle} color="green.500" fontSize="9px" />
-                                      <Text fontSize="9px" color="green.600" fontWeight="500">Stock</Text>
+                                    {product.sku}
+                                  </Text>
+                                </Td>
+                                <Td borderColor={borderColor} p={2}>
+                                  <VStack align="start" spacing={1}>
+                                    <HStack>
+                                      <Text
+                                        fontWeight="700"
+                                        color="blue.600"
+                                        fontSize="xs"
+                                      >
+                                        {formatPrice(product.final_price_nett)}
+                                      </Text>
+                                      {product.is_discounted && (
+                                        <Badge
+                                          colorScheme="red"
+                                          variant="solid"
+                                          fontSize="9px"
+                                        >
+                                          -{product.discount_percentage_nett}%
+                                        </Badge>
+                                      )}
                                     </HStack>
-                                  ) : (
-                                    <HStack spacing={1}>
-                                      <Icon as={FiXCircle} color="red.500" fontSize="9px" />
-                                      <Text fontSize="9px" color="red.600" fontWeight="500">Out</Text>
-                                    </HStack>
-                                  )}
-                                </VStack>
-                              </Td>
-                              <Td borderColor={borderColor} p={2}>
-                                <Wrap spacing={1}>
-                                  {product.shipping_free && (
-                                    <WrapItem>
-                                      <Tooltip label="Free Shipping">
-                                        <Badge colorScheme="green" variant="outline" fontSize="8px" p={1}>
-                                          <Icon as={FiTruck} />
-                                        </Badge>
-                                      </Tooltip>
-                                    </WrapItem>
-                                  )}
-                                  {product.mark_as_featured && (
-                                    <WrapItem>
-                                      <Tooltip label="Featured">
-                                        <Badge colorScheme="purple" variant="outline" fontSize="8px" p={1}>
-                                          <Icon as={FiAward} />
-                                        </Badge>
-                                      </Tooltip>
-                                    </WrapItem>
-                                  )}
-                                  {product.mark_as_new && (
-                                    <WrapItem>
-                                      <Tooltip label="New">
-                                        <Badge colorScheme="orange" variant="outline" fontSize="8px" p={1}>
-                                          <Icon as={FiZap} />
-                                        </Badge>
-                                      </Tooltip>
-                                    </WrapItem>
-                                  )}
-                                  {product.mark_as_top_seller && (
-                                    <WrapItem>
-                                      <Tooltip label="Best Seller">
-                                        <Badge colorScheme="red" variant="outline" fontSize="8px" p={1}>
-                                          <Icon as={FiStar} />
-                                        </Badge>
-                                      </Tooltip>
-                                    </WrapItem>
-                                  )}
-                                  {product.has_services && (
-                                    <WrapItem>
-                                      <Tooltip label="Has Services">
-                                        <Badge colorScheme="blue" variant="outline" fontSize="8px" p={1}>
-                                          <Icon as={FiTool} />
-                                        </Badge>
-                                      </Tooltip>
-                                    </WrapItem>
-                                  )}
-                                </Wrap>
-                              </Td>
-                              <Td borderColor={borderColor} p={2}>
-                                <Text fontSize="10px" color="gray.600">
-                                  {formatWithTimezone(product.created_at, formatOptions.SHORT_DATE, currentTimezone)}
-                                </Text>
-                              </Td>
-                              <Td borderColor={borderColor} p={2}>
-                                <Menu>
-                                  <MenuButton
-                                    as={IconButton}
-                                    icon={<FiMoreVertical />}
-                                    size="xs"
-                                    variant="ghost"
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                  <MenuList fontSize="xs">
-                                    <MenuItem
-                                      icon={<FiEye />}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleViewProduct(product.id);
-                                      }}
-                                      fontSize="xs"
+                                    {product.is_discounted && (
+                                      <Text
+                                        fontSize="9px"
+                                        color="gray.500"
+                                        textDecoration="line-through"
+                                      >
+                                        {formatPrice(
+                                          product.regular_price_nett
+                                        )}
+                                      </Text>
+                                    )}
+                                  </VStack>
+                                </Td>
+                                <Td borderColor={borderColor} p={2}>
+                                  <VStack align="start" spacing={1}>
+                                    <Badge
+                                      colorScheme={getStatusColor(product)}
+                                      variant="solid"
+                                      fontSize="9px"
+                                      px={2}
+                                      py={1}
+                                      borderRadius="md"
                                     >
-                                      View
-                                    </MenuItem>
-                                    <MenuItem
-                                      icon={<FiEdit />}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleEditProduct(product.id);
-                                      }}
-                                      fontSize="xs"
-                                    >
-                                      Edit
-                                    </MenuItem>
-                                    <MenuItem
-                                      icon={<FiCopy />}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDuplicateProduct(product);
-                                      }}
-                                      fontSize="xs"
-                                      isDisabled={duplicating === product.id}
-                                    >
-                                      {duplicating === product.id ? 'Duplicating...' : 'Duplicate'}
-                                    </MenuItem>
-                                    {/* <MenuItem
+                                      {getStatusText(product)}
+                                    </Badge>
+                                    {product.is_available_on_stock ? (
+                                      <HStack spacing={1}>
+                                        <Icon
+                                          as={FiCheckCircle}
+                                          color="green.500"
+                                          fontSize="9px"
+                                        />
+                                        <Text
+                                          fontSize="9px"
+                                          color="green.600"
+                                          fontWeight="500"
+                                        >
+                                          Stock
+                                        </Text>
+                                      </HStack>
+                                    ) : (
+                                      <HStack spacing={1}>
+                                        <Icon
+                                          as={FiXCircle}
+                                          color="red.500"
+                                          fontSize="9px"
+                                        />
+                                        <Text
+                                          fontSize="9px"
+                                          color="red.600"
+                                          fontWeight="500"
+                                        >
+                                          Out
+                                        </Text>
+                                      </HStack>
+                                    )}
+                                  </VStack>
+                                </Td>
+                                <Td borderColor={borderColor} p={2}>
+                                  <Wrap spacing={1}>
+                                    {product.shipping_free && (
+                                      <WrapItem>
+                                        <Tooltip label="Free Shipping">
+                                          <Badge
+                                            colorScheme="green"
+                                            variant="outline"
+                                            fontSize="8px"
+                                            p={1}
+                                          >
+                                            <Icon as={FiTruck} />
+                                          </Badge>
+                                        </Tooltip>
+                                      </WrapItem>
+                                    )}
+                                    {product.mark_as_featured && (
+                                      <WrapItem>
+                                        <Tooltip label="Featured">
+                                          <Badge
+                                            colorScheme="purple"
+                                            variant="outline"
+                                            fontSize="8px"
+                                            p={1}
+                                          >
+                                            <Icon as={FiAward} />
+                                          </Badge>
+                                        </Tooltip>
+                                      </WrapItem>
+                                    )}
+                                    {product.mark_as_new && (
+                                      <WrapItem>
+                                        <Tooltip label="New">
+                                          <Badge
+                                            colorScheme="orange"
+                                            variant="outline"
+                                            fontSize="8px"
+                                            p={1}
+                                          >
+                                            <Icon as={FiZap} />
+                                          </Badge>
+                                        </Tooltip>
+                                      </WrapItem>
+                                    )}
+                                    {product.mark_as_top_seller && (
+                                      <WrapItem>
+                                        <Tooltip label="Best Seller">
+                                          <Badge
+                                            colorScheme="red"
+                                            variant="outline"
+                                            fontSize="8px"
+                                            p={1}
+                                          >
+                                            <Icon as={FiStar} />
+                                          </Badge>
+                                        </Tooltip>
+                                      </WrapItem>
+                                    )}
+                                    {product.has_services && (
+                                      <WrapItem>
+                                        <Tooltip label="Has Services">
+                                          <Badge
+                                            colorScheme="blue"
+                                            variant="outline"
+                                            fontSize="8px"
+                                            p={1}
+                                          >
+                                            <Icon as={FiTool} />
+                                          </Badge>
+                                        </Tooltip>
+                                      </WrapItem>
+                                    )}
+                                  </Wrap>
+                                </Td>
+                                <Td borderColor={borderColor} p={2}>
+                                  <Text fontSize="10px" color="gray.600">
+                                    {formatWithTimezone(
+                                      product.created_at,
+                                      formatOptions.SHORT_DATE,
+                                      currentTimezone
+                                    )}
+                                  </Text>
+                                </Td>
+
+                                <Td borderColor={borderColor} p={2}>
+                                  <Menu>
+                                    <MenuButton
+                                      as={IconButton}
+                                      icon={<FiMoreVertical />}
+                                      size="xs"
+                                      variant="ghost"
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <MenuList fontSize="xs">
+                                      <MenuItem
+                                        icon={<FiEye />}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleViewProduct(product.id);
+                                        }}
+                                        fontSize="xs"
+                                      >
+                                        View
+                                      </MenuItem>
+                                      <MenuItem
+                                        icon={<FiEdit />}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleEditProduct(product.id);
+                                        }}
+                                        fontSize="xs"
+                                      >
+                                        Edit
+                                      </MenuItem>
+                                      <MenuItem
+                                        icon={<FiCopy />}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDuplicateProduct(product);
+                                        }}
+                                        fontSize="xs"
+                                        isDisabled={duplicating === product.id}
+                                      >
+                                        {duplicating === product.id
+                                          ? "Duplicating..."
+                                          : "Duplicate"}
+                                      </MenuItem>
+                                      {/* <MenuItem
                                       icon={<FiTrash2 />}
                                       color="red.600"
                                       onClick={(e) => {
@@ -1076,10 +1458,11 @@ const ProductsPage = () => {
                                     >
                                       Delete
                                     </MenuItem> */}
-                                  </MenuList>
-                                </Menu>
-                              </Td>
-                            </Tr>
+                                    </MenuList>
+                                  </Menu>
+                                </Td>
+                              </Tr>
+                            </React.Fragment>
                           ))}
                         </Tbody>
                       </Table>
@@ -1094,17 +1477,18 @@ const ProductsPage = () => {
                           No products found
                         </Text>
                         <Text color="gray.500" fontSize="xs" textAlign="center">
-                          {Object.values(filters).some(v => v !== '' && v !== 1 && v !== 10 && v !== 12) 
+                          {Object.values(filters).some(
+                            (v) => v !== "" && v !== 1 && v !== 10 && v !== 12
+                          )
                             ? "Try adjusting your filters"
-                            : "Create your first product"
-                          }
+                            : "Create your first product"}
                         </Text>
                       </VStack>
                       <Button
                         leftIcon={<FiPlus />}
                         colorScheme="blue"
                         size="sm"
-                        onClick={() => navigate('/create-product')}
+                        onClick={() => navigate("/create-product")}
                         fontSize="xs"
                       >
                         Create Product
@@ -1119,54 +1503,77 @@ const ProductsPage = () => {
                     <Divider mb={4} />
                     <HStack justify="space-between" align="center">
                       <Text fontSize="xs" color="gray.600" fontWeight="500">
-                        {((pagination.current_page - 1) * filters.limit) + 1}-{Math.min(pagination.current_page * filters.limit, pagination.total_items)} of {pagination.total_items}
+                        {(pagination.current_page - 1) * filters.limit + 1}-
+                        {Math.min(
+                          pagination.current_page * filters.limit,
+                          pagination.total_items
+                        )}{" "}
+                        of {pagination.total_items}
                       </Text>
-                      
+
                       <HStack spacing={1}>
                         <IconButton
                           icon={<FiChevronLeft />}
                           size="xs"
-                          onClick={() => handlePageChange(pagination.current_page - 1)}
+                          onClick={() =>
+                            handlePageChange(pagination.current_page - 1)
+                          }
                           isDisabled={!pagination.has_prev}
                           aria-label="Previous"
                           borderRadius="md"
                         />
-                        
+
                         <HStack spacing={0.5}>
-                          {Array.from({ length: Math.min(5, pagination.total_pages) }, (_, i) => {
-                            let pageNum;
-                            if (pagination.total_pages <= 5) {
-                              pageNum = i + 1;
-                            } else if (pagination.current_page <= 3) {
-                              pageNum = i + 1;
-                            } else if (pagination.current_page >= pagination.total_pages - 2) {
-                              pageNum = pagination.total_pages - 4 + i;
-                            } else {
-                              pageNum = pagination.current_page - 2 + i;
+                          {Array.from(
+                            { length: Math.min(5, pagination.total_pages) },
+                            (_, i) => {
+                              let pageNum;
+                              if (pagination.total_pages <= 5) {
+                                pageNum = i + 1;
+                              } else if (pagination.current_page <= 3) {
+                                pageNum = i + 1;
+                              } else if (
+                                pagination.current_page >=
+                                pagination.total_pages - 2
+                              ) {
+                                pageNum = pagination.total_pages - 4 + i;
+                              } else {
+                                pageNum = pagination.current_page - 2 + i;
+                              }
+
+                              return (
+                                <Button
+                                  key={pageNum}
+                                  size="xs"
+                                  variant={
+                                    pageNum === pagination.current_page
+                                      ? "solid"
+                                      : "ghost"
+                                  }
+                                  colorScheme={
+                                    pageNum === pagination.current_page
+                                      ? "blue"
+                                      : "gray"
+                                  }
+                                  onClick={() => handlePageChange(pageNum)}
+                                  borderRadius="md"
+                                  fontWeight="600"
+                                  fontSize="xs"
+                                  minW="24px"
+                                >
+                                  {pageNum}
+                                </Button>
+                              );
                             }
-                            
-                            return (
-                              <Button
-                                key={pageNum}
-                                size="xs"
-                                variant={pageNum === pagination.current_page ? "solid" : "ghost"}
-                                colorScheme={pageNum === pagination.current_page ? "blue" : "gray"}
-                                onClick={() => handlePageChange(pageNum)}
-                                borderRadius="md"
-                                fontWeight="600"
-                                fontSize="xs"
-                                minW="24px"
-                              >
-                                {pageNum}
-                              </Button>
-                            );
-                          })}
+                          )}
                         </HStack>
-                        
+
                         <IconButton
                           icon={<FiChevronRight />}
                           size="xs"
-                          onClick={() => handlePageChange(pagination.current_page + 1)}
+                          onClick={() =>
+                            handlePageChange(pagination.current_page + 1)
+                          }
                           isDisabled={!pagination.has_next}
                           aria-label="Next"
                           borderRadius="md"
@@ -1190,15 +1597,27 @@ const ProductsPage = () => {
             </AlertDialogHeader>
 
             <AlertDialogBody fontSize="sm">
-              Are you sure you want to delete <strong>{selectedProduct?.title}</strong>? 
-              This cannot be undone.
+              Are you sure you want to delete{" "}
+              <strong>{selectedProduct?.title}</strong>? This cannot be undone.
             </AlertDialogBody>
 
             <AlertDialogFooter>
-              <Button onClick={onDeleteClose} borderRadius="md" size="sm" fontSize="xs">
+              <Button
+                onClick={onDeleteClose}
+                borderRadius="md"
+                size="sm"
+                fontSize="xs"
+              >
                 Cancel
               </Button>
-              <Button colorScheme="red" onClick={confirmDelete} ml={2} borderRadius="md" size="sm" fontSize="xs">
+              <Button
+                colorScheme="red"
+                onClick={confirmDelete}
+                ml={2}
+                borderRadius="md"
+                size="sm"
+                fontSize="xs"
+              >
                 Delete
               </Button>
             </AlertDialogFooter>

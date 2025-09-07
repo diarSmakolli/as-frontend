@@ -17,7 +17,6 @@ const axiosInstance = axios.create({
 export const productService = {
   // Create a new product
   createProduct: async (formData) => {
-    console.log('Creating product with custom options:', formData.get('custom_options'));
     return axios.post(`${PRODUCT_API_URL}/create`, formData, {
       withCredentials: true,
       headers: {
@@ -38,7 +37,6 @@ export const productService = {
 
   // Update product by ID
   updateProduct: async (id, formData) => {
-    console.log('Updating product with custom options:', formData.get('custom_options'));
     return axios.put(`${PRODUCT_API_URL}/${id}/edit`, formData, {
       withCredentials: true,
       headers: {

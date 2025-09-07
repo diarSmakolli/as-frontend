@@ -31,6 +31,7 @@ import {
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { homeService } from "../home/services/homeService";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 const RecommendedProducts = ({
   productSlug,
@@ -70,17 +71,15 @@ const RecommendedProducts = ({
       setError(null);
 
       const response = await homeService.getRecommendedProducts(productSlug, {
-        limit: 12, // Increased for scrolling
+        limit: 12,
         exclude_out_of_stock: true,
       });
 
       if (response.status === "success") {
         setRecommendations(response.data.recommendations);
-      } else {
-        setError("Failed to load recommendations");
       }
     } catch (err) {
-      setError("Unable to load recommended products");
+      setRecommendations([]);
     } finally {
       setLoading(false);
     }
@@ -126,205 +125,137 @@ const RecommendedProducts = ({
 
   const renderProductCard = (product, index) => (
     <Card
-      key={product.id}
-      bg={bgColor}
-      border="1px solid"
-      borderColor={borderColor}
+      key={product?.id}
+      bg="white"
       overflow="hidden"
-      cursor="pointer"
-      rounded="xl"
-      shadow="none"
+      shadow="sm"
       transition="all 0.3s ease"
-      minW={cardWidth}
-      maxW={cardWidth}
+      cursor="pointer"
+      borderWidth="1px"
+      borderColor="gray.300"
+      position="relative"
+      rounded="2xl"
+      minW={{ base: "200px", sm: "200px", md: "225px" }}
+      maxW={{ base: "200px", sm: "200px", md: "225px" }}
       flexShrink={0}
-      _hover={{
-        transform: "translateY(-4px)",
-        boxShadow: "none",
-        borderColor: "navy.200",
+      _before={{
+        content: '""',
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.3,
+        pointerEvents: "none",
+        zIndex: 0,
       }}
-      onClick={() => handleProductClick(product.slug)}
     >
       <Box position="relative">
         <Image
-          src={product.main_image_url}
-          alt={product.title}
-          objectFit="cover"
-          w="100%"
+          src={product?.main_image_url}
+          alt={product?.title}
+          w="full"
           h="200px"
+          objectFit="cover"
+          rounded="lg"
           fallback={
             <Box
-              w="100%"
-              h="200px"
-              bg="gray.100"
+              w="full"
+              h={{ base: "150px", sm: "180px", md: "200px" }}
+              bg="#fff"
               display="flex"
               alignItems="center"
               justifyContent="center"
             >
-              <Text color="gray.400" fontSize="sm">
-                No Image
-              </Text>
+              {" "}
             </Box>
           }
         />
 
-        {/* Badges */}
-        <Box position="absolute" top={2} left={2} zIndex={1}>
-          <VStack spacing={1} align="flex-start">
-            {product.badges?.is_on_sale && (
-              <Badge
-                colorScheme="red"
-                size="sm"
-                fontFamily="Bricolage Grotesque"
-                fontWeight="bold"
-                px={2}
-                py={1}
-                borderRadius="md"
-              >
-                Sale
-              </Badge>
-            )}
-            {product.badges?.is_new && (
-              <Badge
-                colorScheme="green"
-                size="sm"
-                fontFamily="Bricolage Grotesque"
-                fontWeight="bold"
-                px={2}
-                py={1}
-                borderRadius="md"
-              >
-                New
-              </Badge>
-            )}
-            {product.badges?.is_featured && (
-              <Badge
-                colorScheme="blue"
-                size="sm"
-                fontFamily="Bricolage Grotesque"
-                fontWeight="bold"
-                px={2}
-                py={1}
-                borderRadius="md"
-              >
-                Featured
-              </Badge>
-            )}
-          </VStack>
-        </Box>
-
-        {/* Discount Badge */}
-        {product.pricing?.is_discounted && (
-          <Badge
-            position="absolute"
-            top={2}
-            right={2}
-            colorScheme="orange"
-            borderRadius="full"
-            px={3}
-            py={1}
-            fontWeight="bold"
-            fontSize="xs"
-            fontFamily="Bricolage Grotesque"
-          >
-            -{Math.round(product.pricing.discount_percentage || 0)}%
-          </Badge>
-        )}
+        {/* Heart Icon */}
+        <IconButton
+          position="absolute"
+          top="2"
+          right="2"
+          size="sm"
+          icon={<FaRegHeart size="20px" />}
+          bg="white"
+          color="black"
+          _hover={{
+            color: "white",
+            bg: "navy",
+            fontWeight: "bold",
+          }}
+          borderRadius="full"
+          aria-label="Add to wishlist"
+          shadow="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        />
       </Box>
 
-      <CardBody p={4}>
-        <VStack align="stretch" spacing={3}>
-          {/* Product Title */}
-          <Text
-            fontSize="sm"
-            fontWeight="semibold"
-            color="gray.800"
-            noOfLines={2}
-            minH="40px"
-            fontFamily="Bricolage Grotesque"
-            lineHeight="1.3"
-          >
-            {product.title}
-          </Text>
-
-          {/* Category */}
-          {product.primary_category && (
-            <Text
-              fontSize="xs"
-              color="gray.500"
-              fontFamily="Bricolage Grotesque"
-              noOfLines={1}
-            >
-              {product.primary_category.name}
-            </Text>
-          )}
-
-          {/* Pricing */}
-          <Box>
-            <HStack spacing={2} align="baseline" wrap="wrap">
+      <CardBody p={3}>
+        <VStack align="start" spacing={2}>
+          <VStack align="start" spacing={1} w="full">
+            <HStack spacing={2} w="full" align="center" flexWrap="wrap">
               <Text
-                fontSize="lg"
-                fontWeight="bold"
-                color="navy"
-                fontFamily="Bricolage Grotesque"
+                fontSize="md"
+                color="black"
+                noOfLines={2}
+                lineHeight="short"
+                minH="40px"
+                title={product.title}
+                fontWeight="500"
+                as="a"
+                href={`/product/${product.slug}`}
+                fontFamily="Airbnb Cereal VF"
               >
-                {formatPrice(product.pricing?.final_price_nett || 0)}
+                {product?.title}
               </Text>
-              {product.pricing?.is_discounted && (
-                <Text
-                  fontSize="sm"
-                  color="gray.400"
-                  textDecoration="line-through"
-                  fontFamily="Bricolage Grotesque"
-                >
-                  {formatPrice(product.pricing?.regular_price_nett || 0)}
-                </Text>
-              )}
+
+              <Text
+                fontSize={{ base: "lg", sm: "xl" }}
+                fontWeight="600"
+                color="black"
+                fontFamily="Airbnb Cereal VF"
+              >
+                {product?.pricing.final_price_gross.toFixed(2)} €
+              </Text>
+
+              {product?.pricing.is_discounted &&
+                product?.pricing.regular_price_gross >
+                  product?.pricing.final_price_gross && (
+                  <>
+                    {/* Responsive discount badge */}
+                    <Badge
+                      bg="rgba(0, 0, 0, 1)"
+                      fontFamily="Airbnb Cereal VF"
+                      color="white"
+                      fontSize={{ base: "xs", sm: "sm" }}
+                      fontWeight="500"
+                      px={{ base: "1", sm: "2" }}
+                      py="0"
+                      borderRadius="full"
+                      textTransform="uppercase"
+                      flexShrink={0}
+                    >
+                      €{product?.pricing.discount_percentage} %
+                    </Badge>
+
+                    <Text
+                      fontSize={{ base: "xs", sm: "sm" }}
+                      color="gray.700"
+                      textDecoration="line-through"
+                      fontFamily="Airbnb Cereal VF"
+                      fontWeight="500"
+                    >
+                      €{product?.pricing.regular_price_gross.toFixed(2)}
+                    </Text>
+                  </>
+                )}
             </HStack>
-            {product.pricing?.savings && (
-              <Text
-                fontSize="xs"
-                color="green.600"
-                fontFamily="Bricolage Grotesque"
-                fontWeight="medium"
-              >
-                Save {formatPrice(product.pricing.savings.savings_nett)}
-              </Text>
-            )}
-          </Box>
-
-          {/* Features */}
-          <HStack spacing={3} fontSize="xs" color="gray.600" wrap="wrap">
-            {product.badges?.free_shipping && (
-              <HStack spacing={1}>
-                <Icon as={FiTruck} />
-                <Text fontFamily="Bricolage Grotesque">Free Ship</Text>
-              </HStack>
-            )}
-            {product.badges?.is_top_seller && (
-              <HStack spacing={1}>
-                <Icon as={FiStar} />
-                <Text fontFamily="Bricolage Grotesque">Top Seller</Text>
-              </HStack>
-            )}
-          </HStack>
-
-          {/* Add to Cart Button */}
-          <Button
-            size="sm"
-            bg="navy"
-            color="white"
-            fontFamily="Bricolage Grotesque"
-            _hover={{ bg: "navy.600" }}
-            _active={{ bg: "navy.700" }}
-            borderRadius="md"
-            fontWeight="medium"
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-          >
-            Add to Cart
-          </Button>
+          </VStack>
         </VStack>
       </CardBody>
     </Card>
@@ -380,17 +311,18 @@ const RecommendedProducts = ({
           <VStack align="flex-start" spacing={1}>
             <Heading
               size="md"
-              fontFamily="Bricolage Grotesque"
+              fontFamily="Airbnb Cereal VF"
               color="gray.800"
+              fontWeight='600'
             >
               {title}
             </Heading>
             <Text
               fontSize="sm"
               color="gray.600"
-              fontFamily="Bricolage Grotesque"
+              fontFamily="Airbnb Cereal VF"
             >
-              Based on similar products and categories
+              Basé sur des produits et catégories similaires
             </Text>
           </VStack>
 

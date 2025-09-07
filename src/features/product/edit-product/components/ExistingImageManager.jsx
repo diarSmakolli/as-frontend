@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Box,
   VStack,
@@ -12,9 +12,9 @@ import {
   Alert,
   AlertIcon,
   AlertDescription,
-} from '@chakra-ui/react';
-import { FiX, FiArrowLeft, FiArrowRight, FiEdit } from 'react-icons/fi';
-import { motion } from 'framer-motion';
+} from "@chakra-ui/react";
+import { FiX, FiArrowLeft, FiArrowRight, FiEdit } from "react-icons/fi";
+import { motion } from "framer-motion";
 
 const MotionBox = motion.create(Box);
 
@@ -43,7 +43,9 @@ const ExistingImageManager = ({ images, onImagesChange }) => {
     return (
       <Alert status="warning" borderRadius="md">
         <AlertIcon />
-        <AlertDescription>No existing images found. Please add new images.</AlertDescription>
+        <AlertDescription>
+          No existing images found. Please add new images.
+        </AlertDescription>
       </Alert>
     );
   }
@@ -53,7 +55,7 @@ const ExistingImageManager = ({ images, onImagesChange }) => {
       <Text fontSize="md" fontWeight="medium" color="gray.700">
         Current Images ({images.length})
       </Text>
-      
+
       <SimpleGrid columns={{ base: 2, md: 4, lg: 6 }} spacing={4}>
         {images.map((image, index) => (
           <MotionBox
@@ -76,7 +78,7 @@ const ExistingImageManager = ({ images, onImagesChange }) => {
                 h="100%"
                 objectFit="cover"
               />
-              
+
               {/* Controls Overlay */}
               <Box
                 position="absolute"
@@ -105,7 +107,7 @@ const ExistingImageManager = ({ images, onImagesChange }) => {
                       title="Move left"
                     />
                   )}
-                  
+
                   {/* Set as Main (if not already main) */}
                   {index !== 0 && (
                     <IconButton
@@ -118,7 +120,7 @@ const ExistingImageManager = ({ images, onImagesChange }) => {
                       title="Set as main image"
                     />
                   )}
-                  
+
                   {/* Remove */}
                   <IconButton
                     icon={<FiX />}
@@ -129,7 +131,7 @@ const ExistingImageManager = ({ images, onImagesChange }) => {
                     aria-label="Remove image"
                     title="Remove image"
                   />
-                  
+
                   {/* Move Right */}
                   {index < images.length - 1 && (
                     <IconButton
@@ -159,13 +161,15 @@ const ExistingImageManager = ({ images, onImagesChange }) => {
                 </Badge>
               )}
             </Box>
-            
+
             <Box p={2} bg="white">
               <Text
                 fontSize="xs"
                 color="gray.600"
                 noOfLines={1}
-                title={image.file_name || image.alt_text || `Image ${index + 1}`}
+                title={
+                  image.file_name || image.alt_text || `Image ${index + 1}`
+                }
               >
                 {image.file_name || image.alt_text || `Image ${index + 1}`}
               </Text>
@@ -174,15 +178,29 @@ const ExistingImageManager = ({ images, onImagesChange }) => {
         ))}
       </SimpleGrid>
 
-      <Box bg="blue.50" p={4} borderRadius="md" borderLeft="4px" borderColor="blue.400">
+      <Box
+        bg="blue.50"
+        p={4}
+        borderRadius="md"
+        borderLeft="4px"
+        borderColor="blue.400"
+      >
         <VStack align="start" spacing={1}>
           <Text fontSize="sm" color="blue.800" fontWeight="medium">
             Image Management Tips:
           </Text>
-          <Text fontSize="xs" color="blue.700">• The first image is used as the main product image</Text>
-          <Text fontSize="xs" color="blue.700">• Use arrow buttons to reorder images</Text>
-          <Text fontSize="xs" color="blue.700">• Click the edit button to set any image as main</Text>
-          <Text fontSize="xs" color="blue.700">• Remove unwanted images with the X button</Text>
+          <Text fontSize="xs" color="blue.700">
+            • The first image is used as the main product image
+          </Text>
+          <Text fontSize="xs" color="blue.700">
+            • Use arrow buttons to reorder images
+          </Text>
+          <Text fontSize="xs" color="blue.700">
+            • Click the edit button to set any image as main
+          </Text>
+          <Text fontSize="xs" color="blue.700">
+            • Remove unwanted images with the X button
+          </Text>
         </VStack>
       </Box>
     </VStack>
