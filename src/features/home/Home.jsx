@@ -863,10 +863,9 @@ function Home() {
         </Grid>
 
         {/* Flash Deals Section - Updated to use real data */}
-        <Box mb={8}>
+        {/* <Box mb={8}>
           <Flex align="center" justify="space-between" mb={4}>
             <HStack spacing={3}>
-              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
               <Heading
                 color="black"
                 fontSize={{ base: "xl", md: "20px" }}
@@ -897,7 +896,6 @@ function Home() {
             </Button>
           </Flex>
 
-          {/* Horizontal Scrollable Flash Deals Row */}
           <Box
             position="relative"
             _before={{
@@ -931,9 +929,7 @@ function Home() {
                 minW="max-content"
                 px={{ base: 2, md: 0 }}
               >
-                {/* Display real flash deals or loading skeleton */}
                 {flashDealsLoading ? (
-                  // Loading skeleton
                   [...Array(6)].map((_, index) => (
                     <Card
                       key={`flash-skeleton-${index}`}
@@ -962,7 +958,6 @@ function Home() {
                     </Card>
                   ))
                 ) : flashDeals && flashDeals.length > 0 ? (
-                  // Real flash deals data
                   flashDeals.map((apiProduct, index) => {
                     const product = transformFlashDealData(apiProduct);
                     const productId = `flash-${index}-${product.id}`;
@@ -973,7 +968,6 @@ function Home() {
                         bg="rgba(255,255,255,1)"
                         overflow="hidden"
                         shadow="sm"
-                        // transition="all 0.3s ease"
                         cursor="pointer"
                         border="1px solid rgba(145, 158, 171, 0.2)"
                         position="relative"
@@ -1047,7 +1041,6 @@ function Home() {
                             </Box>
                           )}
 
-                          {/* Heart Icon */}
                           <IconButton
                             position="absolute"
                             top="2"
@@ -1090,7 +1083,6 @@ function Home() {
                                 {product.title}
                               </Text>
 
-                              {/* Pricing Section */}
                               <HStack
                                 spacing={1}
                                 w="full"
@@ -1109,7 +1101,6 @@ function Home() {
                                 {product.originalPrice &&
                                   product.originalPrice > product.price && (
                                     <>
-                                      {/* Responsive discount badge */}
                                       <Badge
                                         bg="rgba(255, 0, 0, 1)"
                                         fontFamily="Airbnb Cereal VF"
@@ -1152,13 +1143,12 @@ function Home() {
                     );
                   })
                 ) : (
-                  // Empty state
                   <></>
                 )}
               </HStack>
             </Box>
           </Box>
-        </Box>
+        </Box> */}
 
         {/* New Arrivals Section */}
         <Box mb={8}>
@@ -1436,10 +1426,9 @@ function Home() {
         </Box>
 
         {/* Furniture Flash Deals Section Save */}
-        <Box mb={8}>
+        {/* <Box mb={8}>
           <Flex align="center" justify="space-between" mb={4}>
             <HStack spacing={3}>
-              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
               <Heading
                 color="black"
                 fontWeight="600"
@@ -1451,7 +1440,6 @@ function Home() {
             </HStack>
           </Flex>
 
-          {/* Horizontal Scrollable Flash Deals Row */}
           <Box
             position="relative"
             _before={{
@@ -1485,9 +1473,7 @@ function Home() {
                 minW="max-content"
                 px={{ base: 2, md: 0 }}
               >
-                {/* Display furniture flash deals or loading skeleton */}
                 {flashDealsFurnitureLoading ? (
-                  // Loading skeleton with furniture theme
                   [...Array(6)].map((_, index) => (
                     <Card
                       key={`furniture-skeleton-${index}`}
@@ -1516,7 +1502,6 @@ function Home() {
                     </Card>
                   ))
                 ) : flashDealsFurniture && flashDealsFurniture.length > 0 ? (
-                  // Real furniture flash deals data
                   flashDealsFurniture.map((apiProduct, index) => {
                     const product = transformFlashDealData(apiProduct);
                     const productId = `furniture-flash-${index}-${product.id}`;
@@ -1527,7 +1512,6 @@ function Home() {
                         bg="rgba(255,255,255,1)"
                         overflow="hidden"
                         shadow="sm"
-                        // transition="all 0.3s ease"
                         cursor="pointer"
                         border="1px solid rgba(145, 158, 171, 0.2)"
                         position="relative"
@@ -1602,7 +1586,6 @@ function Home() {
                             </Box>
                           )}
 
-                          {/* Heart Icon */}
                           <IconButton
                             position="absolute"
                             top="2"
@@ -1645,7 +1628,6 @@ function Home() {
                                 {product.title}
                               </Text>
 
-                              {/* Pricing Section */}
                               <HStack
                                 spacing={1}
                                 w="full"
@@ -1664,7 +1646,6 @@ function Home() {
                                 {product.originalPrice &&
                                   product.originalPrice > product.price && (
                                     <>
-                                      {/* Responsive discount badge */}
                                       <Badge
                                         bg="rgba(255, 0, 0, 1)"
                                         fontFamily="Airbnb Cereal VF"
@@ -1707,13 +1688,12 @@ function Home() {
                     );
                   })
                 ) : (
-                  // No furniture flash deals found - Empty state
                   <></>
                 )}
               </HStack>
             </Box>
           </Box>
-        </Box>
+        </Box> */}
 
         {/* Categories TOP Products */}
         {/* Portes */}
@@ -1974,6 +1954,8 @@ function Home() {
               </HStack>
             </Box>
           </Box>
+
+          
         </Box>
 
         {/* Fenetres */}
@@ -2754,265 +2736,6 @@ function Home() {
           </Box>
         </Box>
 
-        {/* Constructions */}
-        <Box mb={8}>
-          <Flex align="center" justify="space-between" mb={6}>
-            <HStack spacing={3}>
-              {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
-              <Heading
-                color="black"
-                fontSize={{ base: "xl", md: "20px" }}
-                fontFamily={"Airbnb Cereal VF"}
-                fontWeight="600"
-              >
-                Construction
-              </Heading>
-            </HStack>
-            <Button
-              bg="transparent"
-              size="sm"
-              borderColor="none"
-              borderWidth={"0px"}
-              color="black"
-              _hover={{
-                bg: "transparent",
-                color: "gray.400",
-                borderColor: "none",
-              }}
-              fontFamily={"Airbnb Cereal VF"}
-              rightIcon={<Icon as={FaChevronRight} fontSize="xs" />}
-              onClick={() => {
-                navigate("/category/enfants-bb");
-              }}
-            >
-              Voir tout
-            </Button>
-          </Flex>
-          <Box
-            position="relative"
-            _before={{
-              content: '""',
-              position: "absolute",
-              top: 0,
-              right: 0,
-              bottom: 0,
-              width: "40px",
-              zIndex: 1,
-              pointerEvents: "none",
-              display: { base: "block", md: "none" },
-            }}
-          >
-            <Box
-              overflowX="auto"
-              overflowY="hidden"
-              pb={2}
-              css={{
-                scrollbarWidth: "none",
-                msOverflowStyle: "none",
-                "&::-webkit-scrollbar": {
-                  display: "none",
-                },
-                scrollBehavior: "smooth",
-              }}
-            >
-              <HStack
-                spacing={4}
-                align="stretch"
-                minW="max-content"
-                px={{ base: 2, md: 0 }}
-              >
-                {constructionProductsLoading ? (
-                  [...Array(6)].map((_, index) => (
-                    <Card
-                      key={`top-baby-skeleton-${index}`}
-                      bg="white"
-                      borderRadius="12px"
-                      overflow="hidden"
-                      shadow="sm"
-                      minW={{ base: "150px", sm: "180px", md: "200px" }}
-                      maxW={{ base: "150px", sm: "180px", md: "200px" }}
-                      flexShrink={0}
-                    >
-                      <Skeleton
-                        h={{ base: "150px", sm: "180px", md: "200px" }}
-                        w="full"
-                      />
-                      <CardBody p={3}>
-                        <VStack align="start" spacing={2}>
-                          <SkeletonText noOfLines={2} spacing={2} w="full" />
-                          <Skeleton h="6" w="20" />
-                          <SkeletonText noOfLines={1} w="60%" />
-                        </VStack>
-                      </CardBody>
-                    </Card>
-                  ))
-                ) : constructionProducts && constructionProducts?.length > 0 ? (
-                  constructionProducts?.map((product, index) => {
-                    const productId = `top-construction-${index}-${product?.id}`;
-                    return (
-                      <Card
-                        key={productId}
-                        bg="rgba(255,255,255,1)"
-                        overflow="hidden"
-                        shadow="sm"
-                        // transition="all 0.3s ease"
-                        cursor="pointer"
-                        border="1px solid rgba(145, 158, 171, 0.2)"
-                        position="relative"
-                        rounded="12px"
-                        minW={{ base: "200px", sm: "240px", md: "240px" }}
-                        maxW={{ base: "200px", sm: "240px", md: "240px" }}
-                        _hover={{
-                          shadow: "md",
-                          transform: "translateY(-6px)",
-                        }}
-                        flexShrink={0}
-                        _before={{
-                          content: '""',
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          opacity: 0.3,
-                          pointerEvents: "none",
-                          zIndex: 0,
-                        }}
-                        ref={(el) =>
-                          (topConstructionImpressionRefs.current[index] = el)
-                        }
-                        data-index={index}
-                      >
-                        <Box
-                          position="relative"
-                          zIndex={1}
-                          as="a"
-                          href={`/product/${product.slug}`}
-                          bg="white"
-                        >
-                          <ProductImage
-                            src={
-                              product.main_image_url ||
-                              (product.images?.[0]?.url ?? "")
-                            }
-                            alt={product.title}
-                            height={{ base: "150px", sm: "180px", md: "200px" }}
-                            bg="rgba(255,255,255,1)"
-                          />
-
-                          <IconButton
-                            position="absolute"
-                            top="2"
-                            right="2"
-                            size="sm"
-                            icon={<FaRegHeart size="20px" />}
-                            bg="white"
-                            color="black"
-                            _hover={{
-                              color: "white",
-                              bg: "rgba(255, 0, 0, 1)",
-                              fontWeight: "bold",
-                            }}
-                            borderRadius="full"
-                            aria-label="Add to wishlist"
-                            shadow="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              handleAddToWishlist(product.id);
-                            }}
-                          />
-                        </Box>
-                        <CardBody p={3}>
-                          <VStack align="start" spacing={2}>
-                            <VStack align="start" spacing={1} w="full">
-                              <Text
-                                fontSize="sm"
-                                color="rgba(42, 42, 42, 1)"
-                                noOfLines={2}
-                                lineHeight="short"
-                                minH="40px"
-                                title={product.title}
-                                fontWeight="500"
-                                as="a"
-                                href={`/product/${product.slug}`}
-                                fontFamily="Airbnb Cereal VF"
-                              >
-                                {product.title}
-                              </Text>
-
-                              <HStack
-                                spacing={2}
-                                w="full"
-                                align="center"
-                                flexWrap="wrap"
-                              >
-                                <Text
-                                  fontSize={{ base: "lg", sm: "xl" }}
-                                  fontWeight="600"
-                                  color="gray.800"
-                                  fontFamily="Airbnb Cereal VF"
-                                >
-                                  {product?.final_price_gross.toFixed(2) ??
-                                    product?.regular_price_gross.toFixed(2) ??
-                                    0}{" "}
-                                  €
-                                </Text>
-
-                                {product.regular_price_gross &&
-                                  product.regular_price_gross >
-                                    product.final_price_gross && (
-                                    <>
-                                      <Badge
-                                        bg="rgba(255, 0, 0, 1)"
-                                        fontFamily="Airbnb Cereal VF"
-                                        color="gray.200"
-                                        border="1px solid rgba(33, 1, 1, 0.43)"
-                                        fontSize={{ base: "xs", sm: "sm" }}
-                                        fontWeight="500"
-                                        px={{ base: "1", sm: "2" }}
-                                        py="0"
-                                        borderRadius="lg"
-                                        textTransform="uppercase"
-                                        flexShrink={0}
-                                      >
-                                        -
-                                        {Math.round(
-                                          ((product.regular_price_gross -
-                                            product.final_price_gross) /
-                                            product.regular_price_gross) *
-                                            100
-                                        )}
-                                        %
-                                      </Badge>
-
-                                      <Text
-                                        fontSize={{ base: "xs", sm: "sm" }}
-                                        color="gray.700"
-                                        textDecoration="line-through"
-                                        fontFamily="Airbnb Cereal VF"
-                                        fontWeight="500"
-                                      >
-                                        €
-                                        {product.regular_price_gross.toFixed(2)}{" "}
-                                      </Text>
-                                    </>
-                                  )}
-                              </HStack>
-                            </VStack>
-                          </VStack>
-                        </CardBody>
-                      </Card>
-                    );
-                  })
-                ) : (
-                  <></>
-                )}
-              </HStack>
-            </Box>
-          </Box>
-        </Box>
-
         {/* Sanitaires */}
         <Box mb={8}>
           <Flex align="center" justify="space-between" mb={6}>
@@ -3271,6 +2994,8 @@ function Home() {
             </Box>
           </Box>
         </Box>
+
+        
       </Container>
       <Footer />
     </Box>

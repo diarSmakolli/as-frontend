@@ -12,12 +12,19 @@ import {
   Card,
   CardBody,
   Button,
+  useToast,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { FaHeart, FaBox } from "react-icons/fa";
+import { FaHeart, FaBox, FaRegHeart } from "react-icons/fa";
+import { customerAccountService } from "../customer-account/customerAccountService";
+import { useCustomerAuth } from "../customer-account/auth-context/customerAuthContext";
+import { customToastContainerStyle } from "../../commons/toastStyles";
+import { homeService } from "../home/services/homeService";
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
+  const toast = useToast();
+  const { customer } = useCustomerAuth();
 
   const handleProductClick = () => {
     navigate(`/product/${product.slug}`);
@@ -91,19 +98,65 @@ const ProductCard = ({ product }) => {
 
   const mainTag = getMainTag();
 
+  const handleAddToWishlist = async (productId) => {
+    if (!customer || !customer.id) {
+      navigate("/account/signin");
+      return;
+    }
+    try {
+      await customerAccountService.addToWishlist(productId);
+      toast({
+        title: "Ajouté à la liste de souhaits",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+        variant: "custom",
+        containerStyle: customToastContainerStyle,
+      });
+
+      const eventPayload = {
+        event_type: "wishlist_add",
+        session_id: customer?.id || null,
+        customer_id: customer?.id || null,
+        product_id: productId,
+        page_type: "homepage",
+        page_url: typeof window !== "undefined" ? window.location.href : null,
+        referrer_url:
+          typeof document !== "undefined" ? document.referrer : null,
+        timestamp: new Date().toISOString(),
+      };
+
+      await homeService.createProductEvent(eventPayload);
+    } catch (error) {
+      toast({
+        title:
+          error?.message || "Erreur lors de l'ajout à la liste de souhaits",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+        variant: "custom",
+        containerStyle: customToastContainerStyle,
+      });
+    }
+  };
+
   return (
     <Card
       onClick={handleProductClick}
-      bg="transparent"
-      borderRadius="0px"
+      bg="rgba(255,255,255,1)"
       overflow="hidden"
-      shadow="none"
-      transition="all 0.2s"
+      shadow="sm"
+      // transition="all 0.3s ease"
       cursor="pointer"
-      borderWidth="0px"
-      borderColor="gray.400"
-      // minW={{ base: "200px", sm: "200px", md: "225px" }}
-      // maxW={{ base: "200px", sm: "200px", md: "225px" }}
+      border="1px solid rgba(145, 158, 171, 0.2)"
+      position="relative"
+      rounded="12px"
+      minW={{ base: "200px", sm: "240px", md: "240px" }}
+      maxW={{ base: "200px", sm: "240px", md: "240px" }}
+      _hover={{
+        shadow: "md",
+        transform: "translateY(-6px)",
+      }}
       flexShrink={0}
       _before={{
         content: '""',
@@ -118,29 +171,11 @@ const ProductCard = ({ product }) => {
       }}
     >
       <Box position="relative">
-        <Image
+        <ProductImage
           src={transformedProduct?.image}
           alt={transformedProduct?.title}
-          w="full"
-          h="200px"
-          objectFit="cover"
-          fallback={
-            <Box
-              w="full"
-              h="200px"
-              bg="gray.200"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <VStack spacing={2}>
-                <Icon as={FaBox} fontSize="2xl" color="gray.400" />
-                <Text fontSize="xs" color="gray.500" textAlign="center">
-                  No Image
-                </Text>
-              </VStack>
-            </Box>
-          }
+          height={{ base: "150px", sm: "180px", md: "200px" }}
+          bg="rgba(255,255,255,1)"
         />
 
         {/* Heart Icon */}
@@ -149,15 +184,21 @@ const ProductCard = ({ product }) => {
           top="2"
           right="2"
           size="sm"
-          icon={<FaHeart />}
+          icon={<FaRegHeart size="20px" />}
           bg="white"
-          color="gray.400"
-          _hover={{ color: "rgb(239,48,84)" }}
+          color="black"
+          _hover={{
+            color: "white",
+            bg: "rgba(255, 0, 0, 1)",
+            fontWeight: "bold",
+          }}
           borderRadius="full"
           aria-label="Add to wishlist"
           shadow="sm"
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
+            handleAddToWishlist(product.id);
           }}
         />
       </Box>
@@ -176,14 +217,29 @@ const ProductCard = ({ product }) => {
           </Text> */}
 
           <VStack align="start" spacing={1} w="full">
+            <Text
+              fontSize="sm"
+              color="black"
+              noOfLines={2}
+              lineHeight="short"
+              minH="40px"
+              title={product.title}
+              fontWeight="500"
+              as="a"
+              href={`/product/${product.slug}`}
+              fontFamily="Airbnb Cereal VF"
+            >
+              {transformedProduct.title}
+            </Text>
+
             <HStack spacing={2} w="full" align="center">
               <Text
                 fontSize={{ base: "lg", sm: "xl" }}
-                fontWeight="bold"
-                color="navy"
-                fontFamily="Bogle"
+                fontWeight="600"
+                color="black"
+                fontFamily="Airbnb Cereal VF"
               >
-                $ {formatPrice(transformedProduct.price)}
+                {formatPrice(transformedProduct.price)} €
               </Text>
 
               {transformedProduct.originalPrice &&
@@ -196,72 +252,82 @@ const ProductCard = ({ product }) => {
                   //   €{formatPrice(transformedProduct.originalPrice)}
                   // </Text>
                   <>
-                    <Text
-                      fontSize={{ base: "xs", sm: "sm" }}
-                      color="gray.500"
-                      textDecoration="line-through"
-                      fontFamily="Bogle"
-                    >
-                      $ {formatPrice(transformedProduct.originalPrice)}
-                    </Text>
-
                     <Badge
-                      bg="red.600"
-                      fontFamily="Bogle"
-                      color="white"
+                      bg="rgba(255, 0, 0, 1)"
+                      fontFamily="Airbnb Cereal VF"
+                      color="gray.200"
+                      border="1px solid rgba(33, 1, 1, 0.43)"
                       fontSize={{ base: "xs", sm: "sm" }}
-                      fontWeight="bold"
+                      fontWeight="500"
                       px={{ base: "1", sm: "2" }}
                       py="0"
-                      borderRadius="md"
+                      borderRadius="lg"
                       textTransform="uppercase"
                       flexShrink={0}
                     >
-                      <Text as="span" fontWeight="bold">
-                        {Math.round(transformedProduct.discountPercentage)}%{" "}
-                      </Text>
-                      % OFF
+                      - {Math.round(transformedProduct.discountPercentage)}%{" "}
                     </Badge>
+
+                    <Text
+                      fontSize={{ base: "xs", sm: "sm" }}
+                      color="gray.700"
+                      textDecoration="line-through"
+                      fontFamily="Airbnb Cereal VF"
+                      fontWeight="500"
+                    >
+                      {formatPrice(transformedProduct.originalPrice)} €
+                    </Text>
                   </>
                 )}
             </HStack>
-
-            <Text
-              fontSize="sm"
-              color="black"
-              noOfLines={2}
-              lineHeight="short"
-              minH="40px"
-              title={product.title}
-              fontWeight="500"
-              as="a"
-              href={`/product/${product.slug}`}
-              fontFamily="Fira Sans"
-            >
-              {transformedProduct?.title}
-            </Text>
-
-            <Button
-              fontFamily="Bogle"
-              size="sm"
-              bg="transparent"
-              color="gray.900"
-              _hover={{ bg: "transparent", borderWidth: "2px" }}
-              _active={{ bg: "transparent" }}
-              _focus={{ bg: "transparent" }}
-              px={10}
-              variant="outline"
-              borderColor="navy"
-              rounded="full"
-              borderWidth="1px"
-            >
-              Add
-            </Button>
           </VStack>
         </VStack>
       </CardBody>
     </Card>
   );
 };
+
+function ProductImage({
+  src,
+  alt,
+  height = { base: "150px", sm: "180px", md: "200px" },
+  bg = "transparent",
+  ...props
+}) {
+  return (
+    <Box
+      w="full"
+      h={height}
+      bg={bg}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      overflow="hidden"
+      pl={2}
+      pr={2}
+      pt={2}
+      {...props}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        w="full"
+        h="full"
+        objectFit="contain"
+        objectPosition="center"
+        fallback={
+          <Box
+            w="full"
+            h={height}
+            bg="#fff"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          />
+        }
+      />
+    </Box>
+  );
+}
 
 export default ProductCard;
