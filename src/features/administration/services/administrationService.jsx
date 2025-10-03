@@ -81,4 +81,18 @@ export const administrationService = {
   processRewardPaymentsForAllAgents: async () => {
     return axiosInstance.post("/process-reward-payments");
   },
+  // Generate referral link for admin
+  generateReferralLink: async () => {
+    return axiosInstance.post("/generate-referral-link");
+  },
+  
+  // Get referral statistics for admin
+  getReferralStats: async () => {
+    return axiosInstance.get("/referral-stats");
+  },
+  
+  // Validate referral code (public endpoint - no auth needed)
+  validateReferralCode: async (referralCode) => {
+    return axiosInstance.get(`/validate-referral/${referralCode}`);
+  },
 };

@@ -210,7 +210,7 @@ export default function LoginAccount() {
                       fontWeight={"500"}
                       fontFamily="Airbnb Cereal VF"
                       isLoading={loading}
-                      loadingText="Signing in..."
+                      loadingText="Se connecter..."
                       isDisabled={loading}
                     >
                       Se connecter

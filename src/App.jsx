@@ -1,12 +1,13 @@
 import { React, useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 import {
   AuthProvider,
   useAuth,
 } from "./features/administration/authContext/authContext";
 import { Navigate } from "react-router-dom";
 import {
-  CustomerAuthProvider, useCustomerAuth
+  CustomerAuthProvider,
+  useCustomerAuth,
 } from "./features/customer-account/auth-context/customerAuthContext";
 import Login from "./features/administration/login/Login";
 import Home from "./features/home/Home";
@@ -43,6 +44,22 @@ import CustomersPage from "./features/customer-admin/CustomersPage";
 import CustomerDetails from "./features/customer-admin/CustomerDetails";
 import OrderDetailed from "./features/order-admin/OrderDetailed";
 import OrderList from "./features/order-admin/OrderList";
+import CheckoutSuccess from "./features/checkout/CheckoutSuccess";
+import OrderCancelled from "./features/checkout/OrderCancelled";
+import RoleProtectedRoute from "./features/administration/authContext/RoleProtectedRoute";
+import TOS from "./features/tos/TOS";
+import PrivacyTOS from "./features/tos/PrivacyTOS";
+import ReactGA from "react-ga4";
+
+ReactGA.initialize("G-48VG8VBG33");
+
+function Analytics() {
+  const location = useLocation();
+  useEffect(() => {
+    ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+  }, [location]);
+  return null;
+}
 
 function App() {
   return (
@@ -51,6 +68,7 @@ function App() {
         <PreferencesProvider>
           <CustomerAuthProvider>
             <Router>
+              <Analytics />
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route
@@ -73,10 +91,15 @@ function App() {
                   path="/administrations-console"
                   element={
                     <PrivateRoute>
-                      <AdministrationsList />
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <AdministrationsList />
+                      </RoleProtectedRoute>
                     </PrivateRoute>
                   }
                 />
+
                 <Route
                   path="/administrations-console/detailed/:accountId"
                   element={
@@ -89,7 +112,11 @@ function App() {
                   path="/companies-console"
                   element={
                     <PrivateRoute>
-                      <CompaniesList />
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <CompaniesList />
+                      </RoleProtectedRoute>
                     </PrivateRoute>
                   }
                 />
@@ -97,7 +124,11 @@ function App() {
                   path="/company-details/:companyId"
                   element={
                     <PrivateRoute>
-                      <CompanyDetails />
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <CompanyDetails />
+                      </RoleProtectedRoute>
                     </PrivateRoute>
                   }
                 />
@@ -105,7 +136,11 @@ function App() {
                   path="/taxes-console"
                   element={
                     <PrivateRoute>
-                      <TaxesList />
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <TaxesList />
+                      </RoleProtectedRoute>
                     </PrivateRoute>
                   }
                 />
@@ -113,7 +148,11 @@ function App() {
                   path="/category-console"
                   element={
                     <PrivateRoute>
-                      <CategoryList />
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <CategoryList />
+                      </RoleProtectedRoute>
                     </PrivateRoute>
                   }
                 />
@@ -121,7 +160,11 @@ function App() {
                   path="/create-product"
                   element={
                     <PrivateRoute>
-                      <CreateProductPage />
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <CreateProductPage />
+                      </RoleProtectedRoute>
                     </PrivateRoute>
                   }
                 />
@@ -137,7 +180,11 @@ function App() {
                   path="/products-console/:productId"
                   element={
                     <PrivateRoute>
-                      <ProductDetailsPage />
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <ProductDetailsPage />
+                      </RoleProtectedRoute>
                     </PrivateRoute>
                   }
                 />
@@ -145,7 +192,11 @@ function App() {
                   path="/products-console/:productId/edit"
                   element={
                     <PrivateRoute>
-                      <EditProductPage />
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <EditProductPage />
+                      </RoleProtectedRoute>
                     </PrivateRoute>
                   }
                 />
@@ -175,25 +226,122 @@ function App() {
                     </CustomerIsAuthenticated>
                   }
                 />
-                <Route path='/account/profile'
+                <Route
+                  path="/account/profile"
                   element={
                     <PrivateRouteForCustomer>
                       <ProfileAccount />
                     </PrivateRouteForCustomer>
-                  } 
+                  }
                 />
-                <Route path='/account/verify-email' element={<VerifyEmail /> } />
-                <Route path='/account/forgot-password' element={<ForgotPassword /> } />
-                <Route path='/account/reset-password' element={<ResetPassword />} />
-                <Route path='/account/wishlist' element={<PrivateRouteForCustomer><WishlistItems /></PrivateRouteForCustomer>} />
-                <Route path='/cart' element={<PrivateRouteForCustomer><CartPage /></PrivateRouteForCustomer>} />
-                <Route path='/checkout/confirm' element={<PrivateRouteForCustomer><CheckoutPage /></PrivateRouteForCustomer>} />
-                <Route path='/promotions' element={<PrivateRoute><PromotionPage /></PrivateRoute>} />
-                <Route path='/gift-cards' element={<PrivateRoute><GiftCardPage /></PrivateRoute>} />
-                <Route path='/customers' element={<PrivateRoute><CustomersPage /></PrivateRoute>} />
-                <Route path='/customer-details/:customerId' element={<PrivateRoute><CustomerDetails /></PrivateRoute>} />
-                <Route path='/order-details/:orderId' element={<PrivateRoute><OrderDetailed /></PrivateRoute>} />
-                <Route path='/orders' element={<PrivateRoute><OrderList /></PrivateRoute>} />
+                <Route path="/account/verify-email" element={<VerifyEmail />} />
+                <Route
+                  path="/account/forgot-password"
+                  element={<ForgotPassword />}
+                />
+                <Route
+                  path="/account/reset-password"
+                  element={<ResetPassword />}
+                />
+                <Route
+                  path="/account/wishlist"
+                  element={
+                    <PrivateRouteForCustomer>
+                      <WishlistItems />
+                    </PrivateRouteForCustomer>
+                  }
+                />
+                <Route
+                  path="/cart"
+                  element={
+                    <PrivateRouteForCustomer>
+                      <CartPage />
+                    </PrivateRouteForCustomer>
+                  }
+                />
+                <Route
+                  path="/checkout/confirm"
+                  element={
+                    <PrivateRouteForCustomer>
+                      <CheckoutPage />
+                    </PrivateRouteForCustomer>
+                  }
+                />
+                <Route
+                  path="/promotions"
+                  element={
+                    <PrivateRoute>
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <PromotionPage />
+                      </RoleProtectedRoute>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/gift-cards"
+                  element={
+                    <PrivateRoute>
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <GiftCardPage />
+                      </RoleProtectedRoute>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/customers"
+                  element={
+                    <PrivateRoute>
+                      <CustomersPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/customer-details/:customerId"
+                  element={
+                    <PrivateRoute>
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <CustomerDetails />
+                      </RoleProtectedRoute>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/order-details/:orderId"
+                  element={
+                    <PrivateRoute>
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <OrderDetailed />
+                      </RoleProtectedRoute>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/orders"
+                  element={
+                    <PrivateRoute>
+                      <RoleProtectedRoute
+                        allowedRoles={["administrator", "global-administrator"]}
+                      >
+                        <OrderList />
+                      </RoleProtectedRoute>
+                    </PrivateRoute>
+                  }
+                />
+                <Route path="/checkout/success" element={<CheckoutSuccess />} />
+                <Route
+                  path="/checkout/order-cancelled"
+                  element={<OrderCancelled />}
+                />
+                <Route path="/terms-and-conditions" element={<TOS />} />
+                 <Route path="/privacy-policy" element={<PrivacyTOS />} />
                 <Route path="*" element={<Error404 />} />
               </Routes>
             </Router>
@@ -203,6 +351,7 @@ function App() {
     </>
   );
 }
+
 
 const PrivateRoute = ({ children }) => {
   const { account, isLoading, logout } = useAuth();
@@ -238,11 +387,11 @@ const CustomerIsAuthenticated = ({ children }) => {
 const PrivateRouteForCustomer = ({ children }) => {
   const { customer, isLoading } = useCustomerAuth();
 
-  if(isLoading) {
-    return <Loader />
+  if (isLoading) {
+    return <Loader />;
   }
 
-  return customer ? children : <Navigate to='/' />;
-}
+  return customer ? children : <Navigate to="/" />;
+};
 
 export default App;

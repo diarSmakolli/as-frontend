@@ -46,9 +46,9 @@ const ProductCard = ({ product }) => {
 
     // Calculate it from prices if not provided
     const finalPrice =
-      product.pricing?.final_price_nett || product.final_price_nett;
+      product.pricing?.final_price_gross || product.final_price_gross;
     const regularPrice =
-      product.pricing?.regular_price_nett || product.regular_price_nett;
+      product.pricing?.regular_price_gross || product.regular_price_gross;
     const isDiscounted =
       product.pricing?.is_discounted || product.is_discounted;
 
@@ -70,10 +70,10 @@ const ProductCard = ({ product }) => {
     slug: product.slug,
     title: product.title,
     image: product.main_image_url || product.images?.[0]?.url,
-    price: product.pricing?.final_price_nett || product.final_price_nett,
+    price: product.pricing?.final_price_gross || product.final_price_gross,
     originalPrice:
       product.pricing?.is_discounted || product.is_discounted
-        ? product.pricing?.regular_price_nett || product.regular_price_nett
+        ? product.pricing?.regular_price_gross || product.regular_price_gross
         : null,
     discountPercentage: calculateDiscountPercentage(),
     isDiscounted: product.pricing?.is_discounted || product.is_discounted,
@@ -143,32 +143,18 @@ const ProductCard = ({ product }) => {
   return (
     <Card
       onClick={handleProductClick}
-      bg="rgba(255,255,255,1)"
+      bg="transparent"
       overflow="hidden"
-      shadow="sm"
+      shadow="none"
       // transition="all 0.3s ease"
       cursor="pointer"
-      border="1px solid rgba(145, 158, 171, 0.2)"
+      border="0px solid rgba(145, 158, 171, 0.2)"
       position="relative"
       rounded="12px"
       minW={{ base: "200px", sm: "240px", md: "240px" }}
       maxW={{ base: "200px", sm: "240px", md: "240px" }}
-      _hover={{
-        shadow: "md",
-        transform: "translateY(-6px)",
-      }}
       flexShrink={0}
-      _before={{
-        content: '""',
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        opacity: 0.3,
-        pointerEvents: "none",
-        zIndex: 0,
-      }}
+     
     >
       <Box position="relative">
         <ProductImage

@@ -1,4 +1,4 @@
-// WORKING WELL
+// Amazon/AliExpress-inspired Checkout
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -9,6 +9,7 @@ import {
   VStack,
   HStack,
   Grid,
+  GridItem,
   FormControl,
   FormLabel,
   Input,
@@ -20,11 +21,7 @@ import {
   Divider,
   Badge,
   Image,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
+  Flex,
   Alert,
   AlertIcon,
   AlertDescription,
@@ -36,6 +33,19 @@ import {
   InputRightElement,
   IconButton,
   Checkbox,
+  Heading,
+  useDisclosure,
+  Collapse,
+  List,
+  ListItem,
+  ListIcon,
+  Progress,
+  useBreakpointValue,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionIcon,
+  AccordionPanel,
 } from "@chakra-ui/react";
 import {
   FaCheck,
@@ -45,6 +55,23 @@ import {
   FaGift,
   FaTimes,
   FaEdit,
+  FaLock,
+  FaMapMarkerAlt,
+  FaTruck,
+  FaChevronDown,
+  FaChevronUp,
+  FaInfoCircle,
+  FaPhoneAlt,
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaArrowRight,
+  FaArrowLeft,
+  FaUser,
+  FaBuilding,
+  FaShoppingCart,
+  FaFileInvoiceDollar,
+  FaSync,
+  FaPlus,
 } from "react-icons/fa";
 import { homeService } from "../home/services/homeService";
 import { customerAccountService } from "../customer-account/customerAccountService";
@@ -65,6 +92,17 @@ const ADDRESS_MODES = {
   CHOOSE: "choose",
 };
 
+// Constants for viewport meta - will be used inside component
+const setViewportMeta = () => {
+  let meta = document.querySelector('meta[name="viewport"]');
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.name = "viewport";
+    document.head.appendChild(meta);
+  }
+  meta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0";
+};
+
 const REQUIRED_ADDRESS_FIELDS = [
   "first_name",
   "last_name",
@@ -82,7 +120,7 @@ const COUNTRY_NAME_TO_ISO = {
   Belgium: "be",
   Switzerland: "ch",
   Spain: "es",
-  Hungary: "hu"
+  Hungary: "hu",
 };
 
 function getIsoCountry(countryName) {
@@ -93,6 +131,28 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const { customer, refreshCustomer } = useCustomerAuth();
+
+  // Step-based checkout control using disclosure hooks
+  const addressDisclosure = useDisclosure({ defaultIsOpen: true });
+  const paymentDisclosure = useDisclosure();
+  const reviewDisclosure = useDisclosure();
+
+  // Add viewport meta tag for better mobile display
+  useEffect(() => {
+    setViewportMeta();
+    // Clean up function not needed as we're just setting the meta tag once
+  }, []);
+
+  // Responsive UI adjustments
+  const columnTemplate = useBreakpointValue({
+    base: "1fr",
+    md: "1fr",
+    lg: "3fr 2fr",
+  });
+
+  // Track checkout step (1: Address, 2: Payment, 3: Review)
+  const [activeStep, setActiveStep] = useState(1);
+
   // Core state
   const [cartData, setCartData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -210,7 +270,7 @@ const CheckoutPage = () => {
   //   }
   // }, [editingAddress?.postal_code, editingAddress?.country, cartData]);
 
-  // 2. Fetch shipping options ONLY when address changes
+  // Fetch shipping options ONLY when address changes
   useEffect(() => {
     // Only run if we have a postal code, country, and cartData with items
     const postalCode =
@@ -260,55 +320,112 @@ const CheckoutPage = () => {
     billingFormData?.country,
   ]);
 
-  // ✅ NEW: Calculate shipping when addresses are first loaded/selected
-useEffect(() => {
-  // Only run after customer and addresses are loaded, and we have cart data
-  if (customer?.addresses && selectedShippingAddress && cartData?.items?.length > 0 && !editingAddress) {
-    const addressData = getAddressById(selectedShippingAddress);
-    
-    if (addressData?.postal_code && addressData?.country) {
-      const isoCountry = getIsoCountry(addressData.country);
-      
-      console.log(`[InitShipping] Calculating for default address: ${addressData.country} (${isoCountry}), ${addressData.postal_code}`);
-      
-      let cancelled = false;
-      (async () => {
-        try {
-          const cart = await homeService.getActiveCart(isoCountry, addressData.postal_code);
-          if (cancelled) return;
-          
-          setCartData(cart);
-          
-          const options = cart.bigbuy_shipping_details?.all_options || [];
-          setShippingOptions(options);
+  // Calculate shipping when addresses are first loaded/selected
+  useEffect(() => {
+    // Only run after customer and addresses are loaded, and we have cart data
+    if (
+      customer?.addresses &&
+      selectedShippingAddress &&
+      cartData?.items?.length > 0 &&
+      !editingAddress
+    ) {
+      const addressData = getAddressById(selectedShippingAddress);
 
-          if (options.length > 0) {
-            const lowest = options.reduce(
-              (min, opt) => (opt.cost < min.cost ? opt : min),
-              options[0]
+      if (addressData?.postal_code && addressData?.country) {
+        const isoCountry = getIsoCountry(addressData.country);
+
+        let cancelled = false;
+        (async () => {
+          try {
+            const cart = await homeService.getActiveCart(
+              isoCountry,
+              addressData.postal_code
             );
-            setSelectedShippingOption(lowest);
-            setShippingFee(lowest.cost);
-            
-            console.log(`[InitShipping] Default shipping calculated: €${lowest.cost}`);
+            if (cancelled) return;
+
+            setCartData(cart);
+
+            const options = cart.bigbuy_shipping_details?.all_options || [];
+            setShippingOptions(options);
+
+            if (options.length > 0) {
+              const lowest = options.reduce(
+                (min, opt) => (opt.cost < min.cost ? opt : min),
+                options[0]
+              );
+              setSelectedShippingOption(lowest);
+              setShippingFee(lowest.cost);
+            }
+          } catch (err) {
+            if (cancelled) return;
           }
-        } catch (err) {
-          if (cancelled) return;
-          console.error('[InitShipping] Failed:', err);
-        }
-      })();
-      
-      return () => {
-        cancelled = true;
-      };
+        })();
+
+        return () => {
+          cancelled = true;
+        };
+      }
     }
-  }
-}, [
-  customer?.addresses, 
-  selectedShippingAddress, 
-  cartData?.items?.length,
-  editingAddress // Don't run this when user is editing (let the other useEffect handle it)
-]);
+  }, [
+    customer?.addresses,
+    selectedShippingAddress,
+    cartData?.items?.length,
+    editingAddress, // Don't run this when user is editing (let the other useEffect handle it)
+    getAddressById,
+  ]);
+
+  // ✅ NEW: Calculate shipping when addresses are first loaded/selected
+  useEffect(() => {
+    // Only run after customer and addresses are loaded, and we have cart data
+    if (
+      customer?.addresses &&
+      selectedShippingAddress &&
+      cartData?.items?.length > 0 &&
+      !editingAddress
+    ) {
+      const addressData = getAddressById(selectedShippingAddress);
+
+      if (addressData?.postal_code && addressData?.country) {
+        const isoCountry = getIsoCountry(addressData.country);
+
+        let cancelled = false;
+        (async () => {
+          try {
+            const cart = await homeService.getActiveCart(
+              isoCountry,
+              addressData.postal_code
+            );
+            if (cancelled) return;
+
+            setCartData(cart);
+
+            const options = cart.bigbuy_shipping_details?.all_options || [];
+            setShippingOptions(options);
+
+            if (options.length > 0) {
+              const lowest = options.reduce(
+                (min, opt) => (opt.cost < min.cost ? opt : min),
+                options[0]
+              );
+              setSelectedShippingOption(lowest);
+              setShippingFee(lowest.cost);
+            }
+          } catch (err) {
+            if (cancelled) return;
+          }
+        })();
+
+        return () => {
+          cancelled = true;
+        };
+      }
+    }
+  }, [
+    customer?.addresses,
+    selectedShippingAddress,
+    cartData?.items?.length,
+    editingAddress, // Don't run this when user is editing (let the other useEffect handle it)
+  ]);
 
   // Computed values
   const hasAddresses = useMemo(
@@ -848,14 +965,6 @@ useEffect(() => {
         special_note: specialNote,
       };
 
-      console.log("=== CHECKOUT DATA DEBUG ===");
-      console.log("Customer Type:", customer?.customer_type);
-      console.log("Original Shipping Address:", shippingAddress);
-      console.log("Enhanced Shipping Address:", enhancedShippingAddress);
-      console.log("Billing Address:", billingAddress);
-      console.log("Use Same Address:", useSameAddressForBilling);
-      console.log("============================");
-
       const result = await homeService.checkout(checkoutData);
 
       if (
@@ -890,12 +999,18 @@ useEffect(() => {
   };
 
   const handleError = (title, error) => {
-    console.error(title, error);
     showToast(title, error.message || "Une erreur s'est produite.", "error");
   };
 
   const renderAddressForm = () => (
-    <VStack spacing={4} align="stretch">
+    <VStack
+      spacing={4}
+      align="stretch"
+      bg="white"
+      p={4}
+      borderRadius="md"
+      boxShadow="sm"
+    >
       <FormControl>
         <FormLabel fontSize="sm">Étiquette d'adresse (facultatif)</FormLabel>
         <Input
@@ -903,12 +1018,12 @@ useEffect(() => {
           onChange={(e) =>
             setEditingAddress((prev) => ({ ...prev, label: e.target.value }))
           }
-          placeholder="e.g., Home, Office, Main Address"
-          size="sm"
+          placeholder="Ex: Domicile, Bureau, Adresse principale"
+          size="md"
         />
       </FormControl>
 
-      <Grid templateColumns="1fr 1fr 1fr" gap={4}>
+      <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
         <FormControl isRequired>
           <FormLabel fontSize="sm">Prénom</FormLabel>
           <Input
@@ -919,7 +1034,7 @@ useEffect(() => {
                 first_name: e.target.value,
               }))
             }
-            size="sm"
+            size="md"
           />
         </FormControl>
         <FormControl isRequired>
@@ -932,21 +1047,103 @@ useEffect(() => {
                 last_name: e.target.value,
               }))
             }
-            size="sm"
+            size="md"
           />
         </FormControl>
-        <FormControl isRequired>
-          <FormLabel fontSize="sm">Téléphone</FormLabel>
+      </Grid>
+
+      <FormControl isRequired>
+        <FormLabel fontSize="sm">Téléphone</FormLabel>
+        <InputGroup>
           <Input
             value={editingAddress?.phone || ""}
             onChange={(e) =>
               setEditingAddress((prev) => ({ ...prev, phone: e.target.value }))
             }
             placeholder="Entrez le numéro de téléphone"
-            size="sm"
+            size="md"
           />
-        </FormControl>
-      </Grid>
+          <InputRightElement>
+            <Icon as={FaPhoneAlt} color="gray.400" />
+          </InputRightElement>
+        </InputGroup>
+      </FormControl>
+
+      {/* BUSINESS FIELDS FOR SHIPPING ADDRESS */}
+      {customer?.customer_type === "business" && (
+        <Box bg="gray.50" p={4} borderRadius="md" mt={2}>
+          <Text fontSize="sm" fontWeight="semibold" mb={3} color="gray.700">
+            Informations sur l'entreprise
+          </Text>
+          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
+            <FormControl isRequired>
+              <FormLabel fontSize="sm">Nom de l'entreprise</FormLabel>
+              <Input
+                value={editingAddress?.company || ""}
+                onChange={(e) =>
+                  setEditingAddress((prev) => ({
+                    ...prev,
+                    company: e.target.value,
+                  }))
+                }
+                placeholder="Entrez le nom de l'entreprise"
+                size="md"
+                bg="white"
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel fontSize="sm">Numéro d'enregistrement</FormLabel>
+              <Input
+                value={editingAddress?.business_registration_number || ""}
+                onChange={(e) =>
+                  setEditingAddress((prev) => ({
+                    ...prev,
+                    business_registration_number: e.target.value,
+                  }))
+                }
+                placeholder="Entrez le numéro d'enregistrement"
+                size="md"
+                bg="white"
+              />
+            </FormControl>
+          </Grid>
+
+          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4} mt={3}>
+            <FormControl>
+              <FormLabel fontSize="sm">Numéro de TVA</FormLabel>
+              <Input
+                value={editingAddress?.vat_number || ""}
+                onChange={(e) =>
+                  setEditingAddress((prev) => ({
+                    ...prev,
+                    vat_number: e.target.value,
+                  }))
+                }
+                placeholder="Entrez le numéro de TVA"
+                size="md"
+                bg="white"
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel fontSize="sm">Numéro fiscal</FormLabel>
+              <Input
+                value={editingAddress?.fiscal_number || ""}
+                onChange={(e) =>
+                  setEditingAddress((prev) => ({
+                    ...prev,
+                    fiscal_number: e.target.value,
+                  }))
+                }
+                placeholder="Entrez le numéro fiscal"
+                size="md"
+                bg="white"
+              />
+            </FormControl>
+          </Grid>
+        </Box>
+      )}
+
+      {/* BUSINESS FIELDS FOR SHIPPING ADDRESS - CONSOLIDATED */}
 
       {/* ✅ BUSINESS FIELDS FOR SHIPPING ADDRESS */}
       {customer?.customer_type === "business" && (
@@ -954,7 +1151,7 @@ useEffect(() => {
           <Text fontSize="sm" fontWeight="semibold" mb={3} color="gray.700">
             Informations sur l'entreprise
           </Text>
-          <Grid templateColumns="1fr 1fr" gap={4}>
+          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
             <FormControl isRequired>
               <FormLabel fontSize="sm">Nom de l'entreprise</FormLabel>
               <Input
@@ -985,7 +1182,7 @@ useEffect(() => {
             </FormControl>
           </Grid>
 
-          <Grid templateColumns="1fr 1fr" gap={4} mt={3}>
+          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4} mt={3}>
             <FormControl>
               <FormLabel fontSize="sm">Numéro de TVA</FormLabel>
               <Input
@@ -1018,7 +1215,7 @@ useEffect(() => {
         </Box>
       )}
 
-      <Grid templateColumns="1fr 1fr" gap={4}>
+      <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
         <FormControl isRequired>
           <FormLabel fontSize="sm">Ville</FormLabel>
           <Input
@@ -1044,7 +1241,7 @@ useEffect(() => {
         </FormControl>
       </Grid>
 
-      <Grid templateColumns="1fr 1fr" gap={4}>
+      <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
         <FormControl isRequired>
           <FormLabel fontSize="sm">Code Postal</FormLabel>
           <Input
@@ -1079,18 +1276,22 @@ useEffect(() => {
         </FormControl>
       </Grid>
 
-      <HStack>
+      <Flex
+        direction={{ base: "column", sm: "row" }}
+        gap={3}
+        w={{ base: "100%", sm: "auto" }}
+      >
         <Button
           size="sm"
           color="rgb(99, 115, 129)"
-          rounded="50px"
+          rounded="10px"
           border="1px solid rgba(145, 158, 171, 0.2)"
-          p="18px 18px"
           bg="#fff"
-          fontWeight={"500"}
-          fontFamily="Airbnb Cereal VF"
+          fontWeight="500"
           onClick={saveAddress}
           isLoading={submitting}
+          minH="40px"
+          w={{ base: "100%", sm: "auto" }}
         >
           {addressMode === ADDRESS_MODES.ADD
             ? "Ajouter une adresse"
@@ -1102,26 +1303,31 @@ useEffect(() => {
           color="gray.600"
           fontWeight="400"
           onClick={() => setAddressMode(ADDRESS_MODES.VIEW)}
+          minH="40px"
+          w={{ base: "100%", sm: "auto" }}
         >
           Annuler
         </Button>
-      </HStack>
+      </Flex>
     </VStack>
   );
 
   const renderAddressSelector = () => (
-    <Box>
-      <Text fontSize="sm" color="gray.600" mb={3}>
-        Select an address from your saved addresses: (
-        {customer?.addresses?.length || 0} addresses)
+    <Box bg="white" p={4} borderRadius="md" boxShadow="sm">
+      <Text fontSize="md" fontWeight="medium" mb={3}>
+        Sélectionnez une adresse de livraison (
+        {customer?.addresses?.length || 0})
       </Text>
 
       {/* Show loading state during refresh */}
       {submitting && (
-        <Box mb={3} p={2} bg="blue.50" borderRadius="md">
-          <Text fontSize="sm" color="blue.600">
-            Mise à jour des adresses...
-          </Text>
+        <Box mb={3} p={3} bg="blue.50" borderRadius="md">
+          <Flex align="center">
+            <Spinner size="sm" color="blue.500" mr={2} />
+            <Text fontSize="sm" color="blue.600">
+              Mise à jour des adresses...
+            </Text>
+          </Flex>
         </Box>
       )}
 
@@ -1132,59 +1338,73 @@ useEffect(() => {
       >
         <Stack spacing={3}>
           {customer?.addresses?.map((address, idx) => (
-            <Radio
-              key={`address-${address.id || address.label || idx}-${
-                customer?.addresses?.length
-              }`}
-              value={address.id || address.label}
+            <Box
+              key={`address-${address.id || address.label || idx}`}
+              border="1px solid"
+              borderColor={
+                selectedShippingAddress === (address.id || address.label)
+                  ? "yellow.400"
+                  : "gray.200"
+              }
+              bg={
+                selectedShippingAddress === (address.id || address.label)
+                  ? "yellow.50"
+                  : "white"
+              }
+              borderRadius="md"
+              p={3}
             >
-              <Box>
-                <Text fontWeight="semibold">
-                  {address.label || `Address ${idx + 1}`}
-                </Text>
-                <Text fontSize="sm" color="gray.600">
-                  {formatAddress(address)}
-                </Text>
-                <Text fontSize="xs" color="gray.500">
-                  Téléphone: {address.phone || customer.phone_primary}
-                </Text>
-              </Box>
-            </Radio>
+              <Radio value={address.id || address.label} w="100%">
+                <Box>
+                  <Text fontWeight="medium">
+                    {address.label || `Adresse ${idx + 1}`}
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    {formatAddress(address)}
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    {address.first_name} {address.last_name} |{" "}
+                    {address.phone || customer.phone_primary}
+                  </Text>
+                </Box>
+              </Radio>
+            </Box>
           ))}
         </Stack>
       </RadioGroup>
 
-      <HStack>
+      <Flex flexWrap="wrap" gap={3}>
         <Button
+          variant="outline"
           size="sm"
-          variant="ghost"
           onClick={() => setAddressMode(ADDRESS_MODES.VIEW)}
         >
           Annuler
         </Button>
         <Button
+          variant="solid"
+          colorScheme="blue"
           size="sm"
-          colorScheme="orange"
           onClick={handleManualRefresh}
           isLoading={submitting}
+          leftIcon={<Icon as={FaSync} />}
         >
           Actualiser la liste
         </Button>
         <Button
+          variant="solid"
+          colorScheme="yellow"
           size="sm"
-          colorScheme="green"
-          onClick={() => {
-            setEditingAddress(createEmptyAddress());
-            setSelectedShippingAddress("new");
-            setAddressMode(ADDRESS_MODES.ADD);
-          }}
+          onClick={handleAddNewAddress}
+          leftIcon={<Icon as={FaPlus} />}
         >
           Ajouter une nouvelle adresse
         </Button>
-      </HStack>
+      </Flex>
     </Box>
   );
 
+  // Enhanced address summary with better error handling
   // Enhanced address summary with better error handling
   const renderAddressSummary = () => {
     const currentAddress = selectedShippingAddressData;
@@ -1194,34 +1414,37 @@ useEffect(() => {
         <Box
           p={4}
           border="1px"
-          borderColor="red.200"
+          borderColor="red.300"
           borderRadius="md"
           bg="red.50"
         >
           <VStack align="start" spacing={2}>
-            <Text fontWeight="semibold" color="red.600">
-              Adresse non trouvée
-            </Text>
+            <Flex align="center">
+              <Icon as={FaExclamationCircle} color="red.500" mr={2} />
+              <Text fontWeight="medium" color="red.600">
+                Adresse non trouvée
+              </Text>
+            </Flex>
             <Text fontSize="sm" color="red.500">
               L'adresse sélectionnée n'a pas pu être chargée. Veuillez
               sélectionner une autre adresse ou en ajouter une nouvelle.
             </Text>
-            <HStack>
+            <Flex mt={2} gap={2}>
               <Button
                 size="sm"
-                colorScheme="orange"
+                colorScheme="blue"
                 onClick={() => setAddressMode(ADDRESS_MODES.CHOOSE)}
               >
                 Choisir une adresse
               </Button>
               <Button
                 size="sm"
-                colorScheme="green"
+                colorScheme="yellow"
                 onClick={handleAddNewAddress}
               >
                 Ajouter une nouvelle adresse
               </Button>
-            </HStack>
+            </Flex>
           </VStack>
         </Box>
       );
@@ -1232,16 +1455,20 @@ useEffect(() => {
         <Box
           p={4}
           border="1px"
-          borderColor="orange.200"
+          borderColor="orange.300"
           borderRadius="md"
           bg="orange.50"
         >
           <VStack align="start" spacing={2}>
-            <Text fontWeight="semibold" color="orange.600">
-              New address required
-            </Text>
-            <Text fontSize="sm" color="orange.500">
-              Please fill in the address form below to continue.
+            <Flex align="center">
+              <Icon as={FaExclamationCircle} color="orange.500" mr={2} />
+              <Text fontWeight="medium" color="orange.700">
+                Nouvelle adresse requise
+              </Text>
+            </Flex>
+            <Text fontSize="sm" color="orange.600">
+              Veuillez remplir le formulaire d'adresse ci-dessous pour
+              continuer.
             </Text>
           </VStack>
         </Box>
@@ -1254,33 +1481,68 @@ useEffect(() => {
         border="1px"
         borderColor="gray.200"
         borderRadius="md"
-        bg="gray.50"
+        bg="white"
+        boxShadow="sm"
       >
-        <VStack align="start" spacing={2}>
-          <Text fontWeight="semibold">
-            {customer?.customer_type === "business"
-              ? customer?.business_name ||
-                `${customer?.first_name} ${customer?.last_name}`
-              : `${customer?.first_name} ${customer?.last_name}`}
+        <Flex align="center" mb={2}>
+          <Icon as={FaMapMarkerAlt} mr={2} color="yellow.500" />
+          <Text fontWeight="medium" fontSize="md">
+            Adresse de livraison
           </Text>
-          <Text fontSize="sm" color="gray.600">
-            {formatAddress(currentAddress)}
+        </Flex>
+
+        <Box px={6}>
+          <Text fontWeight="medium">
+            {currentAddress.first_name} {currentAddress.last_name}
           </Text>
-          {customer?.customer_type === "business" &&
-            customer?.business_registration_number && (
-              <Text fontSize="sm" color="gray.500">
-                Reg. Nr: {customer.business_registration_number}
-              </Text>
-            )}
-          {customer?.customer_type === "business" && customer?.vat_number && (
-            <Text fontSize="sm" color="gray.500">
-              VAT: {customer.vat_number}
-            </Text>
+
+          {customer?.customer_type === "business" && currentAddress.company && (
+            <Text color="gray.700">{currentAddress.company}</Text>
           )}
-          <Text fontSize="sm" color="gray.500">
-            Phone: {currentAddress?.phone || customer?.phone_primary}
+
+          <Text color="gray.700">{currentAddress.street}</Text>
+          <Text color="gray.700">
+            {currentAddress.city}, {currentAddress.postal_code}
           </Text>
-        </VStack>
+          <Text color="gray.700">{currentAddress.country}</Text>
+          <Text color="gray.700" mt={1}>
+            Téléphone: {currentAddress?.phone || customer?.phone_primary}
+          </Text>
+
+          {customer?.customer_type === "business" && (
+            <Box mt={2}>
+              {customer?.business_registration_number && (
+                <Text fontSize="sm" color="gray.500">
+                  SIRET: {customer.business_registration_number}
+                </Text>
+              )}
+              {customer?.vat_number && (
+                <Text fontSize="sm" color="gray.500">
+                  TVA: {customer.vat_number}
+                </Text>
+              )}
+            </Box>
+          )}
+
+          <Flex mt={3} gap={2}>
+            <Button
+              size="sm"
+              leftIcon={<Icon as={FaEdit} />}
+              onClick={handleEditAddress}
+              colorScheme="blue"
+              variant="outline"
+            >
+              Modifier
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setAddressMode(ADDRESS_MODES.CHOOSE)}
+              variant="outline"
+            >
+              Changer d'adresse
+            </Button>
+          </Flex>
+        </Box>
       </Box>
     );
   };
@@ -1322,7 +1584,7 @@ useEffect(() => {
             *
           </Text>
         </Text>
-        <Grid templateColumns="1fr 1fr" gap={4}>
+        <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
           <FormControl isRequired>
             <FormLabel fontSize="sm">
               Prénom{" "}
@@ -1390,7 +1652,7 @@ useEffect(() => {
               *
             </Text>
           </Text>
-          <Grid templateColumns="1fr 1fr" gap={4}>
+          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
             <FormControl isRequired>
               <FormLabel fontSize="sm">
                 Nom de l'entreprise{" "}
@@ -1426,7 +1688,7 @@ useEffect(() => {
             </FormControl>
           </Grid>
 
-          <Grid templateColumns="1fr 1fr" gap={4} mt={3}>
+          <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4} mt={3}>
             <FormControl>
               <FormLabel fontSize="sm">Numéro de TVA</FormLabel>
               <Input
@@ -1467,7 +1729,7 @@ useEffect(() => {
             *
           </Text>
         </Text>
-        <Grid templateColumns="1fr 1fr" gap={4}>
+        <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4}>
           <FormControl isRequired>
             <FormLabel fontSize="sm">
               Ville{" "}
@@ -1508,7 +1770,7 @@ useEffect(() => {
           </FormControl>
         </Grid>
 
-        <Grid templateColumns="1fr 1fr" gap={4} mt={3}>
+        <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={4} mt={3}>
           <FormControl isRequired>
             <FormLabel fontSize="sm">
               Code Postal{" "}
@@ -1530,8 +1792,7 @@ useEffect(() => {
           </FormControl>
           <FormControl isRequired>
             <FormLabel fontSize="sm">
-              
-              {" "}
+              Pays{" "}
               <Text as="span" color="red.500">
                 *
               </Text>
@@ -1771,12 +2032,16 @@ useEffect(() => {
     return (
       <>
         <Navbar />
-        <Container maxW="7xl" py={8}>
-          <VStack spacing={6} align="center" py={20}>
-            <Spinner size="xl" />
-            <Text>Chargement du paiement...</Text>
-          </VStack>
-        </Container>
+        <Box bg="#FAFAFA" minH="calc(100vh - 120px)">
+          <Container maxW="7xl" py={8}>
+            <VStack spacing={6} align="center" py={20}>
+              <Spinner size="xl" color="yellow.500" thickness="4px" />
+              <Text fontSize="lg" color="gray.600">
+                Préparation de votre commande...
+              </Text>
+            </VStack>
+          </Container>
+        </Box>
         <Footer />
       </>
     );
@@ -1805,14 +2070,37 @@ useEffect(() => {
   return (
     <>
       <Navbar />
-      <Box bg="rgba(252, 252, 253, 1)" minH="calc(100vh - 200px)">
-        <Container maxW="7xl" py={8}>
-          {error && (
-            <Alert status="error" mb={6} borderRadius="xl">
-              <AlertIcon />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+      <Box bg="#FAFAFA" minH="calc(100vh - 120px)" py={[4, 6, 8]}>
+        <Container maxW="7xl" px={{ base: 3, md: 6 }}>
+          {/* Amazon-style Checkout Header */}
+          <Flex
+            direction="column"
+            align="flex-start"
+            mb={6}
+            borderBottom="1px solid"
+            borderColor="gray.200"
+            pb={4}
+          >
+            <Heading
+              as="h1"
+              fontSize={["lg", "2xl"]}
+              fontWeight="500"
+              color="#232f3e"
+              mb={2}
+              fontFamily="Airbnb Cereal VF"
+            >
+              Finaliser la commande
+            </Heading>
+
+            {error && (
+              <Alert status="error" mt={4} mb={2} borderRadius="md">
+                <AlertIcon />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+          </Flex>
+
+          {/* Main Content Grid - Responsive layout */}
 
           <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={8}>
             {/* Left Column - Checkout Form */}
@@ -1820,77 +2108,100 @@ useEffect(() => {
               <Accordion defaultIndex={[0]} allowMultiple>
                 {/* Shipping and Billing Section */}
                 <AccordionItem
-                  bg="white"
+                  bg="rgb(255,255,255)"
                   borderRadius="xl"
                   border="1px solid rgba(145, 158, 171, 0.2)"
                 >
-                  <AccordionButton py={4} px={6}>
-                    <HStack spacing={4} flex={1}>
-                      <VStack align="start" spacing={0}>
-                        <Text fontWeight="bold" color="gray.800">
+                  <AccordionButton py={4} px={{ base: 3, md: 6 }}>
+                    <Box flex="1">
+                      <Flex
+                        direction={{ base: "column", md: "row" }}
+                        align={{ base: "flex-start", md: "center" }}
+                        justify="space-between"
+                        width="100%"
+                        gap={3}
+                      >
+                        <Text
+                          fontWeight="500"
+                          color="gray.800"
+                          mb={{ base: 2, md: 0 }}
+                          fontFamily={"Airbnb Cereal VF"}
+                        >
                           Expédition et facturation
                         </Text>
-                      </VStack>
-                      <Spacer />
 
-                      {hasAddresses && (
-                        <>
+                        <Flex
+                          gap={2}
+                          flexWrap={{ base: "wrap", md: "nowrap" }}
+                          justify={{ base: "flex-start", md: "flex-end" }}
+                          width={{ base: "100%", md: "auto" }}
+                        >
+                          {hasAddresses && (
+                            <>
+                              <Button
+                                size="sm"
+                                color="rgba(223, 240, 255, 1)"
+                                rounded="10px"
+                                border="1px solid rgba(148, 145, 171, 0.2)"
+                                bg="#3167a8ff"
+                                _hover={{ color: "white" }}
+                                fontWeight="500"
+                                onClick={handleEditAddress}
+                                isDisabled={
+                                  !selectedShippingAddressData ||
+                                  selectedShippingAddress === "new"
+                                }
+                                flexShrink={0}
+                                fontSize={{ base: "xs", sm: "sm" }}
+                                px={{ base: 2, sm: 3 }}
+                                py={{ base: 1, sm: 2 }}
+                              >
+                                <Icon as={FaEdit} mr={1} />
+                                Modifier
+                              </Button>
+                              <Button
+                                size="sm"
+                                color="rgba(223, 240, 255, 1)"
+                                rounded="10px"
+                                border="1px solid rgba(148, 145, 171, 0.2)"
+                                bg="#3167a8ff"
+                                _hover={{ color: "white" }}
+                                fontWeight="500"
+                                onClick={() =>
+                                  setAddressMode(ADDRESS_MODES.CHOOSE)
+                                }
+                                flexShrink={0}
+                                fontSize={{ base: "xs", sm: "sm" }}
+                                px={{ base: 2, sm: 3 }}
+                                py={{ base: 1, sm: 2 }}
+                              >
+                                Choisir adresse
+                              </Button>
+                            </>
+                          )}
                           <Button
                             size="sm"
                             color="rgba(223, 240, 255, 1)"
                             rounded="10px"
                             border="1px solid rgba(148, 145, 171, 0.2)"
-                            p="18px 18px"
                             bg="#3167a8ff"
                             _hover={{ color: "white" }}
-                            fontWeight={"500"}
-                            fontFamily="Airbnb Cereal VF"
-                            leftIcon={<FaEdit />}
-                            onClick={handleEditAddress}
-                            isDisabled={
-                              !selectedShippingAddressData ||
-                              selectedShippingAddress === "new"
-                            }
+                            fontWeight="500"
+                            onClick={handleAddNewAddress}
+                            flexShrink={0}
+                            fontSize={{ base: "xs", sm: "sm" }}
+                            px={{ base: 2, sm: 3 }}
+                            py={{ base: 1, sm: 2 }}
                           >
-                            Modifier l'adresse
+                            Nouvelle adresse
                           </Button>
-                          <Button
-                            size="sm"
-                            color="rgba(223, 240, 255, 1)"
-                            rounded="10px"
-                            border="1px solid rgba(148, 145, 171, 0.2)"
-                            p="18px 18px"
-                            bg="#3167a8ff"
-                            _hover={{ color: "white" }}
-                            fontWeight={"500"}
-                            fontFamily="Airbnb Cereal VF"
-                            onClick={() => setAddressMode(ADDRESS_MODES.CHOOSE)}
-                          >
-                            Choisir une autre adresse (
-                            {customer?.addresses?.length})
-                          </Button>
-                        </>
-                      )}
-
-                      <Button
-                        size="sm"
-                        color="rgba(223, 240, 255, 1)"
-                        rounded="10px"
-                        border="1px solid rgba(148, 145, 171, 0.2)"
-                        p="18px 18px"
-                        bg="#3167a8ff"
-                        _hover={{ color: "white" }}
-                        fontWeight={"500"}
-                        fontFamily="Airbnb Cereal VF"
-                        onClick={handleAddNewAddress}
-                      >
-                        Ajouter une nouvelle adresse
-                      </Button>
-                    </HStack>
-                    <AccordionIcon />
+                        </Flex>
+                      </Flex>
+                    </Box>
+                    <AccordionIcon ml={2} />
                   </AccordionButton>
 
-                  <AccordionPanel px={6} pb={6}>
+                  <AccordionPanel px={{ base: 3, md: 6 }} pb={6}>
                     <VStack spacing={6} align="stretch">
                       <Box>
                         <Text fontWeight="semibold" mb={4} color="gray.700">
@@ -1945,11 +2256,11 @@ useEffect(() => {
                   borderColor="gray.200"
                   mt={4}
                 >
-                  <AccordionButton py={4} px={6}>
+                  <AccordionButton py={4} px={{ base: 3, md: 6 }}>
                     <HStack spacing={4} flex={1}>
                       <Box
-                        w={8}
-                        h={8}
+                        w={7}
+                        h={7}
                         borderRadius="full"
                         bg={paymentMethod ? "green.500" : "gray.300"}
                         color="white"
@@ -1968,7 +2279,7 @@ useEffect(() => {
                     <AccordionIcon />
                   </AccordionButton>
 
-                  <AccordionPanel px={6} pb={6}>
+                  <AccordionPanel px={{ base: 3, md: 6 }} pb={6}>
                     <Text fontSize="sm" color="gray.600" mb={4}>
                       Choisissez le mode de paiement
                     </Text>
@@ -2048,12 +2359,16 @@ useEffect(() => {
               <Box
                 bg="white"
                 borderRadius="xl"
-                p={6}
+                p={{ base: 4, md: 6 }}
                 border="1px"
                 borderColor="gray.200"
               >
                 <FormControl>
-                  <FormLabel fontWeight="semibold" color="gray.700">
+                  <FormLabel
+                    fontWeight="semibold"
+                    color="gray.700"
+                    fontSize={{ base: "sm", md: "md" }}
+                  >
                     Si vous souhaitez laisser un commentaire, vous pouvez
                     l'écrire ici
                   </FormLabel>
@@ -2063,6 +2378,7 @@ useEffect(() => {
                     placeholder="Entrez vos notes spéciales ici..."
                     rows={4}
                     resize="none"
+                    fontSize={{ base: "sm", md: "md" }}
                   />
                 </FormControl>
               </Box>
@@ -2117,10 +2433,12 @@ useEffect(() => {
             <Box
               bg="white"
               borderRadius="xl"
-              p={6}
+              p={{ base: 4, md: 6 }}
               border="1px"
               borderColor="gray.200"
               h="fit-content"
+              mb={8}
+              boxShadow="sm"
             >
               <Text fontSize="xl" fontWeight="500" mb={6} color="gray.800">
                 Total de la commande

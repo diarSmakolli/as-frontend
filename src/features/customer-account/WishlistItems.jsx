@@ -104,7 +104,6 @@ export default function WishlistItems() {
 
     return {
       ...baseProduct,
-      // Flash deal specific enhancements
       savingsAmount: apiProduct.pricing?.savings_nett || 0,
       dealUrgency: apiProduct.flash_deal?.deal_urgency || "low",
       dealType: apiProduct.flash_deal?.deal_type || "discount",
@@ -269,7 +268,7 @@ export default function WishlistItems() {
                 </Box>
 
                 {/* Navigation Menu */}
-                <Box
+                {/* <Box
                   bg="white"
                   borderRadius="md"
                   border="1px"
@@ -283,22 +282,23 @@ export default function WishlistItems() {
                       borderBottom="1px"
                       borderColor="gray.100"
                       color="gray.700"
+                      fontFamily="Airbnb Cereal VF"
                     >
                       Compte
                     </Text>
                     {menuItems.map((item) => (
                       <Box
                         key={item.key}
-                        bg={item.active ? "orange.50" : "transparent"}
+                        bg={item.active ? "transparent" : "transparent"}
                         borderLeft={
-                          item.active ? "3px solid" : "3px solid transparent"
+                          item.active ? "0px solid" : "0px solid transparent"
                         }
-                        borderColor={item.active ? "orange.500" : "transparent"}
+                        borderColor={item.active ? "transparent" : "transparent"}
                         px={3}
                         py={2}
                         cursor="pointer"
                         _hover={{
-                          bg: item.active ? "orange.50" : "gray.50",
+                          bg: item.active ? "gray.50" : "gray.50",
                         }}
                         borderBottom="1px"
                         borderBottomColor="gray.100"
@@ -307,12 +307,12 @@ export default function WishlistItems() {
                           <Icon
                             as={item.icon}
                             size="sm"
-                            color={item.active ? "orange.500" : "gray.500"}
+                            color={item.active ? "gray.500" : "gray.500"}
                           />
                           <Text
                             fontSize="sm"
                             fontWeight={item.active ? "500" : "normal"}
-                            color={item.active ? "orange.600" : "gray.700"}
+                            color={item.active ? "gray.700" : "gray.700"}
                           >
                             {item.label}
                           </Text>
@@ -320,7 +320,7 @@ export default function WishlistItems() {
                       </Box>
                     ))}
                   </VStack>
-                </Box>
+                </Box> */}
               </VStack>
             </GridItem>
 
@@ -335,7 +335,7 @@ export default function WishlistItems() {
               >
                 <VStack spacing={6} align="stretch">
                   <HStack justify="space-between" align="center">
-                    <Heading fontSize="xl" color="gray.800">
+                    <Heading fontSize="md" color="gray.800" fontFamily="Airbnb Cereal VF">
                       Ma liste de souhaits
                     </Heading>
                     <Text color="gray.500" fontSize="sm">
@@ -565,18 +565,18 @@ export default function WishlistItems() {
       </Box>
 
        {/* Confirmation Modal */}
-       <Modal isOpen={isOpen} onClose={() => { setSelectedProductId(null); onClose(); }}>
+       <Modal isOpen={isOpen} onClose={() => { setSelectedProductId(null); onClose(); }} isCentered>
         <ModalOverlay />
-        <ModalContent rounded='2xl'>
-          <ModalHeader fontFamily="Airbnb Cereal VF">Supprimer de la liste de souhaits</ModalHeader>
-          <ModalBody fontFamily="Airbnb Cereal VF">
+        <ModalContent rounded='2xl' ml={{ base: 4 }} mr={{base: 4}}>
+          <ModalHeader fontFamily="Airbnb Cereal VF" fontSize='md'>Supprimer de la liste de souhaits</ModalHeader>
+          <ModalBody fontFamily="Airbnb Cereal VF" fontSize='sm'>
             Êtes-vous sûr de vouloir supprimer ce produit de votre liste de souhaits ?
           </ModalBody>
           <ModalFooter fontFamily="Airbnb Cereal VF">
-            <Button variant="ghost" mr={3} onClick={() => { setSelectedProductId(null); onClose(); }} fontFamily="Airbnb Cereal VF">
+            <Button variant="ghost" mr={3} onClick={() => { setSelectedProductId(null); onClose(); }} fontFamily="Airbnb Cereal VF" fontSize='sm'>
               Annuler
             </Button>
-            <Button colorScheme="red" onClick={() => handleRemoveFromWishlist(selectedProductId)} fontFamily="Airbnb Cereal VF" rounded='xl'>
+            <Button colorScheme="red" onClick={() => handleRemoveFromWishlist(selectedProductId)} fontFamily="Airbnb Cereal VF" rounded='xl' fontSize='sm'>
               Retirer
             </Button>
           </ModalFooter>

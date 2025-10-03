@@ -128,6 +128,7 @@ const CustomOptionsForm = ({
   const optionTypes = [
     { value: "radio", label: "Radio Buttons", icon: FiCircle, hasValues: true },
     { value: "select", label: "Select", icon: FiSquare, hasValues: true },
+    { value: "number", label: "Number", icon: FiSquare, hasValues: true },
   ];
 
   const handleInputChange = (name, value) => {

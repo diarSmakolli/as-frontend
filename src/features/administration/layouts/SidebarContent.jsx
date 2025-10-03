@@ -26,19 +26,70 @@ const SidebarContent = ({ onClose, onSettingsOpen, ...rest }) => {
     onClose: onSearchClose,
   } = useDisclosure();
 
-  const LinkItems = [
-    { name: "Home", icon: FiHome, href: "/dashboard" },
-    { name: "Users", icon: AiOutlineUser, href: "/administrations-console" },
-    { name: "Companies", icon: AiOutlineUsergroupAdd, href: "/companies-console" },
-    { name: "Taxes", icon: AiOutlineUsergroupAdd, href: "/taxes-console" },
-    { name: "Category", icon: AiOutlineUsergroupAdd, href: "/category-console" },
-    { name: "Products", icon: AiOutlineUsergroupAdd, href: "/products-console" },
-    { name: "Promotion Codes", icon: AiOutlineUsergroupAdd, href: "/promotions" },
-    { name: "Gift Cards", icon: AiOutlineUsergroupAdd, href: "/gift-cards" },
-    { name: "Customers", icon: AiOutlineUsergroupAdd, href: "/customers" },
-    { name: "Orders", icon: AiOutlineUsergroupAdd, href: "/orders" },
-    { name: "Reports", icon: AiOutlineUsergroupAdd, href: "/dashboard" },
-  ];
+  // const LinkItems = [
+    // { name: "Home", icon: FiHome, href: "/dashboard" },
+    // { name: "Users", icon: AiOutlineUser, href: "/administrations-console" },
+    // { name: "Companies", icon: AiOutlineUsergroupAdd, href: "/companies-console" },
+    // { name: "Taxes", icon: AiOutlineUsergroupAdd, href: "/taxes-console" },
+    // { name: "Category", icon: AiOutlineUsergroupAdd, href: "/category-console" },
+    // { name: "Products", icon: AiOutlineUsergroupAdd, href: "/products-console" },
+    // { name: "Promotion Codes", icon: AiOutlineUsergroupAdd, href: "/promotions" },
+    // { name: "Gift Cards", icon: AiOutlineUsergroupAdd, href: "/gift-cards" },
+    // { name: "Customers", icon: AiOutlineUsergroupAdd, href: "/customers" },
+    // { name: "Orders", icon: AiOutlineUsergroupAdd, href: "/orders" },
+    // { name: "Reports", icon: AiOutlineUsergroupAdd, href: "/dashboard" },
+
+  //   const LinkItems = [
+  //   { name: "Home", icon: FiHome, href: "/dashboard" },
+  //   // Only show "Users" for admin roles
+  //   ...(account && ["administrator", "global-administrator"].includes(account.role)
+  //     ? [{ name: "Users", icon: AiOutlineUser, href: "/administrations-console" }]
+  //     : []),
+  //   // Show "My Profile" for all users
+  //   ...(account
+  //     ? [{
+  //         name: "My Profile",
+  //         icon: AiOutlineUser,
+  //         href: `/administrations-console/detailed/${account.id}`,
+  //       }]
+  //     : []),
+  //   { name: "Companies", icon: AiOutlineUsergroupAdd, href: "/companies-console" },
+  //   { name: "Taxes", icon: AiOutlineUsergroupAdd, href: "/taxes-console" },
+  //   { name: "Category", icon: AiOutlineUsergroupAdd, href: "/category-console" },
+  //   { name: "Products", icon: AiOutlineUsergroupAdd, href: "/products-console" },
+  //   { name: "Promotion Codes", icon: AiOutlineUsergroupAdd, href: "/promotions" },
+  //   { name: "Gift Cards", icon: AiOutlineUsergroupAdd, href: "/gift-cards" },
+  //   { name: "Customers", icon: AiOutlineUsergroupAdd, href: "/customers" },
+  //   { name: "Orders", icon: AiOutlineUsergroupAdd, href: "/orders" },
+  //   { name: "Reports", icon: AiOutlineUsergroupAdd, href: "/dashboard" },
+  // ];
+  // ];
+
+  let LinkItems = [];
+
+  if (account && ["administrator", "global-administrator"].includes(account.role)) {
+    // Admins see everything
+    LinkItems = [
+      { name: "Home", icon: FiHome, href: "/dashboard" },
+      { name: "Users", icon: AiOutlineUser, href: "/administrations-console" },
+      { name: "My Profile", icon: AiOutlineUser, href: `/administrations-console/detailed/${account.id}` },
+      { name: "Companies", icon: AiOutlineUsergroupAdd, href: "/companies-console" },
+      { name: "Taxes", icon: AiOutlineUsergroupAdd, href: "/taxes-console" },
+      { name: "Category", icon: AiOutlineUsergroupAdd, href: "/category-console" },
+      { name: "Products", icon: AiOutlineUsergroupAdd, href: "/products-console" },
+      { name: "Promotion Codes", icon: AiOutlineUsergroupAdd, href: "/promotions" },
+      { name: "Gift Cards", icon: AiOutlineUsergroupAdd, href: "/gift-cards" },
+      { name: "Customers", icon: AiOutlineUsergroupAdd, href: "/customers" },
+      { name: "Orders", icon: AiOutlineUsergroupAdd, href: "/orders" },
+      { name: "Reports", icon: AiOutlineUsergroupAdd, href: "/dashboard" },
+    ];
+  } else if (account && account.role === "sales-agent") {
+    // Sales agent sees only dashboard, my profile, settings
+    LinkItems = [
+      { name: "Home", icon: FiHome, href: "/dashboard" },
+      { name: "My Profile", icon: AiOutlineUser, href: `/administrations-console/detailed/${account.id}` },
+    ];
+  }
 
   return (
     <>

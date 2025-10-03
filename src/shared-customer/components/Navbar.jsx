@@ -74,6 +74,7 @@ import {
   FaTrash
 } from "react-icons/fa";
 import { RiHome5Line } from "react-icons/ri";
+import LogoTwo from "../../assets/ASLOGO.svg";
 import { BsCollection } from "react-icons/bs";
 import { IoChatbubbleEllipsesOutline, IoCartOutline } from "react-icons/io5";
 import { CiTrash } from "react-icons/ci";
@@ -713,6 +714,7 @@ function Navbar() {
                             {categoriesWithoutChildren.map((category) => (
                               <Button
                                 key={category.id}
+                                as='a' href={`/category/${category.slug}`}
                                 variant="outline"
                                 size="sm"
                                 borderColor="gray.300"
@@ -951,7 +953,7 @@ function Navbar() {
   return (
     <>
       {/* Top Banner */}
-      <Box bg="black" py={2} px={4} display={{ base: "none", md: "block" }}>
+      <Box bg="#131921" py={2} px={4} display={{ base: "none", md: "block" }}>
         <Container maxW="8xl">
           <HStack spacing={6} justify="center" align="center">
             <HStack spacing={2}>
@@ -988,7 +990,7 @@ function Navbar() {
 
       {/* Main Header */}
       <Box
-        bg="#0053e2"
+        bg="#131921"
         shadow="none"
         position="sticky"
         top="0"
@@ -1007,13 +1009,13 @@ function Navbar() {
               >
                 <Flex align="center">
                   <Image
-                    src={Logo}
+                    src={LogoTwo}
                     alt="AS Solutions Logo"
-                    height="30.9px"
+                    height="60.9px"
                     width="auto"
                     objectFit="contain"
                   />
-                  <Text
+                  {/* <Text
                     ml={2}
                     mt={0}
                     fontWeight="bold"
@@ -1024,7 +1026,7 @@ function Navbar() {
                     letterSpacing={"1.1px"}
                   >
                     | AS SOLUTIONS
-                  </Text>
+                  </Text> */}
                 </Flex>
               </Box>
 
@@ -1038,7 +1040,7 @@ function Navbar() {
                       placeholder="Recherchez tout ce que vous voulez."
                       value={searchTerm}
                       onChange={handleSearchChange}
-                      rounded="full"
+                      rounded="5px"
                       border="1px"
                       borderColor={searchError ? "red.300" : "gray.200"}
                       focusBorderColor={
@@ -1472,7 +1474,7 @@ function Navbar() {
               >
                 <Link to="/">
                   <Image
-                    src={Logo}
+                    src={LogoTwo}
                     alt="AS Solutions Logo"
                     height="40px"
                     width="auto"
@@ -1517,10 +1519,10 @@ function Navbar() {
                   <Icon as={FaSearch} color="gray.400" />
                 </InputLeftElement>
                 <Input
-                  placeholder="Search products..."
+                  placeholder="Rechercher des produits..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  borderRadius="full"
+                  borderRadius="5px"
                   border="1px"
                   borderColor="gray.300"
                   focusBorderColor="rgb(239,48,84)"
@@ -1554,7 +1556,7 @@ function Navbar() {
 
       {/* Mobile area Header */}
       <Box
-        bg="#0053e2"
+        bg="#131921"
         shadow="none"
         position="sticky"
         top="0"
@@ -1589,24 +1591,12 @@ function Navbar() {
               >
                 <Flex align="center">
                   <Image
-                    src={Logo}
+                    src={LogoTwo}
                     alt="AS Solutions Logo"
-                    height="30.9px"
+                    height="40.9px"
                     width="auto"
                     objectFit="contain"
                   />
-                  <Text
-                    ml={2}
-                    mt={0}
-                    fontWeight="bold"
-                    fontSize="26.5px"
-                    color="white"
-                    fontFamily="Bogle"
-                    lineHeight={"0.7"}
-                    letterSpacing={"1.1px"}
-                  >
-                    | AS SOLUTIONS
-                  </Text>
                 </Flex>
               </Box>
 
@@ -1632,7 +1622,7 @@ function Navbar() {
                     placeholder="Recherchez tout ce que vous voulez."
                     value={searchTerm}
                     onChange={handleSearchChange}
-                    rounded="full"
+                    rounded="5px"
                     border="1px"
                     borderColor={searchError ? "red.300" : "gray.200"}
                     focusBorderColor={
@@ -2064,7 +2054,8 @@ function Navbar() {
 
       {/* Category Navigation - Responsive for both desktop and mobile */}
       <Box
-        bg="#c9dcfd"
+        bg="#fce3e3ff"
+        rounded='0'
         borderTop="0px"
         borderColor="gray.200"
         py={1}
@@ -2338,7 +2329,7 @@ function Navbar() {
                                   color="gray.500"
                                   textAlign="center"
                                 >
-                                  No subcategories available!
+                                  Aucune sous-catégorie disponible!
                                 </Text>
                               </VStack>
                             )}

@@ -160,6 +160,9 @@ const AdministrationDetails = () => {
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
   const [totalActivities, setTotalActivities] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [referralData, setReferralData] = useState(null);
+  const [isLoadingReferrals, setIsLoadingReferrals] = useState(false);
+  const [referralStats, setReferralStats] = useState(null);
 
 
   const {
@@ -199,6 +202,69 @@ const AdministrationDetails = () => {
   };
 
   const avatarSize = useBreakpointValue({ base: "xl", md: "2xl" });
+
+  // ✅ REFERRAL FUNCTIONS
+const generateReferralLink = async () => {
+  setIsLoadingReferrals(true);
+  try {
+    const response = await administrationService.generateReferralLink();
+    
+    if (response.data.status === 'success') {
+      setReferralData(response.data.data);
+      toast({
+        title: "Success!",
+        description: response.data.message,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        variant: "custom",
+        containerStyle: customToastContainerStyle,
+      });
+      // Also fetch stats after generating link
+      fetchReferralStats();
+    }
+  } catch (error) {
+    handleApiError(error, toast);
+  } finally {
+    setIsLoadingReferrals(false);
+  }
+};
+
+const fetchReferralStats = async () => {
+  try {
+    const response = await administrationService.getReferralStats();
+    
+    if (response.data.status === 'success') {
+      setReferralStats(response.data.data);
+      setReferralData(response.data.data); // Update referral data too
+    }
+  } catch (error) {
+    // Don't show error toast for stats fetch failure
+    console.error('Failed to fetch referral stats:', error);
+  }
+};
+
+const copyToClipboard = (text) => {
+  navigator.clipboard.writeText(text);
+  toast({
+    title: "Copied!",
+    description: "Referral link copied to clipboard",
+    status: "success",
+    duration: 2000,
+    isClosable: true,
+    variant: "custom",
+    containerStyle: customToastContainerStyle,
+  });
+};
+
+// Add this useEffect after your existing useEffects (around line 600):
+
+// Fetch referral stats when component loads
+useEffect(() => {
+  if (userDetails && accountId) {
+    fetchReferralStats();
+  }
+}, [userDetails, accountId]);
 
   // fetch user data details
   const fetchUserDetails = useCallback(async () => {
@@ -1106,6 +1172,20 @@ const AdministrationDetails = () => {
                   <Icon as={FiActivity} mr={2} />
                   Reward histories
                 </Tab>
+                <Tab
+                  color="gray.300"
+                  _selected={{ color: "black", bg: "blue.500" }}
+                  fontWeight="medium"
+                  px={5}
+                >
+                  <Icon as={FiUsers} mr={2} />
+                  Referrals{" "}
+                  {referralStats?.stats?.total_referrals > 0 && (
+                    <Badge ml={2} colorScheme="green" borderRadius="full">
+                      {referralStats?.stats?.total_referrals}
+                    </Badge>
+                  )}
+                </Tab>
               </TabList>
 
               <TabPanels>
@@ -1627,6 +1707,194 @@ const AdministrationDetails = () => {
                     </Table>
                   </Box>
                 </TabPanel>
+                
+                <TabPanel px={0}>
+      <MotionCard
+        bg="rgb(255,255,255)"
+        borderColor="gray.200"
+        borderWidth="1px"
+        borderRadius="lg"
+        overflow="hidden"
+        {...slideUp}
+        mb={6}
+      >
+        <CardHeader pb={0}>
+          <Flex justify="space-between" align="center">
+            <Heading size="md" color="black" fontWeight="medium">
+              Referral System
+            </Heading>
+            <Button
+              leftIcon={<FiRefreshCw />}
+              size="sm"
+              onClick={fetchReferralStats}
+              isLoading={isLoadingReferrals}
+              bg="black"
+              color="white"
+              _hover={{ bg: "black" }}
+            >
+              Refresh
+            </Button>
+          </Flex>
+        </CardHeader>
+
+        <CardBody>
+          {/* Generate Referral Link Section */}
+          <Box mb={8}>
+            <Heading size="sm" mb={4} color="black">
+              Your Referral Link
+            </Heading>
+            
+            {!referralData?.referral_code ? (
+              <VStack spacing={4} align="center" p={8} bg="gray.50" borderRadius="md">
+                <Icon as={FiUsers} fontSize="3xl" color="gray.400" />
+                <Text color="gray.600" textAlign="center">
+                  Generate your referral link to start earning commissions
+                </Text>
+                <Button
+                  onClick={generateReferralLink}
+                  isLoading={isLoadingReferrals}
+                  bg="blue.500"
+                  color="white"
+                  _hover={{ bg: "blue.600" }}
+                  size="lg"
+                >
+                  Generate Referral Link
+                </Button>
+              </VStack>
+            ) : (
+              <VStack spacing={4} align="stretch">
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                  <Box p={4} bg="blue.50" borderRadius="md" border="1px solid" borderColor="blue.200">
+                    <Text fontSize="sm" color="blue.600" mb={1}>Referral Code</Text>
+                    <Text fontWeight="bold" fontSize="lg" color="blue.700">
+                      {referralData.referral_code}
+                    </Text>
+                  </Box>
+                  <Box p={4} bg="green.50" borderRadius="md" border="1px solid" borderColor="green.200">
+                    <Text fontSize="sm" color="green.600" mb={1}>Commission Rate</Text>
+                    <Text fontWeight="bold" fontSize="lg" color="green.700">
+                      {referralData.commission_rate}%
+                    </Text>
+                  </Box>
+                </SimpleGrid>
+                
+                <Box p={4} bg="gray.50" borderRadius="md" border="1px solid" borderColor="gray.200">
+                  <Text fontSize="sm" mb={2} color="gray.600">Share this link:</Text>
+                  <Flex>
+                    <Input 
+                      value={referralData.referral_link} 
+                      readOnly 
+                      bg="white"
+                      fontSize="sm"
+                    />
+                    <Button 
+                      ml={2} 
+                      onClick={() => copyToClipboard(referralData.referral_link)}
+                      bg="black"
+                      color="white"
+                      _hover={{ bg: "gray.800" }}
+                    >
+                      Copy
+                    </Button>
+                  </Flex>
+                </Box>
+              </VStack>
+            )}
+          </Box>
+
+          {/* Referral Statistics Section */}
+          {referralStats && (
+            <Box>
+              <Heading size="sm" mb={4} color="black">
+                Referral Statistics
+              </Heading>
+              
+              <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} mb={6}>
+                <Box p={4} bg="purple.50" borderRadius="md" textAlign="center">
+                  <Text fontSize="2xl" fontWeight="bold" color="purple.600">
+                    {referralStats.stats.total_referrals}
+                  </Text>
+                  <Text fontSize="sm" color="purple.600">Total Referrals</Text>
+                </Box>
+                
+                <Box p={4} bg="green.50" borderRadius="md" textAlign="center">
+                  <Text fontSize="2xl" fontWeight="bold" color="green.600">
+                    €{referralStats.stats.total_earnings.toFixed(2)}
+                  </Text>
+                  <Text fontSize="sm" color="green.600">Total Earnings</Text>
+                </Box>
+                
+                <Box p={4} bg="orange.50" borderRadius="md" textAlign="center">
+                  <Text fontSize="2xl" fontWeight="bold" color="orange.600">
+                    {referralStats.stats.this_month_referrals}
+                  </Text>
+                  <Text fontSize="sm" color="orange.600">This Month</Text>
+                </Box>
+                
+                <Box p={4} bg="blue.50" borderRadius="md" textAlign="center">
+                  <Text fontSize="2xl" fontWeight="bold" color="blue.600">
+                    €{referralStats.stats.this_month_earnings.toFixed(2)}
+                  </Text>
+                  <Text fontSize="sm" color="blue.600">Month Earnings</Text>
+                </Box>
+              </SimpleGrid>
+
+              {/* Recent Referrals Table */}
+              {referralStats.recent_referrals && referralStats.recent_referrals.length > 0 && (
+                <Box>
+                  <Heading size="sm" mb={3} color="black">
+                    Recent Referrals
+                  </Heading>
+                  <Table variant="simple" size="sm">
+                    <Thead>
+                      <Tr>
+                        <Th color="gray.900" textTransform="none">Customer</Th>
+                        <Th color="gray.900" textTransform="none">Email</Th>
+                        <Th color="gray.900" textTransform="none">Referred Date</Th>
+                        <Th color="gray.900" textTransform="none">Commission Rate</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {referralStats.recent_referrals.map((referral, index) => (
+                        <Tr key={index}>
+                          <Td color="gray.900">
+                            {referral.customer_name || 'Unknown'}
+                          </Td>
+                          <Td color="gray.900">
+                            {referral.customer_email || 'Unknown'}
+                          </Td>
+                          <Td color="gray.900">
+                            {referral.referred_at 
+                              ? new Date(referral.referred_at).toLocaleDateString()
+                              : 'Unknown'
+                            }
+                          </Td>
+                          <Td color="gray.900">
+                            {referral.commission_rate}%
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </Box>
+              )}
+
+              {/* Empty State for No Referrals */}
+              {referralStats.stats.total_referrals === 0 && (
+                <Box textAlign="center" py={8}>
+                  <Icon as={FiUsers} fontSize="3xl" color="gray.400" mb={2} />
+                  <Text color="gray.600" mb={2}>No referrals yet</Text>
+                  <Text fontSize="sm" color="gray.500">
+                    Share your referral link to start earning commissions!
+                  </Text>
+                </Box>
+              )}
+            </Box>
+          )}
+        </CardBody>
+      </MotionCard>
+    </TabPanel>
+
               </TabPanels>
             </Tabs>
           </MotionBox>

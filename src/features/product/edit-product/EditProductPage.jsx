@@ -1180,7 +1180,7 @@ const EditProductPage = () => {
                   size="sm"
                   isLoading={submitting}
                   loadingText="Updating..."
-                  isDisabled={!isFormValid()}
+                  // isDisabled={!isFormValid()}
                   width={{ base: "50%", md: "auto" }}
                   minW={0}
                 >

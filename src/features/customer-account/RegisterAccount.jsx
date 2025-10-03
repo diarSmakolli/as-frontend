@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom"; // ✅ ADD useLocation
 import {
   Box,
   Container,
@@ -25,6 +26,8 @@ import {
   AlertIcon,
   Progress,
   SimpleGrid,
+  Spinner,
+  Badge,
 } from "@chakra-ui/react";
 import { 
   ViewIcon, 
@@ -78,6 +81,76 @@ export default function RegisterAccount() {
   const [errors, setErrors] = useState({});
   const [currentStep, setCurrentStep] = useState(0);
   const toast = useToast();
+
+  const [referralCode, setReferralCode] = useState("");
+  const [referralInfo, setReferralInfo] = useState(null);
+  const [referralLoading, setReferralLoading] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const refCode = urlParams.get('ref');
+    
+    if (refCode) {
+      setReferralCode(refCode);
+      validateReferralCode(refCode);
+    }
+  }, [location]);
+
+  const validateReferralCode = async (code) => {
+    if (!code || code.trim() === '') {
+      setReferralInfo(null);
+      return;
+    }
+
+    setReferralLoading(true);
+    try {
+      const result = await customerAccountService.validateReferralCode(code);
+      
+      if (result.data.valid) {
+        setReferralInfo({
+          valid: true,
+          referrerName: result.data.referrer_name,
+          commissionRate: result.data.commission_rate
+        });
+        
+        toast({
+          title: "🎉 Code de parrainage valide!",
+          description: `Vous avez été parrainé par ${result.data.referrer_name}`,
+          status: "success",
+          duration: 4000,
+          isClosable: true,
+          variant: 'custom',
+          containerStyle: customToastContainerStyle
+        });
+      } else {
+        setReferralInfo({ valid: false });
+        toast({
+          title: "Code de parrainage invalide",
+          description: result.data.message || "Ce code n'est pas valide ou a expiré",
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+          variant: 'custom',
+          containerStyle: customToastContainerStyle
+        });
+      }
+    } catch (error) {
+      setReferralInfo({ valid: false });
+      toast({
+        title: "Erreur de validation",
+        description: "Impossible de valider le code de parrainage",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+        variant: 'custom',
+        containerStyle: customToastContainerStyle
+      });
+    } finally {
+      setReferralLoading(false);
+    }
+  };
 
   // Define steps based on account type
   const steps = useMemo(() => {
@@ -258,6 +331,12 @@ export default function RegisterAccount() {
     setLoading(true);
     try {
       const payload = { ...form };
+      
+      // ✅ ADD REFERRAL CODE TO PAYLOAD
+      if (referralCode && referralInfo?.valid) {
+        payload.referral_code = referralCode;
+      }
+      
       if (form.customer_type !== "business") {
         delete payload.business_name;
         delete payload.business_registration_number;
@@ -268,11 +347,18 @@ export default function RegisterAccount() {
         delete payload.business_address;
       }
       
-      await customerAccountService.registerAccount(payload);
+      const result = await customerAccountService.registerAccount(payload);
+      
+      let successMessage = "Bienvenue! Vous pouvez désormais commencer vos achats.";
+      
+      // ✅ SHOW REFERRAL SUCCESS MESSAGE
+      if (referralCode && referralInfo?.valid) {
+        successMessage = `Bienvenue! Votre parrainage par ${referralInfo.referrerName} a été confirmé.`;
+      }
       
       toast({
         title: "Compte créé avec succès! 🎉",
-        description: "Bienvenue! Vous pouvez désormais commencer vos achats.",
+        description: successMessage,
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -285,6 +371,8 @@ export default function RegisterAccount() {
       setConfirmPassword("");
       setAgree(false);
       setCurrentStep(0);
+      setReferralCode("");
+      setReferralInfo(null);
 
       window.location.href = '/account/signin';
     } catch (err) {
@@ -624,6 +712,69 @@ export default function RegisterAccount() {
       </FormControl>
     </VStack>
   );
+
+  const renderReferralInfo = () => {
+    if (!referralCode) return null;
+
+    return (
+      <Box mb={4} bg="white" p={4} borderRadius="4px" border="1px solid #ddd">
+        {referralLoading ? (
+          <HStack spacing={3} align="center">
+            <Spinner size="sm" color="#007185" />
+            <Text fontSize="13px" color="#0F1111">
+              Validation du code de parrainage...
+            </Text>
+          </HStack>
+        ) : referralInfo?.valid ? (
+          <Alert status="success" variant="subtle" borderRadius="4px">
+            <AlertIcon />
+            <VStack align="start" spacing={1} flex="1">
+              <Text fontSize="13px" fontWeight="bold" color="green.700">
+                🎉 Code de parrainage valide!
+              </Text>
+              <Text fontSize="12px" color="green.600">
+                Vous avez été parrainé par <strong>{referralInfo.referrerName}</strong>
+                {referralInfo.commissionRate && (
+                  <> (Commission: {referralInfo.commissionRate}%)</>
+                )}
+              </Text>
+              <HStack spacing={2} mt={1}>
+                <Badge colorScheme="green" fontSize="10px">
+                  Code: {referralCode}
+                </Badge>
+              </HStack>
+            </VStack>
+          </Alert>
+        ) : referralInfo?.valid === false ? (
+          <Alert status="error" variant="subtle" borderRadius="4px">
+            <AlertIcon />
+            <VStack align="start" spacing={1} flex="1">
+              <Text fontSize="13px" fontWeight="bold" color="red.700">
+                Code de parrainage invalide
+              </Text>
+              <Text fontSize="12px" color="red.600">
+                Ce code n'est pas valide ou a expiré: <strong>{referralCode}</strong>
+              </Text>
+              <Button
+                size="xs"
+                variant="ghost"
+                color="red.600"
+                onClick={() => {
+                  setReferralCode("");
+                  setReferralInfo(null);
+                  // Remove ref parameter from URL
+                  const newUrl = window.location.pathname;
+                  window.history.replaceState({}, '', newUrl);
+                }}
+              >
+                Ignorer le code
+              </Button>
+            </VStack>
+          </Alert>
+        ) : null}
+      </Box>
+    );
+  };
 
   // const renderAddressStep = () => (
   //   <VStack spacing={4} align="stretch">
@@ -985,6 +1136,8 @@ export default function RegisterAccount() {
       <Box minH="100vh" bg="#f3f3f3" py={8}>
         <Container maxW="500px">
           <VStack spacing={0} align="stretch">
+            {renderReferralInfo()}
+
             {/* Progress Indicator */}
             <Box mb={6} bg="white" p={4} borderRadius="4px" border="1px solid #ddd">
               <VStack spacing={3}>

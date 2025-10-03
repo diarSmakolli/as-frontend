@@ -238,4 +238,13 @@ export const customerAccountService = {
       throw error.response?.data || error;
     }
   },
+
+  validateReferralCode: async (referralCode) => {
+    try {
+      const response = await axiosInstance.get(`/validate-referral/${referralCode}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error;
+    }
+  },
 };

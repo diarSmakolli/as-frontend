@@ -451,15 +451,6 @@ export default function OrderList() {
               quantity: item.quantity,
             };
 
-            console.log(
-              "OrderList - Config being sent to pricing API:",
-              config
-            );
-            console.log(
-              "OrderList - Item customDimensions:",
-              item.customDimensions
-            );
-
             const response = await homeService.calculateProductPricing(
               item.productId,
               config
@@ -485,7 +476,6 @@ export default function OrderList() {
               );
             }
           } catch (error) {
-            console.error("Pricing calculation error:", error);
             setOrderItems((prevItems) =>
               prevItems.map((it, i) =>
                 i === itemIndex
@@ -516,9 +506,6 @@ export default function OrderList() {
 
   const handleDimensionChange = useCallback(
     (itemIndex, dimension, value) => {
-      console.log(
-        `OrderList - Dimension change: ${dimension} = ${value} for item ${itemIndex}`
-      );
 
       setOrderItems((prev) => {
         const newItems = prev.map((item, i) =>
@@ -594,28 +581,18 @@ export default function OrderList() {
 
   const handleSelectProduct = async (idx, product) => {
     try {
-      console.log("OrderList - Selected product from search:", product);
 
       const productRes = await productService.getProductById(product.id);
       const fullProduct =
         productRes.data?.data?.product || productRes.data || product;
 
-      console.log("OrderList - Full product loaded:", fullProduct);
 
       const configRes = await homeService.getProductPricingConfig(
         fullProduct.id
       );
       const pricingConfig = configRes.data || configRes || {};
 
-      console.log("OrderList - Pricing config loaded:", pricingConfig);
-      console.log(
-        "OrderList - Is dimensional pricing:",
-        fullProduct?.is_dimensional_pricing
-      );
-      console.log(
-        "OrderList - Required dimensions:",
-        pricingConfig?.required_dimensions
-      );
+      
 
       const customOptions = pricingConfig.custom_options || [];
 
@@ -655,20 +632,12 @@ export default function OrderList() {
         });
       }
 
-      console.log(
-        "OrderList - Dimension constraints created:",
-        dimensionConstraints
-      );
 
       const enhancedPricingConfig = {
         ...pricingConfig,
         dimension_constraints: dimensionConstraints,
       };
 
-      console.log(
-        "OrderList - Enhanced pricing config:",
-        enhancedPricingConfig
-      );
 
       setOrderItems((prev) =>
         prev.map((item, i) =>
@@ -702,7 +671,6 @@ export default function OrderList() {
         calculatePricing(idx);
       }, 100);
     } catch (err) {
-      console.error("OrderList - Error loading product:", err);
       toast({
         title: "Failed to load product details",
         description: err?.message || "Unknown error",
@@ -835,7 +803,6 @@ export default function OrderList() {
         })),
       };
 
-      console.log("OrderList - Final payload being sent:", payload);
 
       await homeService.createOrderByAdmin(payload);
       toast({
@@ -894,7 +861,6 @@ export default function OrderList() {
       });
       setCreatingCustomer(false);
     } catch (error) {
-      console.error("Create order error:", error);
       toast({
         title: "Error creating order",
         description: error.message || "Failed to create order.",

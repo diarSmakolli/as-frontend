@@ -1519,6 +1519,15 @@ const ProductDetailsPage = () => {
                                       €{product.regular_price_gross}
                                     </Td>
                                   </Tr>
+                                  <Tr>
+                                    <Td fontWeight="medium">Recommended Price</Td>
+                                    <Td isNumeric fontFamily="mono">
+                                      €{product.recommended_price_nett}
+                                    </Td>
+                                    <Td isNumeric fontFamily="mono">
+                                      €{product.recommended_price_gross}
+                                    </Td>
+                                  </Tr>
                                   <Tr
                                     bg={
                                       product.is_discounted

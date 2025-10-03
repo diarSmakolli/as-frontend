@@ -14,6 +14,7 @@ import {
   IconButton,
   Link,
   Select,
+  Center,
 } from "@chakra-ui/react";
 import {
   FaFacebook,
@@ -28,7 +29,7 @@ import {
   FaMobileAlt,
   FaArrowUp,
 } from "react-icons/fa";
-import Logo from "../../assets/logo-v2.png";
+import Logo from "../../assets/ASLOGO.svg";
 
 
 const Footer = () => {
@@ -66,22 +67,10 @@ const Footer = () => {
                   <Image
                     src={Logo}
                     alt="AS Solutions Logo"
-                    height="30.9px"
+                    height="50.9px"
                     width="auto"
                     objectFit="contain"
                   />
-                  <Text
-                    ml={2}
-                    mt={0}
-                    fontWeight="bold"
-                    fontSize="26.5px"
-                    color="white"
-                    fontFamily="Bogle"
-                    lineHeight={"0.7"}
-                    letterSpacing={"1.1px"}
-                  >
-                    | AS SOLUTIONS
-                  </Text>
                 </Flex>
               </Box>
 
@@ -111,8 +100,9 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
+                        href='/cart'
                       >
-                        My Cart
+                        Ajouter
                       </Link>
                       <Link
                         fontSize="sm"
@@ -125,6 +115,7 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
+                        href='/account/profile'
                       >
                         My Orders
                       </Link>
@@ -139,6 +130,7 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
+                        href='/account/wishlist'
                       >
                         My Wishlist
                       </Link>
@@ -153,65 +145,9 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
+                        href='/account/profile'
                       >
                         My Account
-                      </Link>
-                    </VStack>
-                  </VStack>
-
-                  {/* Sell Column */}
-                  <VStack align="start" spacing={6}>
-                    <Heading
-                      size="md"
-                      color="white"
-                      fontWeight="bold"
-                      fontSize="lg"
-                      fontFamily={"Airbnb Cereal VF"}
-                    >
-                      Frequently Questions
-                    </Heading>
-                    <VStack align="start" spacing={3}>
-                      <Link
-                        fontSize="sm"
-                        color="gray.100"
-                        _hover={{
-                          color: "rgb(239,48,84)",
-                          textDecoration: "underline",
-                          transform: "translateX(4px)",
-                        }}
-                        transition="all 0.2s"
-                        cursor="pointer"
-                        fontFamily={"Airbnb Cereal VF"}
-                      >
-                        About As-Solutions
-                      </Link>
-                      <Link
-                        fontSize="sm"
-                        color="gray.100"
-                        _hover={{
-                          color: "rgb(239,48,84)",
-                          textDecoration: "underline",
-                          transform: "translateX(4px)",
-                        }}
-                        transition="all 0.2s"
-                        cursor="pointer"
-                        fontFamily={"Airbnb Cereal VF"}
-                      >
-                        Payments
-                      </Link>
-                      <Link
-                        fontSize="sm"
-                        color="gray.100"
-                        _hover={{
-                          color: "rgb(239,48,84)",
-                          textDecoration: "underline",
-                          transform: "translateX(4px)",
-                        }}
-                        transition="all 0.2s"
-                        cursor="pointer"
-                        fontFamily={"Airbnb Cereal VF"}
-                      >
-                        Technical Support
                       </Link>
                     </VStack>
                   </VStack>
@@ -254,7 +190,7 @@ const Footer = () => {
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
                       >
-                        For request of offers:
+                        Pour demande d'offres
                       </Link>
                       <Link
                         fontSize="sm"
@@ -296,20 +232,7 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
-                      >
-                        Help Center
-                      </Link>
-                      <Link
-                        fontSize="sm"
-                        color="gray.100"
-                        _hover={{
-                          color: "rgb(239,48,84)",
-                          textDecoration: "underline",
-                          transform: "translateX(4px)",
-                        }}
-                        transition="all 0.2s"
-                        cursor="pointer"
-                        fontFamily={"Airbnb Cereal VF"}
+                        href='/privacy-policy'
                       >
                         Privacy
                       </Link>
@@ -324,6 +247,7 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
+                        href='/terms-and-conditions'
                       >
                         Terms Of Policy
                       </Link>
@@ -415,28 +339,7 @@ const Footer = () => {
                 <Text fontSize="sm" color="gray.400" textAlign="center">
                   © 2025 AS Solutions, Inc.
                 </Text>
-                <HStack
-                  spacing={8}
-                  flexWrap="wrap"
-                  justify="center"
-                  divider={<Text color="gray.600">•</Text>}
-                >
-                  {["Terms of Use", "Privacy"].map((item, index) => (
-                    <Link
-                      key={index}
-                      fontSize="sm"
-                      color="gray.400"
-                      _hover={{
-                        color: "rgb(239,48,84)",
-                        textDecoration: "underline",
-                      }}
-                      transition="color 0.2s"
-                      whiteSpace="nowrap"
-                    >
-                      {item}
-                    </Link>
-                  ))}
-                </HStack>
+               
               </Flex>
             </Flex>
           </Container>
@@ -465,6 +368,13 @@ const Footer = () => {
             aria-label="Back to top"
           />
         )}
+
+        <Center py={4}>
+          <Text fontSize="sm" color="gray.400" textAlign="center">
+            Made with ❤️ by <Text as='a' href='https://linkedin.com/in/dijarsmakolli'>
+            Dijar</Text>
+          </Text>
+        </Center>
       </Box>
     </Box>
   );

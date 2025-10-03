@@ -59,14 +59,14 @@ export const CustomerAuthProvider = ({ children }) => {
         withCredentials: true,
       });
 
-      toast({
-        description: `${response.data.message}`,
-        status: 'success',
-        isClosable: true,
-        duration: 5000,
-        variant: 'custom',
-        containerStyle: customToastContainerStyle,
-      });
+      // toast({
+      //   description: `${response.data.message}`,
+      //   status: 'success',
+      //   isClosable: true,
+      //   duration: 5000,
+      //   variant: 'custom',
+      //   containerStyle: customToastContainerStyle,
+      // });
     } catch (error) {
       const { response } = error;
       if (!response) {

@@ -130,6 +130,7 @@ import RecommendedProducts from "./RecommendedProducts";
 import Navbar from "../../shared-customer/components/Navbar";
 import { customToastContainerStyle } from "../../commons/toastStyles";
 import { useCustomerAuth } from "../customer-account/auth-context/customerAuthContext";
+// import CuisineConfigurator from "./CuisineConfigurator";
 
 function CustomerProductPage() {
   const { slug } = useParams();
@@ -232,14 +233,19 @@ function CustomerProductPage() {
       debounceTimeoutRef.current = setTimeout(() => {
         const calculationId = Date.now();
         lastCalculationRef.current = calculationId;
-        
+
         calculatePricing(dimensions, options, qty, calculationId);
       }, 800); // Wait 800ms after user stops typing
     },
     [product?.id, pricingConfig]
   );
 
-  const calculatePricing = async (dimensions = customDimensions, options = selectedCustomOptions, qty = quantity, calculationId = null) => {
+  const calculatePricing = async (
+    dimensions = customDimensions,
+    options = selectedCustomOptions,
+    qty = quantity,
+    calculationId = null
+  ) => {
     if (!product?.id) return;
 
     setIsCalculating(true);
@@ -252,11 +258,6 @@ function CustomerProductPage() {
         quantity: qty,
       };
 
-      console.log(`[Pricing] Starting calculation ${calculationId} for:`, {
-        dimensions,
-        quantity: qty,
-        optionsCount: Object.keys(options).length
-      });
 
       const response = await homeService.calculateProductPricing(
         product.id,
@@ -265,13 +266,11 @@ function CustomerProductPage() {
 
       // ✅ RACE CONDITION CHECK: Only update if this is the latest calculation
       if (calculationId && lastCalculationRef.current !== calculationId) {
-        console.log(`[Pricing] Ignoring outdated calculation ${calculationId}`);
         return;
       }
 
       if (response.success) {
         setPricingData(response);
-        console.log(`[Pricing] Updated pricing data from calculation ${calculationId}:`, response.pricing?.final?.gross);
       }
     } catch (error) {
       // ✅ Only show error for latest calculation
@@ -290,7 +289,7 @@ function CustomerProductPage() {
 
   const handleDimensionChange = (dimension, value) => {
     const numericValue = parseFloat(value) || null;
-    
+
     // Update local state immediately for UI responsiveness
     setLocalDimensions((prev) => ({
       ...prev,
@@ -303,15 +302,15 @@ function CustomerProductPage() {
         ...prev,
         [dimension]: numericValue,
       };
-      
+
       // Trigger debounced calculation
       debouncedCalculatePricing(newDimensions, selectedCustomOptions, quantity);
-      
+
       return newDimensions;
     });
   };
 
-    // ✅ CLEANUP: Clear timeout on unmount
+  // ✅ CLEANUP: Clear timeout on unmount
   useEffect(() => {
     return () => {
       if (debounceTimeoutRef.current) {
@@ -324,9 +323,6 @@ function CustomerProductPage() {
   useEffect(() => {
     setLocalDimensions(customDimensions);
   }, [customDimensions]);
-
-
-  
 
   useEffect(() => {
     if (descriptionRef.current) {
@@ -450,37 +446,6 @@ function CustomerProductPage() {
     }
   };
 
-  // const calculatePricing = async () => {
-  //   if (!product?.id) return;
-
-  //   setIsCalculating(true);
-  //   setCalculationError("");
-
-  //   try {
-  //     const config = {
-  //       dimensions: customDimensions,
-  //       selectedOptions: homeService.formatSelectedOptionsForAPI(
-  //         selectedCustomOptions
-  //       ),
-  //       quantity: quantity,
-  //     };
-
-  //     const response = await homeService.calculateProductPricing(
-  //       product.id,
-  //       config
-  //     );
-
-  //     if (response.success) {
-  //       setPricingData(response);
-  //     }
-  //   } catch (error) {
-  //     setPricingConfig(null);
-  //     setPricingData(null);
-  //   } finally {
-  //     setIsCalculating(false);
-  //   }
-  // };
-
   const fetchProductDetails = useCallback(async () => {
     if (!slug) return;
     setLoading(true);
@@ -549,30 +514,22 @@ function CustomerProductPage() {
     }
   }, [product?.custom_options]);
 
-  // useEffect(() => {
-  //   if (product?.id && pricingConfig) {
-  //     calculatePricing();
-  //   }
-  // }, [
-  //   product?.id,
-  //   customDimensions,
-  //   selectedCustomOptions,
-  //   quantity,
-  //   pricingConfig,
-  // ]);
-
   useEffect(() => {
     if (product?.id && pricingConfig) {
       // Only calculate if we have meaningful changes
       const hasValidDimensions = pricingConfig?.required_dimensions?.some(
-        dim => customDimensions[dim] != null && customDimensions[dim] > 0
+        (dim) => customDimensions[dim] != null && customDimensions[dim] > 0
       );
-      
+
       const hasSelectedOptions = Object.keys(selectedCustomOptions).length > 0;
-      
+
       // Trigger immediate calculation for non-dimensional changes
       if (!product?.is_dimensional_pricing || hasValidDimensions) {
-        debouncedCalculatePricing(customDimensions, selectedCustomOptions, quantity);
+        debouncedCalculatePricing(
+          customDimensions,
+          selectedCustomOptions,
+          quantity
+        );
       }
     }
   }, [
@@ -601,13 +558,6 @@ function CustomerProductPage() {
     return totalPrice + servicesPrice;
   };
 
-  // const handleDimensionChange = (dimension, value) => {
-  //   setCustomDimensions((prev) => ({
-  //     ...prev,
-  //     [dimension]: parseFloat(value) || null,
-  //   }));
-  // };
-
   const handleCustomOptionChange = (
     optionId,
     valueId,
@@ -634,30 +584,6 @@ function CustomerProductPage() {
     );
   };
 
-  // const handleQuantityChange = (newQuantity) => {
-  //   const parsedQuantity = parseInt(newQuantity) || 1;
-
-  //   // Get constraints from pricing config
-  //   const minOrderQty =
-  //     pricingConfig?.quantity_constraints?.min_order_quantity || 1;
-  //   const maxOrderQty =
-  //     pricingConfig?.quantity_constraints?.max_order_quantity || 9999;
-
-  //   if (parsedQuantity < minOrderQty) {
-  //     setCalculationError(`La quantité minimum de commande est ${minOrderQty}`);
-  //     return;
-  //   }
-
-  //   if (parsedQuantity > maxOrderQty) {
-  //     setCalculationError(
-  //       `La quantité maximale de commande est ${maxOrderQty}`
-  //     );
-  //     return;
-  //   }
-
-  //   setCalculationError("");
-  //   setQuantity(parsedQuantity);
-  // };
 
   const handleQuantityChange = (newQuantity) => {
     const parsedQuantity = parseInt(newQuantity) || 1;
@@ -682,9 +608,13 @@ function CustomerProductPage() {
 
     setCalculationError("");
     setQuantity(parsedQuantity);
-    
+
     // ✅ DEBOUNCED: Trigger calculation after quantity change
-    debouncedCalculatePricing(customDimensions, selectedCustomOptions, parsedQuantity);
+    debouncedCalculatePricing(
+      customDimensions,
+      selectedCustomOptions,
+      parsedQuantity
+    );
   };
 
   const handleQuantityIncrement = () => {
@@ -1361,45 +1291,81 @@ function CustomerProductPage() {
       });
     }
   };
-  // ADD TO CART END
 
-   const renderDimensionInputs = () => (
-    <Grid
-      templateColumns="repeat(auto-fit, minmax(150px, 1fr))"
-      gap={4}
-    >
-      {pricingConfig?.required_dimensions.map((dimension) => (
-        <FormControl key={dimension}>
-          <FormLabel textTransform="capitalize">
-            {dimension} (cm)
-          </FormLabel>
-          <Input
-            type="number"
-            placeholder={`Enter ${dimension}`}
-            value={localDimensions[dimension] || ""} // ✅ Use local state for immediate UI updates
-            onChange={(e) =>
-              handleDimensionChange(dimension, e.target.value)
-            }
-            min={
-              pricingConfig.dimension_constraints[dimension]?.min || 0
-            }
-            max={
-              pricingConfig.dimension_constraints[dimension]?.max || undefined
-            }
-          />
-          {pricingConfig.dimension_constraints[dimension] && (
-            <FormHelperText>
-              Min:{" "}
-              {pricingConfig.dimension_constraints[dimension].min} - Max:{" "}
-              {pricingConfig.dimension_constraints[dimension].max || "No limit"}
-            </FormHelperText>
-          )}
-        </FormControl>
-      ))}
-    </Grid>
-  );
 
-  
+
+  function getAllowedOptionValueIds(selectedCustomOptions, product, option) {
+
+    // Handle "Imposte/allège" filtering based on "Type de fenêtre"
+    if (option.option_name === "Imposte/allège") {
+      const typeDeFenetre = product.custom_options.find(
+        (opt) => opt.option_name === "Type de fenêtre"
+      );
+      if (!typeDeFenetre) {
+        return null;
+      }
+
+      const selectedTypeValueId =
+        selectedCustomOptions[typeDeFenetre.id]?.valueId;
+      const selectedTypeValue = typeDeFenetre.option_values.find(
+        (v) => v.id === selectedTypeValueId
+      );
+
+
+      if (!selectedTypeValue) {
+        return null;
+      }
+
+      const allowed = selectedTypeValue.additional_data?.show_option_values;
+
+      return Array.isArray(allowed) ? allowed : null;
+    }
+
+    // Handle "Type d'ouverture" filtering based on "Imposte/allège"
+    // 🚀 FIX: Use the exact apostrophe character from your JSON data
+    if (
+      option.id === "8d7dbef3-3058-4993-b0be-bcc545e8a095" ||
+      option.id === "e62e6e0b-aea1-4bf3-8b00-fe5075f69fb4"
+      // option.display_name === "Type d’ouverture"
+    ) {
+      // ← Changed apostrophe
+
+      const imposteAllege = product.custom_options.find(
+        (opt) => opt.option_name === "Imposte/allège"
+      );
+
+      
+
+      if (!imposteAllege) {
+        return null;
+      }
+
+      
+
+      const selectedImposteValueId =
+        selectedCustomOptions[imposteAllege.id]?.valueId;
+
+      
+
+      const selectedImposteValue = imposteAllege.option_values.find(
+        (v) => v.id === selectedImposteValueId
+      );
+
+      
+
+      if (!selectedImposteValue) {
+        return null;
+      }
+
+      const allowed = selectedImposteValue.additional_data?.show_option_values;
+
+      
+
+      return Array.isArray(allowed) ? allowed : null;
+    }
+
+    return null;
+  }
 
   if (!product) {
     navigate("/product-not-found");
@@ -2061,7 +2027,7 @@ function CustomerProductPage() {
                                   bg="white"
                                   shadow="none"
                                 >
-                                  {/* <Text
+                                  <Text
                                     fontSize="lg"
                                     fontWeight="semibold"
                                     mb={3}
@@ -2079,16 +2045,18 @@ function CustomerProductPage() {
                                     {
                                       pricingConfig?.dimensional_calculation_type
                                     }
-                                  </Text> */}
+                                  </Text>
 
-                                  {/* <Grid
-                                    templateColumns="repeat(auto-fit, minmax(150px, 1fr))"
-                                    gap={4}
-                                  >
+                                  <VStack spacing={4}>
                                     {pricingConfig?.required_dimensions.map(
                                       (dimension) => (
                                         <FormControl key={dimension}>
-                                          <FormLabel textTransform="capitalize">
+                                          <FormLabel
+                                            textTransform="capitalize"
+                                            fontSize="sm"
+                                            fontWeight="medium"
+                                            fontFamily={"Bogle"}
+                                          >
                                             {dimension} (cm)
                                           </FormLabel>
                                           <Input
@@ -2115,11 +2083,12 @@ function CustomerProductPage() {
                                                 dimension
                                               ]?.max || undefined
                                             }
+                                            size="md"
                                           />
                                           {pricingConfig.dimension_constraints[
                                             dimension
                                           ] && (
-                                            <FormHelperText>
+                                            <FormHelperText fontSize="xs">
                                               Min:{" "}
                                               {
                                                 pricingConfig
@@ -2137,29 +2106,7 @@ function CustomerProductPage() {
                                         </FormControl>
                                       )
                                     )}
-                                  </Grid> */}
-
-                                  <Text
-                                    fontSize="lg"
-                                    fontWeight="semibold"
-                                    mb={3}
-                                    fontFamily="Bogle"
-                                  >
-                                    Personnaliser les dimensions
-                                  </Text>
-                                  <Text
-                                    fontSize="sm"
-                                    color="gray.600"
-                                    mb={4}
-                                    fontFamily="Bogle"
-                                  >
-                                    Type de calcul:{" "}
-                                    {
-                                      pricingConfig?.dimensional_calculation_type
-                                    }
-                                  </Text>
-
-                                  {renderDimensionInputs()}
+                                  </VStack>
 
                                   {calculationError && (
                                     <Alert status="error" mt={4}>
@@ -2170,294 +2117,345 @@ function CustomerProductPage() {
                                 </Box>
                               )}
 
-                            {product.custom_options.map((option) => (
-                              <Box
-                                key={option.id}
-                                p={1}
-                                borderRadius="md"
-                                bg="white"
-                                shadow="none"
-                                border="0px"
-                                borderColor="gray.200"
-                              >
-                                <Text
-                                  fontWeight="400"
-                                  fontSize="sm"
-                                  fontFamily={"Bogle"}
-                                  mb={3}
-                                  color="gray.900"
-                                >
-                                  {option.option_name}
-                                  {option.is_required && (
-                                    <Text as="span" color="red.500" ml={1}>
-                                      *
-                                    </Text>
-                                  )}
-                                </Text>
+                            {/* Sort custom options by sort_order before mapping */}
+                            {product.custom_options
+                              .sort(
+                                (a, b) =>
+                                  (a.sort_order || 0) - (b.sort_order || 0)
+                              )
+                              .map((option) => {
+                                // Filter option values for "Imposte/allège" if needed
+                                let filteredOptionValues = option.option_values;
+                                const allowedIds = getAllowedOptionValueIds(
+                                  selectedCustomOptions,
+                                  product,
+                                  option
+                                );
+                                if (allowedIds) {
+                                  filteredOptionValues =
+                                    filteredOptionValues.filter((v) =>
+                                      allowedIds.includes(v.id)
+                                    );
+                                }
 
-                                {option.option_type === "radio" && (
-                                  <RadioGroup
-                                    value={
-                                      selectedCustomOptions[option.id]
-                                        ?.valueId || ""
-                                    }
-                                    onChange={(valueId) => {
-                                      const selectedValue =
-                                        option.option_values?.find(
-                                          (v) => v.id === valueId
-                                        );
-                                      if (selectedValue) {
-                                        handleCustomOptionChange(
-                                          option.id,
-                                          valueId,
-                                          selectedValue.option_value,
-                                          selectedValue.price_modifier,
-                                          selectedValue.price_modifier_type
-                                        );
-                                      }
-                                    }}
+                                // Sort filtered option values by sort_order
+                                filteredOptionValues =
+                                  filteredOptionValues.sort(
+                                    (a, b) =>
+                                      (a.sort_order || 0) - (b.sort_order || 0)
+                                  );
+
+                                return (
+                                  <Box
+                                    key={option.id}
+                                    p={1}
+                                    borderRadius="md"
+                                    bg="white"
+                                    shadow="none"
+                                    border="0px"
+                                    borderColor="gray.200"
                                   >
-                                    <Box
-                                      maxH="300px"
-                                      overflowY="auto"
-                                      overflowX="hidden"
-                                      borderRadius="md"
-                                      css={{
-                                        "&::-webkit-scrollbar": {
-                                          width: "6px",
-                                        },
-                                        "&::-webkit-scrollbar-track": {
-                                          background: "#f7fafc",
-                                          borderRadius: "3px",
-                                        },
-                                        "&::-webkit-scrollbar-thumb": {
-                                          background: "#e2e8f0",
-                                          borderRadius: "3px",
-                                        },
-                                        "&::-webkit-scrollbar-thumb:hover": {
-                                          background: "#cbd5e0",
-                                        },
-                                      }}
+                                    <Text
+                                      fontWeight="400"
+                                      fontSize="sm"
+                                      fontFamily={"Bogle"}
+                                      mb={3}
+                                      color="gray.900"
                                     >
-                                      <SimpleGrid columns={4} spacing={2} p={1}>
-                                        {option.option_values?.map((value) => (
-                                          <Box
-                                            key={value.id}
-                                            as="label"
-                                            cursor="pointer"
+                                      {option.option_name}
+                                      {option.is_required && (
+                                        <Text as="span" color="red.500" ml={1}>
+                                          *
+                                        </Text>
+                                      )}
+                                    </Text>
+
+                                    {option.option_type === "radio" && (
+                                      <RadioGroup
+                                        value={
+                                          selectedCustomOptions[option.id]
+                                            ?.valueId || ""
+                                        }
+                                        onChange={(valueId) => {
+                                          const selectedValue =
+                                            filteredOptionValues.find(
+                                              (v) => v.id === valueId
+                                            );
+                                          if (selectedValue) {
+                                            handleCustomOptionChange(
+                                              option.id,
+                                              valueId,
+                                              selectedValue.option_value,
+                                              selectedValue.price_modifier,
+                                              selectedValue.price_modifier_type
+                                            );
+                                          }
+                                        }}
+                                      >
+                                        <Box
+                                          maxH="300px"
+                                          overflowY="auto"
+                                          overflowX="hidden"
+                                          borderRadius="md"
+                                          css={{
+                                            "&::-webkit-scrollbar": {
+                                              width: "6px",
+                                            },
+                                            "&::-webkit-scrollbar-track": {
+                                              background: "#f7fafc",
+                                              borderRadius: "3px",
+                                            },
+                                            "&::-webkit-scrollbar-thumb": {
+                                              background: "#e2e8f0",
+                                              borderRadius: "3px",
+                                            },
+                                            "&::-webkit-scrollbar-thumb:hover":
+                                              {
+                                                background: "#cbd5e0",
+                                              },
+                                          }}
+                                        >
+                                          <SimpleGrid
+                                            columns={4}
+                                            spacing={2}
+                                            p={1}
                                           >
-                                            <Card
-                                              p={0}
-                                              borderRadius="2.5px"
-                                              border="0px"
-                                              borderColor={
-                                                selectedCustomOptions[option.id]
-                                                  ?.valueId === value.id
-                                                  ? "gray.400"
-                                                  : "gray.400"
-                                              }
-                                              _hover={{
-                                                borderColor: "red.600",
-                                              }}
-                                              transition="all 0.2s"
-                                              bg="transparent"
-                                              position="relative"
-                                              minH="100px"
-                                              maxH="200px"
-                                              display="flex"
-                                              shadow="none"
-                                              flexDirection="column"
-                                              alignItems="center"
-                                              justifyContent="center"
-                                            >
-                                              {value.image_url && (
+                                            {filteredOptionValues.map(
+                                              (value) => (
                                                 <Box
-                                                  w="full"
-                                                  h="auto"
-                                                  borderRadius="0px"
-                                                  overflow="hidden"
-                                                  bg="transparent"
-                                                  mb={0}
+                                                  key={value.id}
+                                                  as="label"
+                                                  cursor="pointer"
                                                 >
-                                                  <Image
-                                                    src={value.image_url}
-                                                    alt={
-                                                      value.display_name ||
-                                                      value.option_value
+                                                  <Card
+                                                    p={0}
+                                                    borderRadius="2.5px"
+                                                    border="0px"
+                                                    borderColor={
+                                                      selectedCustomOptions[
+                                                        option.id
+                                                      ]?.valueId === value.id
+                                                        ? "gray.400"
+                                                        : "gray.400"
                                                     }
-                                                    w="full"
-                                                    h="100px"
-                                                    maxH="100px"
-                                                    objectFit="100%"
-                                                  />
+                                                    _hover={{
+                                                      borderColor: "red.600",
+                                                    }}
+                                                    transition="all 0.2s"
+                                                    bg="transparent"
+                                                    position="relative"
+                                                    minH="100px"
+                                                    maxH="200px"
+                                                    display="flex"
+                                                    shadow="none"
+                                                    flexDirection="column"
+                                                    alignItems="center"
+                                                    justifyContent="center"
+                                                  >
+                                                    {value.image_url && (
+                                                      <Box
+                                                        w="full"
+                                                        h="auto"
+                                                        borderRadius="0px"
+                                                        overflow="hidden"
+                                                        bg="transparent"
+                                                        mb={0}
+                                                      >
+                                                        <Image
+                                                          src={value.image_url}
+                                                          alt={
+                                                            value.display_name ||
+                                                            value.option_value
+                                                          }
+                                                          w="full"
+                                                          h="100px"
+                                                          maxH="100px"
+                                                          objectFit="100%"
+                                                        />
+                                                      </Box>
+                                                    )}
+                                                    <Text
+                                                      fontSize="xs"
+                                                      fontWeight="medium"
+                                                      textAlign="center"
+                                                      noOfLines={2}
+                                                      fontFamily={"Bogle"}
+                                                      mb={1}
+                                                    >
+                                                      {value.display_name ||
+                                                        value.option_value}
+                                                    </Text>
+                                                    {(() => {
+                                                      const priceModifier =
+                                                        parseFloat(
+                                                          value.price_modifier ||
+                                                            0
+                                                        );
+                                                      const pricePerM2 =
+                                                        parseFloat(
+                                                          value.price_per_m2 ||
+                                                            0
+                                                        );
+                                                      const pricePerM3 =
+                                                        parseFloat(
+                                                          value.price_per_m3 ||
+                                                            0
+                                                        );
+                                                      const pricePerLinearMeter =
+                                                        parseFloat(
+                                                          value.price_per_linear_meter ||
+                                                            0
+                                                        );
+                                                      const pricePerMeter =
+                                                        parseFloat(
+                                                          value.price_per_meter ||
+                                                            0
+                                                        );
+
+                                                      let displayPrice = 0;
+                                                      let displayUnit = "";
+
+                                                      switch (
+                                                        value.price_modifier_type
+                                                      ) {
+                                                        case "m2":
+                                                          displayPrice =
+                                                            pricePerM2;
+                                                          displayUnit = "€/m²";
+                                                          break;
+                                                        case "m3":
+                                                          displayPrice =
+                                                            pricePerM3;
+                                                          displayUnit = "€/m³";
+                                                          break;
+                                                        case "linear-meter":
+                                                          displayPrice =
+                                                            pricePerLinearMeter;
+                                                          displayUnit = "€/m";
+                                                          break;
+                                                        case "meter":
+                                                          displayPrice =
+                                                            pricePerMeter;
+                                                          displayUnit = "€/m";
+                                                          break;
+                                                        case "percentage":
+                                                          displayPrice =
+                                                            priceModifier;
+                                                          displayUnit = "%";
+                                                          break;
+                                                        case "fixed":
+                                                        default:
+                                                          displayPrice =
+                                                            priceModifier;
+                                                          displayUnit = "€";
+                                                      }
+
+                                                      if (displayPrice > 0) {
+                                                        return (
+                                                          <Text
+                                                            fontSize="xs"
+                                                            fontWeight="bold"
+                                                            color="green.600"
+                                                            fontFamily={
+                                                              "Bricolage Grotesque"
+                                                            }
+                                                          >
+                                                            {/* +{displayPrice.toFixed(2)}
+                                        {displayUnit} */}
+                                                          </Text>
+                                                        );
+                                                      } else if (
+                                                        displayPrice < 0
+                                                      ) {
+                                                        return (
+                                                          <Text
+                                                            fontSize="xs"
+                                                            fontWeight="bold"
+                                                            color="red.600"
+                                                            fontFamily={
+                                                              "Bricolage Grotesque"
+                                                            }
+                                                          >
+                                                            {/* {displayPrice.toFixed(2)}
+                                        {displayUnit} */}
+                                                          </Text>
+                                                        );
+                                                      } else {
+                                                        return (
+                                                          <Text
+                                                            fontSize="xs"
+                                                            color="gray.500"
+                                                            fontFamily={
+                                                              "Bricolage Grotesque"
+                                                            }
+                                                          >
+                                                            Included
+                                                          </Text>
+                                                        );
+                                                      }
+                                                    })()}
+                                                    <Radio
+                                                      value={value.id}
+                                                      colorScheme="blue"
+                                                      position="absolute"
+                                                      top={2}
+                                                      right={2}
+                                                      size="sm"
+                                                    />
+                                                  </Card>
                                                 </Box>
-                                              )}
-                                              <Text
-                                                fontSize="xs"
-                                                fontWeight="medium"
-                                                textAlign="center"
-                                                noOfLines={2}
-                                                fontFamily={"Bogle"}
-                                                mb={1}
-                                              >
-                                                {value.display_name ||
-                                                  value.option_value}
-                                              </Text>
-                                              {(() => {
-                                                const priceModifier =
-                                                  parseFloat(
-                                                    value.price_modifier || 0
-                                                  );
-                                                const pricePerM2 = parseFloat(
-                                                  value.price_per_m2 || 0
-                                                );
-                                                const pricePerM3 = parseFloat(
-                                                  value.price_per_m3 || 0
-                                                );
-                                                const pricePerLinearMeter =
-                                                  parseFloat(
-                                                    value.price_per_linear_meter ||
-                                                      0
-                                                  );
-                                                const pricePerMeter =
-                                                  parseFloat(
-                                                    value.price_per_meter || 0
-                                                  );
+                                              )
+                                            )}
+                                          </SimpleGrid>
+                                        </Box>
+                                      </RadioGroup>
+                                    )}
 
-                                                let displayPrice = 0;
-                                                let displayUnit = "";
-
-                                                switch (
-                                                  value.price_modifier_type
-                                                ) {
-                                                  case "m2":
-                                                    displayPrice = pricePerM2;
-                                                    displayUnit = "€/m²";
-                                                    break;
-                                                  case "m3":
-                                                    displayPrice = pricePerM3;
-                                                    displayUnit = "€/m³";
-                                                    break;
-                                                  case "linear-meter":
-                                                    displayPrice =
-                                                      pricePerLinearMeter;
-                                                    displayUnit = "€/m";
-                                                    break;
-                                                  case "meter":
-                                                    displayPrice =
-                                                      pricePerMeter;
-                                                    displayUnit = "€/m";
-                                                    break;
-                                                  case "percentage":
-                                                    displayPrice =
-                                                      priceModifier;
-                                                    displayUnit = "%";
-                                                    break;
-                                                  case "fixed":
-                                                  default:
-                                                    displayPrice =
-                                                      priceModifier;
-                                                    displayUnit = "€";
-                                                }
-
-                                                if (displayPrice > 0) {
-                                                  return (
-                                                    <Text
-                                                      fontSize="xs"
-                                                      fontWeight="bold"
-                                                      color="green.600"
-                                                      fontFamily={
-                                                        "Bricolage Grotesque"
-                                                      }
-                                                    >
-                                                      {/* +{displayPrice.toFixed(2)}
-                                                      {displayUnit} */}
-                                                    </Text>
-                                                  );
-                                                } else if (displayPrice < 0) {
-                                                  return (
-                                                    <Text
-                                                      fontSize="xs"
-                                                      fontWeight="bold"
-                                                      color="red.600"
-                                                      fontFamily={
-                                                        "Bricolage Grotesque"
-                                                      }
-                                                    >
-                                                      {/* {displayPrice.toFixed(2)}
-                                                      {displayUnit} */}
-                                                    </Text>
-                                                  );
-                                                } else {
-                                                  return (
-                                                    <Text
-                                                      fontSize="xs"
-                                                      color="gray.500"
-                                                      fontFamily={
-                                                        "Bricolage Grotesque"
-                                                      }
-                                                    >
-                                                      Included
-                                                    </Text>
-                                                  );
-                                                }
-                                              })()}
-                                              <Radio
-                                                value={value.id}
-                                                colorScheme="blue"
-                                                position="absolute"
-                                                top={2}
-                                                right={2}
-                                                size="sm"
-                                              />
-                                            </Card>
-                                          </Box>
+                                    {option.option_type === "select" && (
+                                      <Select
+                                        placeholder={`Choose ${option.option_name}`}
+                                        size="lg"
+                                        borderRadius="lg"
+                                        value={
+                                          selectedCustomOptions[option.id]
+                                            ?.valueId || ""
+                                        }
+                                        onChange={(e) => {
+                                          const selectedValue =
+                                            filteredOptionValues.find(
+                                              (v) => v.id === e.target.value
+                                            );
+                                          if (selectedValue) {
+                                            handleCustomOptionChange(
+                                              option.id,
+                                              e.target.value,
+                                              selectedValue.option_value,
+                                              selectedValue.price_modifier,
+                                              selectedValue.price_modifier_type
+                                            );
+                                          }
+                                        }}
+                                      >
+                                        {filteredOptionValues.map((value) => (
+                                          <option
+                                            key={value.id}
+                                            value={value.id}
+                                          >
+                                            {value.display_name ||
+                                              value.option_value}
+                                            {parseFloat(value.price_modifier) >
+                                              0 &&
+                                              (value.price_modifier_type ===
+                                              "percentage"
+                                                ? ` (+${value.price_modifier}%)`
+                                                : ` (+${value.price_modifier}€)`)}
+                                          </option>
                                         ))}
-                                      </SimpleGrid>
-                                    </Box>
-                                  </RadioGroup>
-                                )}
-
-                                {option.option_type === "select" && (
-                                  <Select
-                                    placeholder={`Choose ${option.option_name}`}
-                                    size="lg"
-                                    borderRadius="lg"
-                                    value={
-                                      selectedCustomOptions[option.id]
-                                        ?.valueId || ""
-                                    }
-                                    onChange={(e) => {
-                                      const selectedValue =
-                                        option.option_values?.find(
-                                          (v) => v.id === e.target.value
-                                        );
-                                      if (selectedValue) {
-                                        handleCustomOptionChange(
-                                          option.id,
-                                          e.target.value,
-                                          selectedValue.option_value,
-                                          selectedValue.price_modifier,
-                                          selectedValue.price_modifier_type
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    {option.option_values?.map((value) => (
-                                      <option key={value.id} value={value.id}>
-                                        {value.display_name ||
-                                          value.option_value}
-                                        {parseFloat(value.price_modifier) > 0 &&
-                                          (value.price_modifier_type ===
-                                          "percentage"
-                                            ? ` (+${value.price_modifier}%)`
-                                            : ` (+${value.price_modifier}€)`)}
-                                      </option>
-                                    ))}
-                                  </Select>
-                                )}
-                              </Box>
-                            ))}
+                                      </Select>
+                                    )}
+                                  </Box>
+                                );
+                              })}
                           </VStack>
                         </Box>
                       </Box>
