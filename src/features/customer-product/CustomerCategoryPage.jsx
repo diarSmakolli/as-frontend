@@ -538,6 +538,7 @@ const FilterSidebar = React.memo(
 const CustomerCategoryPage = () => {
   const { slug } = useParams();
   const { customer } = useCustomerAuth();
+  const isRestoringRef = useRef(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -589,9 +590,17 @@ const CustomerCategoryPage = () => {
     slug,
   ]);
 
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, [slug]);
+
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [slug]);
+  const savedOffset = parseInt(localStorage.getItem("categoryOffset") || "0", 10);
+  if (savedOffset > 0) {
+    setOffset(savedOffset);
+    isRestoringRef.current = true;
+  }
+}, []);
 
 
   // ANALYTICS
@@ -655,6 +664,14 @@ const CustomerCategoryPage = () => {
       timestamp: new Date().toISOString(),
     }).catch(() => {});
   };
+
+  const handleProductClick = (productId) => {
+    localStorage.setItem("categoryScrollY", window.scrollY);
+    localStorage.setItem("categoryOffset", offset);
+    navigate(`/product/${productId}`);
+  };
+
+  
   
 
   // Filter states (same as search page)
@@ -703,12 +720,15 @@ const CustomerCategoryPage = () => {
       if (!categoryData?.category?.id) return;
 
       if (isLoadMore) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+      // Only reset products if NOT restoring
+      if (!isRestoringRef.current) {
         setProducts([]);
         setOffset(0);
       }
+    }
 
       try {
         const params = {
@@ -977,9 +997,24 @@ const CustomerCategoryPage = () => {
     fetchCategoryData();
   }, [fetchCategoryData]);
 
+  // useEffect(() => {
+  //   if (categoryData?.category?.id) {
+  //     fetchCategoryProducts();
+  //   }
+  // }, [
+  //   sortBy,
+  //   minPrice,
+  //   maxPrice,
+  //   includeOutOfStock,
+  //   selectedFilters,
+  //   categoryData?.category?.id,
+  // ]);
+
   useEffect(() => {
     if (categoryData?.category?.id) {
-      fetchCategoryProducts();
+      if (!isRestoringRef.current) {
+        fetchCategoryProducts();
+      }
     }
   }, [
     sortBy,
@@ -1731,6 +1766,7 @@ const CustomerCategoryPage = () => {
                       <ProductCard
                         key={product.id}
                         product={homeService.formatProductData(product)}
+                        onClick={() => handleProductClick(product.slug)}
                       />
                     </Box>
                   ))}

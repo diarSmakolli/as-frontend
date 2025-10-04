@@ -21,7 +21,7 @@ import { useCustomerAuth } from "../customer-account/auth-context/customerAuthCo
 import { customToastContainerStyle } from "../../commons/toastStyles";
 import { homeService } from "../home/services/homeService";
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, onClick }) => {
   const navigate = useNavigate();
   const toast = useToast();
   const { customer } = useCustomerAuth();
@@ -142,7 +142,7 @@ const ProductCard = ({ product }) => {
 
   return (
     <Card
-      onClick={handleProductClick}
+      onClick={onClick}
       bg="transparent"
       overflow="hidden"
       shadow="none"

@@ -1634,7 +1634,7 @@ function Home() {
                 bgImage={GardenImage}
                 bgSize="cover"
                 as="a"
-                href="/jardin-quipement-extrieur"
+                href="/category/jardin-quipement-extrieur"
               >
                 <Text
                   color="rgba(255, 255, 255, 1)"
