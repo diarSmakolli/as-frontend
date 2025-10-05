@@ -26,9 +26,9 @@ const ProductCard = ({ product }) => {
   const toast = useToast();
   const { customer } = useCustomerAuth();
 
-  const handleProductClick = () => {
-    navigate(`/product/${product.slug}`);
-  };
+  // const handleProductClick = () => {
+  //   navigate(`/product/${product.slug}`);
+  // };
 
   const formatPrice = (price) => {
     return parseFloat(price).toFixed(2);
@@ -142,9 +142,14 @@ const ProductCard = ({ product }) => {
 
   return (
     <>
-      <Link to={`/product/${product.slug}`} target="_blank">
+      <a
+        href={`/product/${product.slug}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ textDecoration: "none" }}
+      >
         <Card
-          onClick={handleProductClick}
+          // onClick={handleProductClick}
           bg="transparent"
           overflow="hidden"
           shadow="none"
@@ -214,6 +219,7 @@ const ProductCard = ({ product }) => {
                   fontWeight="500"
                   as="a"
                   href={`/product/${product.slug}`}
+                  target="_blank"
                   fontFamily="Airbnb Cereal VF"
                 >
                   {transformedProduct.title}
@@ -271,7 +277,7 @@ const ProductCard = ({ product }) => {
             </VStack>
           </CardBody>
         </Card>
-      </Link>
+      </a>
     </>
   );
 };
