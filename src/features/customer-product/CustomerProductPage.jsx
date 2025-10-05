@@ -3447,265 +3447,289 @@ function CustomerProductPage() {
                     </Box>
                   )}
 
-                  {product.custom_options.map((option) => (
-                    <Box key={option.id}>
-                      <Text
-                        fontWeight="500"
-                        fontSize="sm"
-                        fontFamily={"Airbnb Cereal VF"}
-                        mb={3}
-                        color="gray.900"
-                      >
-                        {option?.option_name}
-                        {option?.is_required && (
-                          <Text as="span" color="red.500" ml={1}>
-                            *
-                          </Text>
-                        )}
-                      </Text>
+                  {product.custom_options
+                    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+                    .map((option) => {
+                      let filteredOptionValues = option.option_values;
+                      const allowedIds = getAllowedOptionValueIds(
+                        selectedCustomOptions,
+                        product,
+                        option
+                      );
+                      if (allowedIds) {
+                        filteredOptionValues = filteredOptionValues.filter(
+                          (v) => allowedIds.includes(v.id)
+                        );
+                      }
 
-                      {option?.option_type === "radio" && (
-                        <RadioGroup
-                          value={
-                            selectedCustomOptions[option.id]?.valueId || ""
-                          }
-                          onChange={(valueId) => {
-                            const selectedValue = option.option_values?.find(
-                              (v) => v.id === valueId
-                            );
-                            if (selectedValue) {
-                              handleCustomOptionChange(
-                                option.id,
-                                valueId,
-                                selectedValue.option_value,
-                                selectedValue.price_modifier,
-                                selectedValue.price_modifier_type
-                              );
-                            }
-                          }}
-                        >
-                          <Box
-                            overflowX="auto"
-                            overflowY="hidden"
-                            pb={2}
-                            css={{
-                              "&::-webkit-scrollbar": {
-                                height: "6px",
-                              },
-                              "&::-webkit-scrollbar-track": {
-                                background: "#f7fafc",
-                                borderRadius: "3px",
-                              },
-                              "&::-webkit-scrollbar-thumb": {
-                                background: "#e2e8f0",
-                                borderRadius: "3px",
-                              },
-                              "&::-webkit-scrollbar-thumb:hover": {
-                                background: "#cbd5e0",
-                              },
-                            }}
+                      // Sort filtered option values by sort_order
+                      filteredOptionValues = filteredOptionValues.sort(
+                        (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+                      );
+                      return (
+                        <Box key={option.id}>
+                          <Text
+                            fontWeight="500"
+                            fontSize="sm"
+                            fontFamily={"Airbnb Cereal VF"}
+                            mb={3}
+                            color="gray.900"
                           >
-                            <HStack spacing={3} align="stretch">
-                              {option.option_values?.map((value) => (
-                                <Box
-                                  key={value.id}
-                                  as="label"
-                                  cursor="pointer"
-                                  minW="110px"
-                                  maxW="110px"
-                                  flexShrink={0}
-                                >
-                                  <Card
-                                    p={0}
-                                    borderRadius="2.5px"
-                                    border="0px"
-                                    borderColor={
-                                      selectedCustomOptions[option.id]
-                                        ?.valueId === value.id
-                                        ? "gray.400"
-                                        : "gray.400"
-                                    }
-                                    _hover={{
-                                      borderColor: "red.600",
-                                    }}
-                                    transition="all 0.2s"
-                                    bg="transparent"
-                                    position="relative"
-                                    minH="100px"
-                                    maxH="200px"
-                                    display="flex"
-                                    shadow="none"
-                                    flexDirection="column"
-                                    alignItems="center"
-                                    justifyContent="center"
-                                  >
-                                    {value.image_url && (
-                                      <Box
-                                        w="full"
-                                        h="auto"
-                                        borderRadius="0px"
-                                        overflow="hidden"
-                                        bg="transparent"
-                                        mb={0}
-                                      >
-                                        <Image
-                                          src={value.image_url}
-                                          alt={
-                                            value.display_name ||
-                                            value.option_value
-                                          }
-                                          w="full"
-                                          h="100px"
-                                          maxH="100px"
-                                          objectFit="100%"
-                                        />
-                                      </Box>
-                                    )}
-                                    <Text
-                                      fontSize="xs"
-                                      fontWeight="medium"
-                                      textAlign="center"
-                                      noOfLines={2}
-                                      fontFamily={"Airbnb Cereal VF"}
-                                      mb={1}
+                            {option?.option_name}
+                            {option?.is_required && (
+                              <Text as="span" color="red.500" ml={1}>
+                                *
+                              </Text>
+                            )}
+                          </Text>
+
+                          {option?.option_type === "radio" && (
+                            <RadioGroup
+                              value={
+                                selectedCustomOptions[option.id]?.valueId || ""
+                              }
+                              onChange={(valueId) => {
+                                const selectedValue = filteredOptionValues.find(
+                                  (v) => v.id === valueId
+                                );
+                                if (selectedValue) {
+                                  handleCustomOptionChange(
+                                    option.id,
+                                    valueId,
+                                    selectedValue.option_value,
+                                    selectedValue.price_modifier,
+                                    selectedValue.price_modifier_type
+                                  );
+                                }
+                              }}
+                            >
+                              <Box
+                                overflowX="auto"
+                                overflowY="hidden"
+                                pb={2}
+                                css={{
+                                  "&::-webkit-scrollbar": {
+                                    height: "6px",
+                                  },
+                                  "&::-webkit-scrollbar-track": {
+                                    background: "#f7fafc",
+                                    borderRadius: "3px",
+                                  },
+                                  "&::-webkit-scrollbar-thumb": {
+                                    background: "#e2e8f0",
+                                    borderRadius: "3px",
+                                  },
+                                  "&::-webkit-scrollbar-thumb:hover": {
+                                    background: "#cbd5e0",
+                                  },
+                                }}
+                              >
+                                <HStack spacing={3} align="stretch">
+                                  {filteredOptionValues.map((value) => (
+                                    <Box
+                                      key={value.id}
+                                      as="label"
+                                      cursor="pointer"
+                                      minW="110px"
+                                      maxW="110px"
+                                      flexShrink={0}
                                     >
-                                      {value.display_name || value.option_value}
-                                    </Text>
-                                    {(() => {
-                                      const priceModifier = parseFloat(
-                                        value.price_modifier || 0
-                                      );
-                                      const pricePerM2 = parseFloat(
-                                        value.price_per_m2 || 0
-                                      );
-                                      const pricePerM3 = parseFloat(
-                                        value.price_per_m3 || 0
-                                      );
-                                      const pricePerLinearMeter = parseFloat(
-                                        value.price_per_linear_meter || 0
-                                      );
-                                      const pricePerMeter = parseFloat(
-                                        value.price_per_meter || 0
-                                      );
-
-                                      let displayPrice = 0;
-                                      let displayUnit = "";
-
-                                      switch (value.price_modifier_type) {
-                                        case "m2":
-                                          displayPrice = pricePerM2;
-                                          displayUnit = "€/m²";
-                                          break;
-                                        case "m3":
-                                          displayPrice = pricePerM3;
-                                          displayUnit = "€/m³";
-                                          break;
-                                        case "linear-meter":
-                                          displayPrice = pricePerLinearMeter;
-                                          displayUnit = "€/m";
-                                          break;
-                                        case "meter":
-                                          displayPrice = pricePerMeter;
-                                          displayUnit = "€/m";
-                                          break;
-                                        case "percentage":
-                                          displayPrice = priceModifier;
-                                          displayUnit = "%";
-                                          break;
-                                        case "fixed":
-                                        default:
-                                          displayPrice = priceModifier;
-                                          displayUnit = "€";
-                                      }
-
-                                      if (displayPrice > 0) {
-                                        return (
-                                          <Text
-                                            fontSize="xs"
-                                            fontWeight="bold"
-                                            color="green.600"
-                                            fontFamily="Bogle"
+                                      <Card
+                                        p={0}
+                                        borderRadius="2.5px"
+                                        border="0px"
+                                        borderColor={
+                                          selectedCustomOptions[option.id]
+                                            ?.valueId === value.id
+                                            ? "gray.400"
+                                            : "gray.400"
+                                        }
+                                        _hover={{
+                                          borderColor: "red.600",
+                                        }}
+                                        transition="all 0.2s"
+                                        bg="transparent"
+                                        position="relative"
+                                        minH="100px"
+                                        maxH="200px"
+                                        display="flex"
+                                        shadow="none"
+                                        flexDirection="column"
+                                        alignItems="center"
+                                        justifyContent="center"
+                                      >
+                                        {value.image_url && (
+                                          <Box
+                                            w="full"
+                                            h="auto"
+                                            borderRadius="0px"
+                                            overflow="hidden"
+                                            bg="transparent"
+                                            mb={0}
                                           >
-                                            {/* +{displayPrice.toFixed(2)}
+                                            <Image
+                                              src={value.image_url}
+                                              alt={
+                                                value.display_name ||
+                                                value.option_value
+                                              }
+                                              w="full"
+                                              h="100px"
+                                              maxH="100px"
+                                              objectFit="100%"
+                                            />
+                                          </Box>
+                                        )}
+                                        <Text
+                                          fontSize="xs"
+                                          fontWeight="medium"
+                                          textAlign="center"
+                                          noOfLines={2}
+                                          fontFamily={"Airbnb Cereal VF"}
+                                          mb={1}
+                                        >
+                                          {value.display_name ||
+                                            value.option_value}
+                                        </Text>
+                                        {(() => {
+                                          const priceModifier = parseFloat(
+                                            value.price_modifier || 0
+                                          );
+                                          const pricePerM2 = parseFloat(
+                                            value.price_per_m2 || 0
+                                          );
+                                          const pricePerM3 = parseFloat(
+                                            value.price_per_m3 || 0
+                                          );
+                                          const pricePerLinearMeter =
+                                            parseFloat(
+                                              value.price_per_linear_meter || 0
+                                            );
+                                          const pricePerMeter = parseFloat(
+                                            value.price_per_meter || 0
+                                          );
+
+                                          let displayPrice = 0;
+                                          let displayUnit = "";
+
+                                          switch (value.price_modifier_type) {
+                                            case "m2":
+                                              displayPrice = pricePerM2;
+                                              displayUnit = "€/m²";
+                                              break;
+                                            case "m3":
+                                              displayPrice = pricePerM3;
+                                              displayUnit = "€/m³";
+                                              break;
+                                            case "linear-meter":
+                                              displayPrice =
+                                                pricePerLinearMeter;
+                                              displayUnit = "€/m";
+                                              break;
+                                            case "meter":
+                                              displayPrice = pricePerMeter;
+                                              displayUnit = "€/m";
+                                              break;
+                                            case "percentage":
+                                              displayPrice = priceModifier;
+                                              displayUnit = "%";
+                                              break;
+                                            case "fixed":
+                                            default:
+                                              displayPrice = priceModifier;
+                                              displayUnit = "€";
+                                          }
+
+                                          if (displayPrice > 0) {
+                                            return (
+                                              <Text
+                                                fontSize="xs"
+                                                fontWeight="bold"
+                                                color="green.600"
+                                                fontFamily="Bogle"
+                                              >
+                                                {/* +{displayPrice.toFixed(2)}
                                             {displayUnit} */}
-                                          </Text>
-                                        );
-                                      } else if (displayPrice < 0) {
-                                        return (
-                                          <Text
-                                            fontSize="xs"
-                                            fontWeight="bold"
-                                            color="red.600"
-                                            fontFamily="Bogle"
-                                          >
-                                            {/* {displayPrice.toFixed(2)}
+                                              </Text>
+                                            );
+                                          } else if (displayPrice < 0) {
+                                            return (
+                                              <Text
+                                                fontSize="xs"
+                                                fontWeight="bold"
+                                                color="red.600"
+                                                fontFamily="Bogle"
+                                              >
+                                                {/* {displayPrice.toFixed(2)}
                                             {displayUnit} */}
-                                          </Text>
-                                        );
-                                      } else {
-                                        return (
-                                          <Text
-                                            fontSize="xs"
-                                            color="gray.500"
-                                            fontFamily="Bogle"
-                                          >
-                                            Included
-                                          </Text>
-                                        );
-                                      }
-                                    })()}
-                                    <Radio
-                                      value={value.id}
-                                      colorScheme="blue"
-                                      position="absolute"
-                                      top={2}
-                                      right={2}
-                                      size="sm"
-                                    />
-                                  </Card>
-                                </Box>
+                                              </Text>
+                                            );
+                                          } else {
+                                            return (
+                                              <Text
+                                                fontSize="xs"
+                                                color="gray.500"
+                                                fontFamily="Bogle"
+                                              >
+                                                Included
+                                              </Text>
+                                            );
+                                          }
+                                        })()}
+                                        <Radio
+                                          value={value.id}
+                                          colorScheme="blue"
+                                          position="absolute"
+                                          top={2}
+                                          right={2}
+                                          size="sm"
+                                        />
+                                      </Card>
+                                    </Box>
+                                  ))}
+                                </HStack>
+                              </Box>
+                            </RadioGroup>
+                          )}
+
+                          {option.option_type === "select" && (
+                            <Select
+                              placeholder={`Choose ${option.option_name}`}
+                              size="md"
+                              borderRadius="md"
+                              value={
+                                selectedCustomOptions[option.id]?.valueId || ""
+                              }
+                              onChange={(e) => {
+                                const selectedValue =
+                                  option.option_values?.find(
+                                    (v) => v.id === e.target.value
+                                  );
+                                if (selectedValue) {
+                                  handleCustomOptionChange(
+                                    option.id,
+                                    e.target.value,
+                                    selectedValue.option_value,
+                                    selectedValue.price_modifier,
+                                    selectedValue.price_modifier_type
+                                  );
+                                }
+                              }}
+                            >
+                              {option.option_values?.map((value) => (
+                                <option key={value.id} value={value.id}>
+                                  {value.display_name || value.option_value}
+                                  {parseFloat(value.price_modifier) > 0 &&
+                                    (value.price_modifier_type === "percentage"
+                                      ? ` (+${value.price_modifier}%)`
+                                      : ` (+${value.price_modifier}€)`)}
+                                </option>
                               ))}
-                            </HStack>
-                          </Box>
-                        </RadioGroup>
-                      )}
-
-                      {option.option_type === "select" && (
-                        <Select
-                          placeholder={`Choose ${option.option_name}`}
-                          size="md"
-                          borderRadius="md"
-                          value={
-                            selectedCustomOptions[option.id]?.valueId || ""
-                          }
-                          onChange={(e) => {
-                            const selectedValue = option.option_values?.find(
-                              (v) => v.id === e.target.value
-                            );
-                            if (selectedValue) {
-                              handleCustomOptionChange(
-                                option.id,
-                                e.target.value,
-                                selectedValue.option_value,
-                                selectedValue.price_modifier,
-                                selectedValue.price_modifier_type
-                              );
-                            }
-                          }}
-                        >
-                          {option.option_values?.map((value) => (
-                            <option key={value.id} value={value.id}>
-                              {value.display_name || value.option_value}
-                              {parseFloat(value.price_modifier) > 0 &&
-                                (value.price_modifier_type === "percentage"
-                                  ? ` (+${value.price_modifier}%)`
-                                  : ` (+${value.price_modifier}€)`)}
-                            </option>
-                          ))}
-                        </Select>
-                      )}
-                    </Box>
-                  ))}
+                            </Select>
+                          )}
+                        </Box>
+                      );
+                  })}
                 </VStack>
               </Box>
             )}
