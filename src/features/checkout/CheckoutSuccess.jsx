@@ -20,7 +20,7 @@ export default function CheckoutSuccess() {
   }
   setLoading(true);
   axios
-    .get(`http://localhost:8086/api/orders/public/orders/by-number/${orderNumber}`)
+    .get(`https://api.assolutionsfournitures.fr/api/orders/public/orders/by-number/${orderNumber}`)
     .then((res) => setOrder(res.data.data))
     .catch(() => setOrder(null))
     .finally(() => setLoading(false));
