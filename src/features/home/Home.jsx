@@ -796,7 +796,7 @@ function Home() {
                 bgSize="100%"
               >
                 <Text
-                  color="rgb(255, 255, 255)"
+                  color="rgb(0, 30, 96)"
                   fontFamily="Bogle"
                   fontWeight="700"
                   pl={4}
@@ -809,7 +809,7 @@ function Home() {
                 </Text>
 
                 <Text
-                  color="rgb(255, 255, 255)"
+                  color="rgb(0, 30, 96)"
                   fontWeight="400"
                   pl={4}
                   pt={6}
