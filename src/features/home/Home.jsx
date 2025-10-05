@@ -116,6 +116,7 @@ import Footer from "../../shared-customer/components/Footer";
 import MobileCategoryNavigation from "../../shared-customer/components/MobileCategoryNavigation";
 import { useSwipeable } from "react-swipeable";
 import ExploreAll from "../../shared-customer/components/ExploreAll";
+import VerandaImage from "../../assets/home/as2/veranda.png";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../shared-customer/components/Navbar";
 import { customerAccountService } from "../customer-account/customerAccountService";
@@ -948,6 +949,56 @@ function Home() {
                         </Text>
                       </VStack>
                     </Box>
+
+                    {/* Slide 2 */}
+                    <Box
+                      as="a"
+                      href="/category/structures-extrieures"
+                      position="absolute"
+                      inset={0}
+                      display={currentPromoSlide === 1 ? "flex" : "none"}
+                      alignItems="center"
+                      justifyContent="space-between"
+                      p={0}
+                      transition="all 0.4s ease-in-out"
+                    >
+                      <Image
+                        src={VerandaImage}
+                        alt="La véranda, votre nouvelle pièce à vivre."
+                        w="full"
+                        h="full"
+                        rounded="xl"
+                        objectFit="cover"
+                        transition="transform 0.3s"
+                        _hover={{ transform: "scale(1.02)" }}
+                        zIndex={1}
+                      />
+                      {/* Text overlay above image */}
+                      <VStack
+                        position="absolute"
+                        left={{ base: 4, md: 8 }}
+                        top={{ base: 6, md: 10 }}
+                        zIndex={2}
+                        align="start"
+                        spacing={1}
+                        maxW={{ base: "60%", md: "50%" }}
+                      >
+                        <Text
+                          fontSize={{ base: "lg", md: "4xl" }}
+                          fontWeight="700"
+                          color="rgb(0, 30, 96)"
+                          fontFamily="Bogle"
+                        >
+                          La véranda, votre nouvelle pièce à vivre.
+                        </Text>
+                        <Text
+                          fontSize={{ base: "sm", md: "md" }}
+                          color="rgb(0, 30, 96)"
+                        >
+                          Livraison rapide et fiable
+                        </Text>
+                      </VStack>
+                    </Box>
                   </Box>
 
                   {/* Carousel indicators (keeps existing behaviour) */}
@@ -959,7 +1010,7 @@ function Home() {
                     spacing={2}
                     zIndex={3}
                   >
-                    {[0].map((index) => (
+                    {[0, 1].map((index) => (
                       <Box
                         key={index}
                         w="8px"
@@ -995,6 +1046,7 @@ function Home() {
                   }
                   aria-label="Previous slide"
                 />
+
                 <IconButton
                   position="absolute"
                   right="2"
@@ -1297,6 +1349,60 @@ function Home() {
                   </Box>
                 )}
 
+                {currentMobilePromoSlide === 1 && (
+                  <Box
+                    as="a"
+                    href="/category/structures-extrieures"
+                    position="relative"
+                    h="full"
+                    w="full"
+                    display="block"
+                  >
+                    <Image
+                      src={VerandaImage}
+                      alt="Jasqua mobile promo"
+                      w="full"
+                      h="full"
+                      objectFit="cover"
+                      rounded="xl"
+                    />
+                    {/* Overlay text for mobile slide 1 */}
+                    <Box
+                      position="absolute"
+                      top="15%"
+                      left="8%"
+                      zIndex={2}
+                      color="white"
+                      textAlign="left"
+                    >
+                      <Text
+                        color="rgb(0, 30, 96)"
+                        fontFamily="Bogle"
+                        fontWeight="700"
+                        pl={0}
+                        pt={0}
+                        fontSize="24px"
+                        lineHeight={"1.1"}
+                      >
+                        La maison de vos <br />
+                        rêves, livrée.
+                      </Text>
+
+                      <Text
+                        color="rgb(0, 30, 96)"
+                        fontWeight="400"
+                        pl={0}
+                        pt={2}
+                        fontSize="13px"
+                        lineHeight={"1.1"}
+                        textDecor={"underline"}
+                      >
+                        Shop now
+                      </Text>
+                    </Box>
+                  </Box>
+                )}
+
                 {/* Carousel indicators */}
                 <HStack
                   position="absolute"
@@ -1306,7 +1412,7 @@ function Home() {
                   spacing={2}
                   zIndex={3}
                 >
-                  {[0].map((index) => (
+                  {[0,1].map((index) => (
                     <Box
                       key={index}
                       w="8px"
@@ -2187,30 +2293,35 @@ function Home() {
 
         <Flex gap={6} mt={5} display={{ base: "none", md: "flex" }}>
           <Box bg="white" h="100%" mb={8} width="566px">
-            <Box bg="blue.300" h="566px" rounded="xl">
-              <Image
-                src={AutoImage}
-                h="full"
-                w="full"
-                objectFit="fill"
-                rounded="xl"
-              />
-            </Box>
+            <Link to='/category/automoto'>
+              <Box bg="blue.300" h="566px" rounded="xl">
+                <Image
+                  src={AutoImage}
+                  h="full"
+                  w="full"
+                  objectFit="fill"
+                  rounded="xl"
+                />
+              </Box>
+            </Link>
           </Box>
 
           <Box bg="white" h="600px" width="448.01px">
-            <Box bg="blue.300" h="251.1px" rounded="xl">
-              <Image
-                src={CarAccessories}
-                h="full"
-                w="full"
-                objectFit="fill"
-                rounded="xl"
-              />
-            </Box>
+            <Link to='/category/accessoires-pour-voitures'>
+              <Box bg="blue.300" h="251.1px" rounded="xl">
+                <Image
+                  src={CarAccessories}
+                  h="full"
+                  w="full"
+                  objectFit="fill"
+                  rounded="xl"
+                />
+              </Box>
+            </Link>
 
             <Box>
               <SimpleGrid columns={2} spacing={2} mt={6}>
+                <Link to='/category/peintures-et-accessoires-de-peinture'>
                 <Box
                   bg="blue.300"
                   h="291.18px"
@@ -2218,6 +2329,8 @@ function Home() {
                   bgImage={CarPaintsImage}
                   bgSize="100%"
                 ></Box>
+                </Link>
+                <Link to='/category/huiles-et-autres-fluides'>
                 <Box
                   bg="blue.300"
                   h="291.18px"
@@ -2225,20 +2338,23 @@ function Home() {
                   bgImage={CarOilsImage}
                   bgSize="100%"
                 ></Box>
+                </Link>
               </SimpleGrid>
             </Box>
           </Box>
 
           <Box bg="white" h="600px" width="auto" maxW="340px">
-            <Box h="563.97px" rounded="lg">
-              <Image
-                src={CarToolsImage}
-                h="full"
-                w="full"
-                objectFit="fill"
-                rounded="xl"
-              />
-            </Box>
+            <Link to='/category/outils-pour-voitures'>
+              <Box h="563.97px" rounded="lg">
+                <Image
+                  src={CarToolsImage}
+                  h="full"
+                  w="full"
+                  objectFit="fill"
+                  rounded="xl"
+                />
+              </Box>
+            </Link>
           </Box>
         </Flex>
 
