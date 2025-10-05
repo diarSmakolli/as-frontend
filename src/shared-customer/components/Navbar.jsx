@@ -2054,7 +2054,7 @@ function Navbar() {
 
       {/* Category Navigation - Responsive for both desktop and mobile */}
       <Box
-        bg="#fce3e3ff"
+        bg="#131921"
         rounded='0'
         borderTop="0px"
         borderColor="gray.200"
