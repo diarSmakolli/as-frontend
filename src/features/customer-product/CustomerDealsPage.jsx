@@ -1322,7 +1322,6 @@ const CustomerDealsPage = () => {
                     <ProductCard
                       key={product.id}
                       product={homeService.formatFlashDealProductData(product)}
-                      onClick={() => handleProductClick(product)}
                       isFlashDeal={true}
                     />
                   ))}
