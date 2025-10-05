@@ -978,7 +978,7 @@ const CheckoutPage = () => {
           `Numéro de commande: ${result.order_number}`,
           "success"
         );
-        navigate(`/order-success/${result.order_id}`);
+        navigate(`/checkout-success/${result.order_number}`);
       }
     } catch (err) {
       handleError("Échec du paiement", err);
