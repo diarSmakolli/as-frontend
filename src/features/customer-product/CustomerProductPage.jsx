@@ -185,6 +185,13 @@ function CustomerProductPage() {
   const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
   const BIGBUY_SUPPLIER_ID = "a61270fa-aca5-43e0-9be0-9cb0a7065f1d";
 
+  const dimensionLabels = {
+    width: "Largeur",
+    height: "Hauteur",
+    depth: "Profondeur",
+    length: "Longueur",
+  };
+
   useEffect(() => {
     // Scroll to top when component mounts or slug changes
     window.scrollTo(0, 0);
@@ -2047,7 +2054,7 @@ function CustomerProductPage() {
                                     }
                                   </Text>
 
-                                  <VStack spacing={4}>
+                                  {/* <VStack spacing={4}>
                                     {pricingConfig?.required_dimensions.map(
                                       (dimension) => (
                                         <FormControl key={dimension}>
@@ -2101,6 +2108,72 @@ function CustomerProductPage() {
                                                 .dimension_constraints[
                                                 dimension
                                               ].max || "No limit"}
+                                            </FormHelperText>
+                                          )}
+                                        </FormControl>
+                                      )
+                                    )}
+                                  </VStack> */}
+
+                                  <VStack spacing={4}>
+                                    {pricingConfig?.required_dimensions.map(
+                                      (dimension) => (
+                                        <FormControl key={dimension}>
+                                          <FormLabel
+                                            textTransform="capitalize"
+                                            fontSize="sm"
+                                            fontWeight="medium"
+                                            fontFamily={"Bogle"}
+                                          >
+                                            {dimensionLabels[dimension] ||
+                                              dimension}{" "}
+                                            (cm)
+                                          </FormLabel>
+                                          <Input
+                                            type="number"
+                                            placeholder={`Entrer ${
+                                              dimensionLabels[dimension] ||
+                                              dimension
+                                            }`}
+                                            value={
+                                              customDimensions[dimension] || ""
+                                            }
+                                            onChange={(e) =>
+                                              handleDimensionChange(
+                                                dimension,
+                                                e.target.value
+                                              )
+                                            }
+                                            min={
+                                              pricingConfig
+                                                .dimension_constraints[
+                                                dimension
+                                              ]?.min || 0
+                                            }
+                                            max={
+                                              pricingConfig
+                                                .dimension_constraints[
+                                                dimension
+                                              ]?.max || undefined
+                                            }
+                                            size="md"
+                                          />
+                                          {pricingConfig.dimension_constraints[
+                                            dimension
+                                          ] && (
+                                            <FormHelperText fontSize="xs">
+                                              Min:{" "}
+                                              {
+                                                pricingConfig
+                                                  .dimension_constraints[
+                                                  dimension
+                                                ].min
+                                              }{" "}
+                                              - Max:{" "}
+                                              {pricingConfig
+                                                .dimension_constraints[
+                                                dimension
+                                              ].max || "Pas de limite"}
                                             </FormHelperText>
                                           )}
                                         </FormControl>
@@ -3316,7 +3389,7 @@ function CustomerProductPage() {
               color="black"
               fontFamily={"Airbnb Cereal VF"}
             >
-              Availability
+              Disponibilité
             </Text>
 
             {/* <Text fontSize="sm" fontWeight="500" color="black">
@@ -3345,7 +3418,7 @@ function CustomerProductPage() {
               color="black"
               fontFamily={"Airbnb Cereal VF"}
             >
-              Tax Rate
+              Taux d'imposition
             </Text>
             <Text fontSize="sm" fontWeight="500" color="black">
               {product?.tax.rate}%
@@ -3394,7 +3467,7 @@ function CustomerProductPage() {
                         {pricingConfig?.dimensional_calculation_type}
                       </Text>
 
-                      <VStack spacing={4}>
+                      {/* <VStack spacing={4}>
                         {pricingConfig?.required_dimensions.map((dimension) => (
                           <FormControl key={dimension}>
                             <FormLabel
@@ -3432,6 +3505,52 @@ function CustomerProductPage() {
                                 - Max:{" "}
                                 {pricingConfig.dimension_constraints[dimension]
                                   .max || "No limit"}
+                              </FormHelperText>
+                            )}
+                          </FormControl>
+                        ))}
+                      </VStack> */}
+
+                      <VStack spacing={4}>
+                        {pricingConfig?.required_dimensions.map((dimension) => (
+                          <FormControl key={dimension}>
+                            <FormLabel
+                              textTransform="capitalize"
+                              fontSize="sm"
+                              fontWeight="medium"
+                              fontFamily={"Bogle"}
+                            >
+                              {dimensionLabels[dimension] || dimension} (cm)
+                            </FormLabel>
+                            <Input
+                              type="number"
+                              placeholder={`Entrer ${
+                                dimensionLabels[dimension] || dimension
+                              }`}
+                              value={customDimensions[dimension] || ""}
+                              onChange={(e) =>
+                                handleDimensionChange(dimension, e.target.value)
+                              }
+                              min={
+                                pricingConfig.dimension_constraints[dimension]
+                                  ?.min || 0
+                              }
+                              max={
+                                pricingConfig.dimension_constraints[dimension]
+                                  ?.max || undefined
+                              }
+                              size="md"
+                            />
+                            {pricingConfig.dimension_constraints[dimension] && (
+                              <FormHelperText fontSize="xs">
+                                Min:{" "}
+                                {
+                                  pricingConfig.dimension_constraints[dimension]
+                                    .min
+                                }{" "}
+                                - Max:{" "}
+                                {pricingConfig.dimension_constraints[dimension]
+                                  .max || "Pas de limite"}
                               </FormHelperText>
                             )}
                           </FormControl>
@@ -3729,7 +3848,7 @@ function CustomerProductPage() {
                           )}
                         </Box>
                       );
-                  })}
+                    })}
                 </VStack>
               </Box>
             )}
@@ -3750,7 +3869,7 @@ function CustomerProductPage() {
                   color="gray.800"
                   fontFamily="Airbnb Cereal VF"
                 >
-                  Total Price:
+                  Prix total:
                 </Text>
                 <Text
                   fontSize="xl"
@@ -3884,7 +4003,7 @@ function CustomerProductPage() {
               <VStack align="stretch" spacing={1}>
                 <HStack justify="space-between">
                   <Text fontSize="sm" color="gray.600">
-                    Including VAT ({product?.tax.rate}%)
+                    TVA incluse ({product?.tax.rate}%)
                   </Text>
                 </HStack>
               </VStack>
@@ -3969,7 +4088,7 @@ function CustomerProductPage() {
           <HStack spacing={2} w="full" align="stretch" mt={5}>
             <Box w="30%">
               <Text fontWeight="semibold" mb={2} fontSize="sm" color="gray.900">
-                Quantity
+                Quantité
               </Text>
               <VStack spacing={0} align="stretch">
                 <HStack
@@ -4060,7 +4179,7 @@ function CustomerProductPage() {
                 py={3}
                 onClick={handleAddToCart}
               >
-                Add to Cart
+                Ajouter au panier
               </Button>
             </Box>
           </HStack>
@@ -4139,7 +4258,7 @@ function CustomerProductPage() {
               mt={10}
               ml={3}
             >
-              About this item
+              À propos de cet article
             </Text>
 
             <Accordion allowMultiple maxW={{ base: "100%", md: "100%" }} mt={5}>
@@ -4163,7 +4282,7 @@ function CustomerProductPage() {
                         fontFamily="Airbnb Cereal VF"
                         color="gray.800"
                       >
-                        Product Details
+                        Détails du produit
                       </Text>
                     </Box>
                     <AccordionIcon />
@@ -4214,7 +4333,7 @@ function CustomerProductPage() {
                         fontFamily="Airbnb Cereal VF"
                         color="gray.800"
                       >
-                        Specifications
+                        Caractéristiques
                       </Text>
                     </Box>
                     <AccordionIcon />
@@ -4270,7 +4389,7 @@ function CustomerProductPage() {
                       fontStyle="italic"
                       fontFamily="Bogle"
                     >
-                      No specifications available for this product.
+                      Aucune caractéristique disponible pour ce produit.
                     </Text>
                   )}
                 </AccordionPanel>
