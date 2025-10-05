@@ -142,7 +142,7 @@ const ProductCard = ({ product }) => {
 
   return (
     <>
-      <Link to={`/product/${product.slug}`}>
+      <Link to={`/product/${product.slug}`} target="_blank">
         <Card
           onClick={handleProductClick}
           bg="transparent"
