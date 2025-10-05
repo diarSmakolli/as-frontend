@@ -92,7 +92,7 @@ import SliderNoOne from "../../assets/home/as1/maison-new.png";
 import SliderNoOneMobile from "../../assets/home/as1/maison-new.png";
 import BagageImage from "../../assets/bagages.png";
 import GardenImage from "../../assets/home/as1/garden.png";
-import SanitaryImage from "../../assets/home/as1/sanitary.png";
+import SanitaryImage from "../../assets/sanitary.png";
 import BebeImage from "../../assets/home/as1/bebe.png";
 import PorteImage from "../../assets/porte.png";
 import FurnitureImage from "../../assets/furniture.png";
