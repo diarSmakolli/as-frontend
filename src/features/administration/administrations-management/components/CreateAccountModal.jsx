@@ -197,9 +197,9 @@ const CreateAccountModal = ({ isOpen, onClose, onSuccess }) => {
 
   const roleOptions = [
     { value: "global-administrator", label: "Global Administrator" },
-    { value: "administrator", label: "Administrator" },
-    { value: "supplier", label: "Supplier" },
-    { value: "employee", label: "Employee" },
+    // { value: "administrator", label: "Administrator" },
+    // { value: "supplier", label: "Supplier" },
+    { value: "sales-agent", label: "Agent commercial" },
   ];
 
   const companyOptions = [
