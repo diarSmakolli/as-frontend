@@ -48,10 +48,10 @@ Disallow: /
 User-agent: AhrefsBot
 Disallow: /
 
-# Sitemap locations (served from frontend domain)
-Sitemap: https://assolutionsfournitures.fr/sitemap.xml
-Sitemap: https://assolutionsfournitures.fr/sitemap-products.xml
-Sitemap: https://assolutionsfournitures.fr/sitemap-categories.xml
+# Sitemap locations (UPDATED - pointing to API)
+Sitemap: https://api.assolutionsfournitures.fr/sitemap.xml
+Sitemap: https://api.assolutionsfournitures.fr/sitemap-products.xml
+Sitemap: https://api.assolutionsfournitures.fr/sitemap-categories.xml
 
 # Host directive (preferred domain)
 Host: https://assolutionsfournitures.fr

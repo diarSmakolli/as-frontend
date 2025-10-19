@@ -1,5 +1,39 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://api.assolutionsfournitures.fr/sitemap.xml"
+    },
+    {
+      "source": "/sitemap-products.xml",
+      "destination": "https://api.assolutionsfournitures.fr/sitemap-products.xml"
+    },
+    {
+      "source": "/sitemap-categories.xml",
+      "destination": "https://api.assolutionsfournitures.fr/sitemap-categories.xml"
+    },
+    {
+      "source": "/sitemap-index.xml",
+      "destination": "https://api.assolutionsfournitures.fr/sitemap-index.xml"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/sitemap*.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, s-maxage=3600"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    }
   ]
 }
