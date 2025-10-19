@@ -59,6 +59,12 @@ const CreateAccountModal = ({ isOpen, onClose, onSuccess }) => {
     phone_number: "",
     note: "",
     company_id: "",
+    address: "",
+    city: "",
+    country: "",
+    zip_code: "",
+    passport_number: "",
+    identification_number: "",
   };
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
@@ -124,6 +130,23 @@ const CreateAccountModal = ({ isOpen, onClose, onSuccess }) => {
 
     if (formData.role === "supplier" && !formData.company_id) {
       newErrors.company_id = "Company is required for Supplier role.";
+    }
+
+    if (formData.role === "sales-agent") {
+      if (!formData.address.trim()) newErrors.address = "Address is required";
+      if (!formData.city.trim()) newErrors.city = "City is required";
+      if (!formData.country.trim()) newErrors.country = "Country is required";
+      if (!formData.zip_code.trim())
+        newErrors.zip_code = "Zip code is required";
+      if (
+        !formData.passport_number.trim() &&
+        !formData.identification_number.trim()
+      ) {
+        newErrors.passport_number =
+          "Passport number or identification number is required";
+        newErrors.identification_number =
+          "Passport number or identification number is required";
+      }
     }
 
     setErrors(newErrors);
@@ -416,6 +439,114 @@ const CreateAccountModal = ({ isOpen, onClose, onSuccess }) => {
               />
               <FormErrorMessage>{errors.note}</FormErrorMessage>
             </FormControl>
+
+            {formData.role === "sales-agent" && (
+  <>
+    <FormControl isInvalid={!!errors.address} isRequired>
+      <FormLabel>Address</FormLabel>
+      <Input
+        name="address"
+        value={formData.address}
+        onChange={handleChange}
+        bg="rgb(255,255,255)"
+        borderColor="gray.400"
+        _hover={{ borderColor: "gray.400" }}
+        _focus={{
+          borderColor: "blue.400",
+          boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+        }}
+      />
+      <FormErrorMessage>{errors.address}</FormErrorMessage>
+    </FormControl>
+    <FormControl isInvalid={!!errors.city} isRequired>
+      <FormLabel>City</FormLabel>
+      <Input
+        name="city"
+        value={formData.city}
+        onChange={handleChange}
+        bg="rgb(255,255,255)"
+        borderColor="gray.400"
+        _hover={{ borderColor: "gray.400" }}
+        _focus={{
+          borderColor: "blue.400",
+          boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+        }}
+      />
+      <FormErrorMessage>{errors.city}</FormErrorMessage>
+    </FormControl>
+    <FormControl isInvalid={!!errors.country} isRequired>
+      <FormLabel>Country</FormLabel>
+      <Input
+        name="country"
+        value={formData.country}
+        onChange={handleChange}
+        bg="rgb(255,255,255)"
+        borderColor="gray.400"
+        _hover={{ borderColor: "gray.400" }}
+        _focus={{
+          borderColor: "blue.400",
+          boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+        }}
+      />
+      <FormErrorMessage>{errors.country}</FormErrorMessage>
+    </FormControl>
+    <FormControl isInvalid={!!errors.zip_code} isRequired>
+      <FormLabel>Zip Code</FormLabel>
+      <Input
+        name="zip_code"
+        value={formData.zip_code}
+        onChange={handleChange}
+        bg="rgb(255,255,255)"
+        borderColor="gray.400"
+        _hover={{ borderColor: "gray.400" }}
+        _focus={{
+          borderColor: "blue.400",
+          boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+        }}
+      />
+      <FormErrorMessage>{errors.zip_code}</FormErrorMessage>
+    </FormControl>
+    <FormControl
+      isInvalid={!!errors.passport_number && !!errors.identification_number}
+      isRequired
+    >
+      <FormLabel>
+        Passport Number <b>or</b> Identification Number
+      </FormLabel>
+      <Input
+        name="passport_number"
+        placeholder="Passport Number"
+        value={formData.passport_number}
+        onChange={handleChange}
+        mb={2}
+        bg="rgb(255,255,255)"
+        borderColor="gray.400"
+        _hover={{ borderColor: "gray.400" }}
+        _focus={{
+          borderColor: "blue.400",
+          boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+        }}
+      />
+      <Input
+        name="identification_number"
+        placeholder="Identification Number"
+        value={formData.identification_number}
+        onChange={handleChange}
+        bg="rgb(255,255,255)"
+        borderColor="gray.400"
+        _hover={{ borderColor: "gray.400" }}
+        _focus={{
+          borderColor: "blue.400",
+          boxShadow: "0 0 0 1px rgba(66,153,225,0.6)",
+        }}
+      />
+      <FormErrorMessage>
+        {errors.passport_number || errors.identification_number}
+      </FormErrorMessage>
+    </FormControl>
+  </>
+)}
+
           </Flex>
         </ModalBody>
         <ModalFooter borderTopWidth="1px" borderColor="gray.200">

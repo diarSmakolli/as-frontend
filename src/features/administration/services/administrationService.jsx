@@ -71,12 +71,18 @@ export const administrationService = {
   },
   assignCompanyToUser: async (accountId, companyId) => {
     if (!companyId) {
-        return axiosInstance.put(`/update-account-details/${accountId}`, { company_id: null });
+      return axiosInstance.put(`/update-account-details/${accountId}`, {
+        company_id: null,
+      });
     }
-    return axiosInstance.put(`/user-details/${accountId}/assign-company/${companyId}`);
+    return axiosInstance.put(
+      `/user-details/${accountId}/assign-company/${companyId}`
+    );
   },
   editPercentageCommission: async (accountId, percentage) => {
-    return axiosInstance.put(`/user-details/${accountId}/update-commission`, { percentage });
+    return axiosInstance.put(`/user-details/${accountId}/update-commission`, {
+      percentage,
+    });
   },
   processRewardPaymentsForAllAgents: async () => {
     return axiosInstance.post("/process-reward-payments");
@@ -85,14 +91,19 @@ export const administrationService = {
   generateReferralLink: async () => {
     return axiosInstance.post("/generate-referral-link");
   },
-  
+
   // Get referral statistics for admin
   getReferralStats: async () => {
     return axiosInstance.get("/referral-stats");
   },
-  
+
   // Validate referral code (public endpoint - no auth needed)
   validateReferralCode: async (referralCode) => {
     return axiosInstance.get(`/validate-referral/${referralCode}`);
+  },
+
+  // generate sales agent contract
+  generateSalesAgentContract: async (accountId) => {
+    return axiosInstance.post(`/generate-contract/${accountId}`);
   },
 };

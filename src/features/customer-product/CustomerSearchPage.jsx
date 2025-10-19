@@ -55,6 +55,7 @@ import {
   FaChevronUp,
 } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSEO, generateSearchSEO } from '../../hooks/useSEO';
 import { homeService } from "../home/services/homeService";
 import Navbar from "../../shared-customer/components/Navbar";
 import Footer from "../../shared-customer/components/Footer";
@@ -547,6 +548,10 @@ const CustomerSearchPage = () => {
   const [offset, setOffset] = useState(0);
   const [availableFilters, setAvailableFilters] = useState(null);
   const [query, setQuery] = useState(searchParams.get("q") || "");
+  
+  // SEO for search page
+  const searchSEO = useMemo(() => generateSearchSEO(query, products), [query, products]);
+  
   const [sortBy, setSortBy] = useState(
     searchParams.get("sort_by") || "relevance"
   );
@@ -1296,10 +1301,12 @@ const CustomerSearchPage = () => {
   }
 
   return (
-    <Box minH="100vh" bg="rgba(252, 252, 253, 1)">
-      <Navbar />
+    <>
+      <SEO {...searchSEO} />
+      <Box minH="100vh" bg="rgba(252, 252, 253, 1)">
+        <Navbar />
 
-      <Container maxW="8xl" py={6}>
+        <Container maxW="8xl" py={6}>
         {/* Search Results Header */}
         <VStack spacing={6} mb={8}>
           <Flex
@@ -1513,9 +1520,10 @@ const CustomerSearchPage = () => {
             </DrawerBody>
           </DrawerContent>
         </Drawer>
-      </Container>
-      <Footer />
-    </Box>
+        </Container>
+        <Footer />
+      </Box>
+    </>
   );
 };
 

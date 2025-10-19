@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { SEO } from '../../hooks/useSEO';
 import {
   Box,
   Container,
@@ -772,6 +773,16 @@ const CustomerDealsPage = () => {
     selectedFilters,
   ]);
 
+  // SEO for flash deals page
+  const flashDealsSEO = useMemo(() => ({
+    title: `Offres Flash - Jusqu'à 70% de Réduction | As Solutions Fournitures`,
+    description: `Découvrez ${totalCount} offres flash incroyables avec jusqu'à 70% de réduction. ✓ Livraison rapide ✓ Stock limité ✓ Promotions exceptionnelles`,
+    keywords: 'offres flash, promotions, réductions, ventes flash, prix bas, liquidation, As Solutions',
+    image: '/assets/logo-as.png',
+    type: 'website',
+    canonical: 'https://assolutionsfournitures.fr/flash-deals',
+  }), [totalCount]);
+
   // Handle sort change
   const handleSortChange = useCallback((value) => {
     setSortBy(value);
@@ -1179,10 +1190,12 @@ const CustomerDealsPage = () => {
   }
 
   return (
-    <Box minH="100vh" bg="gray.50">
-      <Navbar />
+    <>
+      <SEO {...flashDealsSEO} />
+      <Box minH="100vh" bg="gray.50">
+        <Navbar />
 
-      <Container maxW="8xl" py={6}>
+        <Container maxW="8xl" py={6}>
         {/* Flash Deals Header */}
         <VStack spacing={6} mb={8}>
           <Flex
@@ -1398,6 +1411,7 @@ const CustomerDealsPage = () => {
 
       <Footer />
     </Box>
+  </>
   );
 };
 

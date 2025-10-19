@@ -1,0 +1,57 @@
+# AS Solutions Fournitures - Robots.txt
+# Updated: 2025-10-19
+
+User-agent: *
+Allow: /
+Allow: /assets/
+Allow: /category/
+Allow: /product/
+Allow: /flash-deals
+Allow: /search
+
+# Block admin and private areas
+Disallow: /gestionnaire
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /api/
+Disallow: /account/
+Disallow: /cart
+Disallow: /checkout
+
+# Block query parameters that don't add SEO value
+Disallow: /*?*session=
+Disallow: /*?*ref=
+Disallow: /*?*utm_
+
+# Block duplicate content
+Disallow: /*?page=
+Disallow: /*?sort=
+Disallow: /*?filter=
+
+# Allow specific search queries
+Allow: /search?q=*
+
+# Crawl-delay for aggressive bots
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: DotBot
+Crawl-delay: 10
+
+# Block bad bots
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+# Sitemap locations (served from frontend domain)
+Sitemap: https://assolutionsfournitures.fr/sitemap.xml
+Sitemap: https://assolutionsfournitures.fr/sitemap-products.xml
+Sitemap: https://assolutionsfournitures.fr/sitemap-categories.xml
+
+# Host directive (preferred domain)
+Host: https://assolutionsfournitures.fr

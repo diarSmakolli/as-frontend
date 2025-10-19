@@ -1,80 +1,19 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  Box,
-  Container,
-  Flex,
-  Heading,
-  Text,
-  Button,
-  Image,
-  VStack,
-  HStack,
-  Badge,
-  Icon,
-  SimpleGrid,
-  IconButton,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  useDisclosure,
-  Card,
-  CardBody,
-  Skeleton,
-  SkeletonText,
-  useBreakpointValue,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverBody,
-  Portal,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  Grid,
-  GridItem,
-  Spacer,
-  textDecoration,
-} from "@chakra-ui/react";
-import {
-  FaStar,
-  FaShippingFast,
-  FaShieldAlt,
-  FaChevronLeft,
-  FaChevronRight,
-  FaSearch,
-  FaHeart,
-  FaShoppingCart,
-  FaBars,
-  FaBox,
-  FaChevronDown,
-  FaChevronRight as FaChevronRightIcon,
-  FaTags,
-  FaClock,
-  FaFire,
-  FaBell,
-  FaPercent,
-  FaHotjar,
-  FaGift,
-  FaGamepad,
-  FaHome,
-  FaTshirt,
-  FaBaby,
-  FaLaptop,
-  FaCar,
-  FaUtensils,
-  FaCamera,
-  FaDumbbell,
-  FaMusic,
-  FaPalette,
-  FaHandsHelping,
-  FaBoxTissue,
-  FaComments,
-  FaUser,
-  FaChevronUp,
-  FaTimes,
-  FaRegHeart,
-} from "react-icons/fa";
+import React, { memo, useMemo, useCallback, lazy, Suspense, useState, useRef, useEffect } from 'react';
+import { 
+  Box, Container, Flex, HStack, VStack, SimpleGrid, Text, Heading, Button, 
+  Card, CardBody, Badge, IconButton, Image, Spinner, Skeleton, SkeletonText,
+  Icon, useBreakpointValue, useToast 
+} from '@chakra-ui/react';
+import { Link, useNavigate } from 'react-router-dom';
+// Use optimized icon imports
+import { HeartIcon, ChevronRightIcon, ChevronLeftIcon } from '../../components/Icons';
+import { useCustomerAuth } from '../customer-account/auth-context/customerAuthContext';
+import { homeService } from "./services/homeService";
+import { customerAccountService } from "../customer-account/customerAccountService";
+import { customToastContainerStyle } from "../../commons/toastStyles";
+import { useSEO, generateHomeSEO } from '../../hooks/useSEO';
+
+// Asset imports
 import Logo from "../../assets/logo-as.png";
 import AsSolutionsPhoto from "../../assets/welcome-as.png";
 import FlashSalePromo from "../../assets/flash-sale-4.png";
@@ -83,11 +22,8 @@ import FournitureSalePromo from "../../assets/fourniture-2.png";
 import FourniturePromoSlide from "../../assets/fourniture-g.png";
 import GaragePromoSlide from "../../assets/garage.png";
 import JasquaMobile from "../../assets/jasqua-mobile.png";
-import GarageSliderMobile from "../../assets/garage-slider-mobile.png";
-import KidsImage from "../../assets/kids.png";
 import FashionImage from "../../assets/fashion.png";
-import HotNewArrivals from "../../assets/hot-new-arrivals.png";
-import TopTechImage from "../../assets/top-tech.png";
+import GarageSliderMobile from "../../assets/garage-slider-mobile.png";
 import SliderNoOne from "../../assets/home/as1/maison-new.png";
 import SliderNoOneMobile from "../../assets/home/as1/maison-new.png";
 import BagageImage from "../../assets/bagages.png";
@@ -111,22 +47,23 @@ import FlashSaleMobileImage from "../../assets/flash-sale-mobile.png";
 import BebeMobileImage from "../../assets/bebe-mobile.png";
 import BeautyMobile from "../../assets/beauty-mobile.jpg";
 import LightsMobile from "../../assets/lights-mobile.jpg";
-import { homeService } from "./services/homeService";
+import VerandaImage from "../../assets/home/as2/veranda.png";
+
+// Component imports
 import Footer from "../../shared-customer/components/Footer";
 import MobileCategoryNavigation from "../../shared-customer/components/MobileCategoryNavigation";
-import { useSwipeable } from "react-swipeable";
 import ExploreAll from "../../shared-customer/components/ExploreAll";
-import VerandaImage from "../../assets/home/as2/veranda.png";
-import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../shared-customer/components/Navbar";
-import { customerAccountService } from "../customer-account/customerAccountService";
-import { useToast } from "@chakra-ui/react";
-import { useCustomerAuth } from "../customer-account/auth-context/customerAuthContext";
-import { customToastContainerStyle } from "../../commons/toastStyles";
+import { useSwipeable } from "react-swipeable";
+import { FaChevronRight } from 'react-icons/fa';
 
 function Home() {
   let toast = useToast();
   const { customer, isLoading } = useCustomerAuth();
+  
+  // SEO for home page
+  const homeSEO = useMemo(() => generateHomeSEO(), []);
+  
   const [currentPromoSlide, setCurrentPromoSlide] = useState(0);
   const [currentMobilePromoSlide, setCurrentMobilePromoSlide] = useState(0);
   const promoSwiperRef = useRef(null);
@@ -222,62 +159,79 @@ function Home() {
     },
   ];
 
-  const handleAddToWishlist = async (productId) => {
+  // Memoize expensive operations
+  const handleAddToWishlist = useCallback(async (productId) => {
     if (!customer || !customer.id) {
-      navigate("/account/signin");
+      toast({
+        title: "Connexion requise",
+        description: "Veuillez vous connecter pour ajouter des produits à votre liste de souhaits.",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
       return;
     }
     try {
-      await customerAccountService.addToWishlist(productId);
+      await customerAccountService.addToWishlist(customer.id, productId);
       toast({
-        title: "Ajouté à la liste de souhaits",
+        title: "Produit ajouté !",
+        description: "Le produit a été ajouté à votre liste de souhaits.",
         status: "success",
         duration: 2000,
         isClosable: true,
-        variant: "custom",
-        containerStyle: customToastContainerStyle,
       });
-
-      const eventPayload = {
-        event_type: "wishlist_add",
-        session_id: customer?.id || null,
-        customer_id: customer?.id || null,
-        product_id: productId,
-        page_type: "homepage",
-        page_url: typeof window !== "undefined" ? window.location.href : null,
-        referrer_url:
-          typeof document !== "undefined" ? document.referrer : null,
-        timestamp: new Date().toISOString(),
-      };
-
-      await homeService.createProductEvent(eventPayload);
     } catch (error) {
       toast({
-        title:
-          error?.message || "Erreur lors de l'ajout à la liste de souhaits",
+        title: "Erreur",
+        description: "Impossible d'ajouter le produit à votre liste de souhaits.",
         status: "error",
-        duration: 2000,
+        duration: 3000,
         isClosable: true,
-        variant: "custom",
-        containerStyle: customToastContainerStyle,
       });
     }
-  };
+  }, [customer, toast]);
 
   const isMobile = useBreakpointValue({ base: true, md: false });
   const columns = useBreakpointValue({ base: 2, sm: 3, md: 4, lg: 5, xl: 6 });
 
+  // Memoize slide handlers for performance
+  const handlePromoSlideChange = useCallback((index) => {
+    setCurrentPromoSlide(index);
+  }, []);
+
+  const handleMobilePromoSlideChange = useCallback((index) => {
+    setCurrentMobilePromoSlide(index);
+  }, []);
+
+  // Progressive loading for better performance
   useEffect(() => {
+    // Load critical data first
     fetchNewArrivals();
     fetchFlashDeals();
-    fetchFurnitureFlashDeals();
-    fetchTopDoorsProducts();
-    fetchTopWindowssProducts();
-    fetchTopAutoMotoProducts();
-    fetchTopBabyProducts();
-    fetchTopConstructionProducts();
-    fetchTopSanitaryProducts();
-    fetchTopBeautyProducts();
+    
+    // Load secondary data with delay
+    const timer1 = setTimeout(() => {
+      fetchTopDoorsProducts();
+      fetchTopWindowssProducts();
+    }, 100);
+    
+    const timer2 = setTimeout(() => {
+      fetchTopAutoMotoProducts();
+      fetchTopBabyProducts();
+    }, 300);
+    
+    const timer3 = setTimeout(() => {
+      fetchFurnitureFlashDeals();
+      fetchTopConstructionProducts();
+      fetchTopSanitaryProducts();
+      fetchTopBeautyProducts();
+    }, 500);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+    };
 
     // Auto-slide banner every 4 seconds
     const interval = setInterval(() => {
@@ -596,14 +550,16 @@ function Home() {
     };
   }
 
-  // Intersection Observer hook for impressions (BATCHED)
-  function useImpressionObserver(products, section, transformFn) {
+  // Optimized Intersection Observer hook for impressions (BATCHED)
+  const useImpressionObserver = useCallback((products, section, transformFn) => {
     const observedRef = useRef([]);
     const sentImpressions = useRef(new Set());
 
     useEffect(() => {
       if (!products || products.length === 0) return;
-      const observer = new window.IntersectionObserver(
+      
+      // Use passive intersection observer for better performance
+      const observer = new IntersectionObserver(
         (entries) => {
           const batchEvents = [];
           entries.forEach((entry) => {
@@ -626,23 +582,33 @@ function Home() {
               }
             }
           });
+          
+          // Batch API calls for better performance
           if (batchEvents.length > 0) {
-            homeService.createProductEventsBatch(batchEvents).catch(() => {});
+            requestIdleCallback(() => {
+              homeService.createProductEventsBatch(batchEvents).catch(() => {});
+            });
           }
         },
-        { threshold: 0.5 }
+        { 
+          threshold: 0.5,
+          rootMargin: '50px'  // Preload slightly before visible
+        }
       );
+      
       observedRef.current.forEach((el) => {
         if (el) observer.observe(el);
       });
+      
       return () => {
         observedRef.current.forEach((el) => {
           if (el) observer.unobserve(el);
         });
       };
     }, [products, section, transformFn]);
+    
     return observedRef;
-  }
+  }, []);
 
   // Product Click Event Payload
   function buildProductClickEvent({ product, index, section = "homepage" }) {
@@ -779,16 +745,27 @@ function Home() {
     homeService.createProductEvent(eventPayload);
   };
 
+  // Early loading state
+  if (isLoading) {
+    return (
+      <Box minH="100vh" bg="rgba(255, 255, 255, 1)" display="flex" alignItems="center" justifyContent="center">
+        <Spinner size="xl" color="blue.500" />
+      </Box>
+    );
+  }
+
   return (
     <Box minH="100vh" bg="rgba(255, 255, 255, 1)">
-      {/* Header matching Wish design but with AS Solutions branding */}
-      <Navbar />
+      {/* SEO and Accessibility Meta */}
+      <Box as="header" role="banner">
+        <Navbar />
+      </Box>
 
       {/* Main Content with Container */}
-      <Container maxW="8xl" py={6} px={4}>
-        <Flex gap={4} display={{ base: "none", md: "flex" }}>
+      <Container maxW="8xl" py={6} px={4} as="main" role="main">
+        <Flex gap={4} display={{ base: "none", md: "flex" }} as="section" aria-label="Promotions principales">
           <Box bg="white" h="100%" mb={8} width="370px">
-            <Link to="/category/salle-de-bain-sanitaires">
+            <Link to="/category/salle-de-bain-sanitaires" aria-label="Voir les produits sanitaires">
               <Box
                 bg="white"
                 h="240.03px"
@@ -914,7 +891,7 @@ function Home() {
                     >
                       <Image
                         src={SliderNoOne}
-                        alt="La maison de vos rêves"
+                        alt="La maison de vos rêves - Maisons préfabriquées en bois AS Solutions"
                         w="full"
                         h="full"
                         rounded="xl"
@@ -922,6 +899,9 @@ function Home() {
                         transition="transform 0.3s"
                         _hover={{ transform: "scale(1.02)" }}
                         zIndex={1}
+                        loading="eager"
+                        fetchpriority="high"
+                        decoding="async"
                       />
                       {/* Text overlay above image */}
                       <VStack
@@ -1032,7 +1012,7 @@ function Home() {
                   left="2"
                   top="50%"
                   transform="translateY(-50%)"
-                  icon={<FaChevronLeft />}
+                  icon={<ChevronLeftIcon />}
                   size="sm"
                   bg="white"
                   color="gray.600"
@@ -1052,7 +1032,7 @@ function Home() {
                   right="2"
                   top="50%"
                   transform="translateY(-50%)"
-                  icon={<FaChevronRight />}
+                  icon={<ChevronRightIcon />}
                   size="sm"
                   bg="white"
                   color="gray.600"
@@ -1306,11 +1286,14 @@ function Home() {
                   >
                     <Image
                       src={SliderNoOneMobile}
-                      alt="Jasqua mobile promo"
+                      alt="La maison de vos rêves - Maisons préfabriquées en bois (mobile)"
                       w="full"
                       h="full"
                       objectFit="cover"
                       rounded="xl"
+                      loading="eager"
+                      fetchpriority="high"
+                      decoding="async"
                     />
                     {/* Overlay text for mobile slide 1 */}
                     <Box
@@ -1772,7 +1755,7 @@ function Home() {
 
         {/* Categories TOP Products */}
         {/* Portes */}
-        <Box mb={8} mt={2}>
+        <Box mb={8} mt={2} as="section" aria-labelledby="portes-heading">
           <Flex align="center" justify="space-between" mb={4}>
             <HStack spacing={3}>
               {/* <Icon as={FaFire} color="red.500" fontSize="xl" /> */}
@@ -3430,23 +3413,31 @@ function Home() {
           </Box>
         </Box>
       </Container>
-      <Footer />
+      <Suspense fallback={<Box h="200px" bg="gray.50" display="flex" alignItems="center" justifyContent="center"><Spinner /></Box>}>
+        <Footer />
+      </Suspense>
     </Box>
   );
 }
 
-function ProductImage({
+// Optimized ProductImage with lazy loading and accessibility
+const ProductImage = memo(function ProductImage({
   src,
   alt,
   height = { base: "150px", sm: "180px", md: "200px" },
   bg = "transparent",
+  loading = "lazy",
+  priority = false,
   ...props
 }) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+
   return (
     <Box
       w="full"
       h={height}
-      bg={bg}
+      bg={loaded ? bg : "gray.100"}
       display="flex"
       alignItems="center"
       justifyContent="center"
@@ -3454,28 +3445,46 @@ function ProductImage({
       pl={2}
       pr={2}
       pt={2}
+      position="relative"
       {...props}
     >
+      {!loaded && !error && (
+        <Spinner size="sm" color="gray.400" position="absolute" />
+      )}
       <Image
-        src={src}
-        alt={alt}
+        src={error ? "/src/assets/no-image.svg" : src}
+        alt={alt || "Image produit"}
         w="full"
         h="full"
         objectFit="contain"
         objectPosition="center"
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        onError={() => {
+          setError(true);
+          setLoaded(true);
+        }}
+        opacity={loaded ? 1 : 0}
+        transition="opacity 0.3s ease"
         fallback={
           <Box
             w="full"
             h={height}
-            bg="#fff"
+            bg="#f7fafc"
             display="flex"
             alignItems="center"
             justifyContent="center"
-          />
+            color="gray.500"
+            fontSize="sm"
+            textAlign="center"
+          >
+            Image non disponible
+          </Box>
         }
       />
     </Box>
   );
-}
+});
 
-export default Home;
+export default memo(Home);

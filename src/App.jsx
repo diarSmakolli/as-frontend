@@ -1,5 +1,6 @@
 import { React, useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
+import { HelmetProvider } from 'react-helmet-async';
 import {
   AuthProvider,
   useAuth,
@@ -63,13 +64,13 @@ function Analytics() {
 
 function App() {
   return (
-    <>
-      <AuthProvider>
-        <PreferencesProvider>
-          <CustomerAuthProvider>
-            <Router>
-              <Analytics />
-              <Routes>
+      <HelmetProvider>
+        <AuthProvider>
+          <PreferencesProvider>
+            <CustomerAuthProvider>
+              <Router>
+                <Analytics />
+                <Routes>
                 <Route path="/" element={<Home />} />
                 <Route
                   path="/gestionnaire"
@@ -343,12 +344,12 @@ function App() {
                 <Route path="/terms-and-conditions" element={<TOS />} />
                  <Route path="/privacy-policy" element={<PrivacyTOS />} />
                 <Route path="*" element={<Error404 />} />
-              </Routes>
-            </Router>
-          </CustomerAuthProvider>
-        </PreferencesProvider>
-      </AuthProvider>
-    </>
+                </Routes>
+              </Router>
+            </CustomerAuthProvider>
+          </PreferencesProvider>
+        </AuthProvider>
+      </HelmetProvider>
   );
 }
 

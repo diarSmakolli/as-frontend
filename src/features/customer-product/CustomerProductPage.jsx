@@ -139,6 +139,10 @@ function CustomerProductPage() {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState(null);
+  
+  // SEO for product page
+  const productSEO = useMemo(() => product ? generateProductSEO(product) : null, [product]);
+  
   const [productServices, setProductServices] = useState([]);
   const [categories, setCategories] = useState([]);
   const [expandedCategories, setExpandedCategories] = useState(new Set());

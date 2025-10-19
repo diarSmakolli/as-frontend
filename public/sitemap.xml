@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+
+  <!-- PAGE D'ACCUEIL (Priorité Maximum) -->
+  <url>
+    <loc>https://assolutionsfournitures.fr/</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/logo-as.png</image:loc>
+      <image:title>As Solutions Fournitures - Logo</image:title>
+      <image:caption>Spécialiste en fournitures industrielles avec plus de 100 000 produits</image:caption>
+    </image:image>
+  </url>
+
+  <!-- PAGES DE RECHERCHE -->
+  <url>
+    <loc>https://assolutionsfournitures.fr/search</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- PROMOTIONS ET VENTES FLASH -->
+  <url>
+    <loc>https://assolutionsfournitures.fr/flash-deals</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- PAGES LÉGALES -->
+  <url>
+    <loc>https://assolutionsfournitures.fr/terms-and-conditions</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/privacy-policy</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- CATÉGORIES PRINCIPALES (High Priority) -->
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/fentres</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/fenetre.png</image:loc>
+      <image:title>Fenêtres sur mesure</image:title>
+      <image:caption>Fenêtres personnalisées de haute qualité</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/portes</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/porte.png</image:loc>
+      <image:title>Portes personnalisées</image:title>
+      <image:caption>Portes sur mesure pour tous vos besoins</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/bricolage-et-outils</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/bricolage.png</image:loc>
+      <image:title>Bricolage et outillage</image:title>
+      <image:caption>Tous vos outils de bricolage et matériaux</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/maisons-prfabriques-en-bois</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/maison-new.png</image:loc>
+      <image:title>Maisons préfabriquées en bois</image:title>
+      <image:caption>Maisons en bois sur mesure, livrées rapidement</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/jardin-quipement-extrieur</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/garden.png</image:loc>
+      <image:title>Jardin et équipement extérieur</image:title>
+      <image:caption>Équipements et outils de jardinage</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/automoto</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/auto.png</image:loc>
+      <image:title>Automobile et garage</image:title>
+      <image:caption>Accessoires et équipements automobiles</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/enfants-bb</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/bebe.png</image:loc>
+      <image:title>Enfants et bébé</image:title>
+      <image:caption>Produits pour bébés et enfants</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/beaut</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/bagages</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/bagages.png</image:loc>
+      <image:title>Bagages et voyage</image:title>
+      <image:caption>Bagages et accessoires de voyage</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/salle-de-bain-sanitaires</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/sanitary.png</image:loc>
+      <image:title>Salle de bain et sanitaires</image:title>
+      <image:caption>Équipements sanitaires et accessoires de salle de bain</image:caption>
+    </image:image>
+  </url>
+
+  <!-- SOUS-CATÉGORIES AUTOMOBILE -->
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/accessoires-pour-voitures</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/auto-accessories.png</image:loc>
+      <image:title>Accessoires automobile</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/huiles-et-autres-fluides</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/car-fluids.png</image:loc>
+      <image:title>Huiles et fluides automobiles</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/peintures-et-accessoires-de-peinture</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/car-paints.png</image:loc>
+      <image:title>Peintures automobiles</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/category/outils-pour-voitures</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://assolutionsfournitures.fr/assets/car-tools.png</image:loc>
+      <image:title>Outils automobiles</image:title>
+    </image:image>
+  </url>
+
+  <!-- PAGES D'AUTHENTIFICATION CLIENT (Indexées mais priorité faible) -->
+  <url>
+    <loc>https://assolutionsfournitures.fr/account/register</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.2</priority>
+  </url>
+
+  <url>
+    <loc>https://assolutionsfournitures.fr/account/signin</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.2</priority>
+  </url>
+
+</urlset>

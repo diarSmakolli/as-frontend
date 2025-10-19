@@ -1367,10 +1367,14 @@ const CustomerCategoryPage = () => {
   if (!categoryData) {
     return <Error404 />;
   }
+  
+  const categorySEO = useMemo(() => generateCategorySEO(categoryData.category, products), [categoryData, products]);
 
   return (
-    <Box minH="100vh" bg="rgba(252, 252, 253, 1)">
-      <Navbar />
+    <>
+      <SEO {...categorySEO} />
+      <Box minH="100vh" bg="rgba(252, 252, 253, 1)">
+        <Navbar />
 
       <Container maxW="8xl" py={6}>
         {/* Breadcrumb Navigation */}
@@ -1795,10 +1799,11 @@ const CustomerCategoryPage = () => {
             </DrawerBody>
           </DrawerContent>
         </Drawer>
-      </Container>
+        </Container>
 
-      <Footer />
-    </Box>
+        <Footer />
+      </Box>
+    </>
   );
 };
 
