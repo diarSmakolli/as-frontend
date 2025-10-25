@@ -6,7 +6,8 @@ import {
 } from '@chakra-ui/react';
 import { Link, useNavigate } from 'react-router-dom';
 // Use optimized icon imports
-import { HeartIcon, ChevronRightIcon, ChevronLeftIcon } from '../../components/Icons';
+import { Helmet } from "react-helmet-async";
+import { HeartIcon, ChevronRightIcon, ChevronLeftIcon, FaRegHeart} from '../../components/Icons';
 import { useCustomerAuth } from '../customer-account/auth-context/customerAuthContext';
 import { homeService } from "./services/homeService";
 import { customerAccountService } from "../customer-account/customerAccountService";
@@ -14,40 +15,40 @@ import { customToastContainerStyle } from "../../commons/toastStyles";
 import { useSEO, generateHomeSEO } from '../../hooks/useSEO';
 
 // Asset imports
-import Logo from "../../assets/logo-as.png";
-import AsSolutionsPhoto from "../../assets/welcome-as.png";
-import FlashSalePromo from "../../assets/flash-sale-4.png";
-import BabySalePromo from "../../assets/baby-3.png";
-import FournitureSalePromo from "../../assets/fourniture-2.png";
-import FourniturePromoSlide from "../../assets/fourniture-g.png";
-import GaragePromoSlide from "../../assets/garage.png";
-import JasquaMobile from "../../assets/jasqua-mobile.png";
-import FashionImage from "../../assets/fashion.png";
-import GarageSliderMobile from "../../assets/garage-slider-mobile.png";
-import SliderNoOne from "../../assets/home/as1/maison-new.png";
-import SliderNoOneMobile from "../../assets/home/as1/maison-new.png";
-import BagageImage from "../../assets/bagages.png";
-import GardenImage from "../../assets/home/as1/garden.png";
-import SanitaryImage from "../../assets/sanitary.png";
-import BebeImage from "../../assets/home/as1/bebe.png";
-import PorteImage from "../../assets/porte.png";
-import FurnitureImage from "../../assets/furniture.png";
-import FenetreImage from "../../assets/fenetre.png";
-import BricolageImage from "../../assets/bricolage.png";
-import AutoImage from "../../assets/auto.png";
-import FurnitureII from "../../assets/furnitureii.png";
-import CarToolsImage from "../../assets/car-tools.png";
-import CarAccessories from "../../assets/auto-accessories.png";
-import CarPaintsImage from "../../assets/car-paints.png";
-import CarOilsImage from "../../assets/car-fluids.png";
+import Logo from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/logo-as.png";
+import AsSolutionsPhoto from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/welcome-as.png";
+import FlashSalePromo from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/flash-sale-4.png";
+import BabySalePromo from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/baby-3.png";
+import FournitureSalePromo from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/fourniture-2.png";
+import FourniturePromoSlide from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/fourniture-g.png";
+import GaragePromoSlide from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/garage.png";
+import JasquaMobile from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/jasqua-mobile.png";
+import FashionImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/fashion.png";
+import GarageSliderMobile from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/garage-slider-mobile.png";
+import SliderNoOne from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/as1/maison-new.png";
+import SliderNoOneMobile from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/as1/maison-new.png";
+import BagageImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/bagages.png";
+import GardenImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/as1/garden.png";
+import SanitaryImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/sanitary.png";
+import BebeImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/as1/bebe.png";
+import PorteImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/porte.png";
+import FurnitureImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/furniture.png";
+import FenetreImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/fenetre.png";
+import BricolageImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/bricolage.png";
+import AutoImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/auto.png";
+import FurnitureII from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/furnitureii.png";
+import CarToolsImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/car-tools.png";
+import CarAccessories from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/auto-accessories.png";
+import CarPaintsImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/car-paints.png";
+import CarOilsImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/car-fluids.png";
 import MaisonVideoOne from "../../assets/video-1.mp4";
-import FlashDealsImg from "../../assets/flash-sale.png";
-import BricolageMobile from "../../assets/bricolage-mobile.png";
-import FlashSaleMobileImage from "../../assets/flash-sale-mobile.png";
-import BebeMobileImage from "../../assets/bebe-mobile.png";
-import BeautyMobile from "../../assets/beauty-mobile.jpg";
-import LightsMobile from "../../assets/lights-mobile.jpg";
-import VerandaImage from "../../assets/home/as2/veranda.png";
+import FlashDealsImg from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/flash-sale.png";
+import BricolageMobile from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/bricolage-mobile.png";
+import FlashSaleMobileImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/flash-sale-mobile.png";
+import BebeMobileImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/flash-sale-mobile.png";
+import BeautyMobile from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/beauty-mobile.jpg";
+import LightsMobile from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/lights-mobile.jpg";
+import VerandaImage from "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/home-page-assets/as2/veranda.png";
 
 // Component imports
 import Footer from "../../shared-customer/components/Footer";
@@ -755,6 +756,72 @@ function Home() {
   }
 
   return (
+    <>
+
+    <Helmet>
+        {/* Primary Meta Tags */}
+        <title>AS Solutions Fournitures - Fournitures de Qualité pour la Maison, Bricolage & Jardin</title>
+        <meta name="title" content="AS Solutions Fournitures - Fournitures de Qualité pour la Maison, Bricolage & Jardin" />
+        <meta name="description" content="Découvrez notre vaste sélection de fournitures : bricolage, maison, jardin, auto-moto et plus. ✓ Prix compétitifs ✓ Livraison rapide ✓ Service client expert. Plus de 10 000 produits disponibles en ligne." />
+        <meta name="keywords" content="fournitures, bricolage, maison, jardin, outils, auto-moto, bébé, beauté, construction, portes, fenêtres, sanitaires, France, AS Solutions" />
+        <meta name="author" content="AS Solutions Fournitures" />
+        <link rel="canonical" href="https://assolutionsfournitures.fr" />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://assolutionsfournitures.fr" />
+        <meta property="og:site_name" content="AS Solutions Fournitures" />
+        <meta property="og:title" content="AS Solutions Fournitures - Fournitures de Qualité pour Tous vos Projets" />
+        <meta property="og:description" content="Découvrez notre vaste sélection de fournitures : bricolage, maison, jardin, auto-moto et plus. ✓ Prix compétitifs ✓ Livraison rapide ✓ Service client expert" />
+        <meta property="og:image" content="https://assolutionsfournitures.fr/assets/logo-as.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:locale" content="fr_FR" />       
+
+        {/* Additional SEO Tags */}
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow" />
+        <meta name="language" content="French" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="distribution" content="global" />
+        <meta name="rating" content="general" />
+
+        {/* Structured Data - Organization */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "AS Solutions Fournitures",
+            "url": "https://assolutionsfournitures.fr",
+            "logo": "https://assolutionsfournitures.fr/assets/logo-as.png",
+            "description": "Fournisseur de produits de qualité pour la maison, bricolage, jardin, auto-moto et plus",
+            "address": {
+              "@type": "PostalAddress",
+              "addressCountry": "FR"
+            },
+            
+          })}
+        </script>
+
+        {/* Structured Data - WebSite with SearchAction */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "AS Solutions Fournitures",
+            "url": "https://assolutionsfournitures.fr",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://assolutionsfournitures.fr/search?q={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          })}
+        </script>
+      </Helmet>
+
     <Box minH="100vh" bg="rgba(255, 255, 255, 1)">
       {/* SEO and Accessibility Meta */}
       <Box as="header" role="banner">
@@ -765,7 +832,10 @@ function Home() {
       <Container maxW="8xl" py={6} px={4} as="main" role="main">
         <Flex gap={4} display={{ base: "none", md: "flex" }} as="section" aria-label="Promotions principales">
           <Box bg="white" h="100%" mb={8} width="370px">
-            <Link to="/category/salle-de-bain-sanitaires" aria-label="Voir les produits sanitaires">
+            <Link to="/category/salle-de-bain-sanitaires" 
+            aria-label="Voir les produits sanitaires"
+            title="Voir les produits sanitaires"
+            >
               <Box
                 bg="white"
                 h="240.03px"
@@ -800,7 +870,10 @@ function Home() {
               </Box>
             </Link>
 
-            <Link to="/category/fentres">
+            <Link to="/category/fentres"
+            aria-label="Voir les produits fenêtres"
+            title="Voir les produits fenêtres"
+            >
               <Box
                 bg="white"
                 h="555.49px"
@@ -835,7 +908,10 @@ function Home() {
               </Box>
             </Link>
 
-            <Link to="/category/bricolage-et-outils">
+            <Link to="/category/bricolage-et-outils"
+              aria-label="Voir les produits de bricolage et outils"
+              title="Voir les produits de bricolage et outils"
+            >
               <Box
                 bg="white"
                 h="208.13px"
@@ -881,6 +957,8 @@ function Home() {
                     <Box
                       as="a"
                       href="/category/maisons-prfabriques-en-bois"
+                      title="Voir les maisons préfabriquées en bois"
+                      aria-label="Voir les maisons préfabriquées en bois"
                       position="absolute"
                       inset={0}
                       display={currentPromoSlide === 0 ? "flex" : "none"}
@@ -935,6 +1013,8 @@ function Home() {
                       as="a"
                       href="/category/structures-extrieures"
                       position="absolute"
+                      title="Voir les structures extérieures"
+                      aria-label='Voir les structures extérieures'
                       inset={0}
                       display={currentPromoSlide === 1 ? "flex" : "none"}
                       alignItems="center"
@@ -996,6 +1076,7 @@ function Home() {
                         w="8px"
                         h="8px"
                         bg={currentPromoSlide === index ? "white" : "gray.300"}
+                        title="Changer de diapositive"
                         borderRadius="full"
                         cursor="pointer"
                         transition="all 0.2s"
@@ -1051,7 +1132,10 @@ function Home() {
 
             <Box mt={6}>
               <SimpleGrid columns={2} spacing={2} mt={2}>
-                <Link to="/category/jardin-quipement-extrieur">
+                <Link to="/category/jardin-quipement-extrieur"
+                  aria-label='Voir les produits de jardin et équipement extérieur'
+                  title='Voir les produits de jardin et équipement extérieur'
+                >
                   <Box
                     bg="white"
                     h="367.87px"
@@ -1086,7 +1170,10 @@ function Home() {
                   </Box>
                 </Link>
 
-                <Link to="/flash-deals">
+                <Link to="/flash-deals"
+                  title="Voir les offres flash"
+                  aria-label="Voir les offres flash"
+                >
                   <Box
                     bg="white"
                     h="367.87px"
@@ -1129,6 +1216,8 @@ function Home() {
               mt={9}
               bgImage={FurnitureImage}
               bgSize="101%"
+              title="Voir les offres sur les meubles"
+              aria-label="Voir les offres sur les meubles"
             >
               <Text
                 color="#fff"
@@ -3417,6 +3506,7 @@ function Home() {
         <Footer />
       </Suspense>
     </Box>
+    </>
   );
 }
 

@@ -1,5 +1,6 @@
 import React from "react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { useNavigate, useParams } from "react-router-dom";
 import { homeService } from "../home/services/homeService";
 import { useState } from "react";
@@ -130,7 +131,6 @@ import RecommendedProducts from "./RecommendedProducts";
 import Navbar from "../../shared-customer/components/Navbar";
 import { customToastContainerStyle } from "../../commons/toastStyles";
 import { useCustomerAuth } from "../customer-account/auth-context/customerAuthContext";
-// import CuisineConfigurator from "./CuisineConfigurator";
 
 function CustomerProductPage() {
   const { slug } = useParams();
@@ -139,10 +139,10 @@ function CustomerProductPage() {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState(null);
-  
+
   // SEO for product page
-  const productSEO = useMemo(() => product ? generateProductSEO(product) : null, [product]);
-  
+  // const productSEO = useMemo(() => product ? generateProductSEO(product) : null, [product]);
+
   const [productServices, setProductServices] = useState([]);
   const [categories, setCategories] = useState([]);
   const [expandedCategories, setExpandedCategories] = useState(new Set());
@@ -200,6 +200,63 @@ function CustomerProductPage() {
     // Scroll to top when component mounts or slug changes
     window.scrollTo(0, 0);
   }, [slug]);
+
+  // SEO
+  // Generate comprehensive SEO meta tags
+  // const productSEO = useMemo(() => {
+  //   if (!product) return null;
+
+  //   const productPrice =
+  //     pricingData?.pricing?.final?.gross ||
+  //     product.pricing?.final_price?.gross ||
+  //     product.price ||
+  //     0;
+  //   const productImage =
+  //     product.images?.main_image?.url ||
+  //     product.images?.gallery?.[0]?.url ||
+  //     `${BASE_URL}/assets/logo-as.png`;
+  //   const isInStock = product.is_available_on_stock;
+  //   const productDescription = product.description
+  //     ? product.description.replace(/<[^>]*>/g, "").substring(0, 160)
+  //     : `Achetez ${product.title} à ${productPrice.toFixed(2)}€. ${
+  //         isInStock ? "En stock" : "Disponible sur commande"
+  //       }, livraison rapide partout en France.`;
+
+  //   const categoryName = product.categories?.[0]?.name || "";
+  //   const categorySlug = product.categories?.[0]?.slug || "";
+  //   const brandName = product.brand || "AS Solutions";
+
+  //   // Build keywords from product data
+  //   const keywords = [
+  //     product.title,
+  //     categoryName,
+  //     brandName,
+  //     "fournitures en ligne",
+  //     "achat fournitures France",
+  //     product.sku,
+  //     ...(product.custom_details?.slice(0, 5).map((d) => d.value) || []),
+  //   ]
+  //     .filter(Boolean)
+  //     .join(", ");
+
+  //   return {
+  //     title: `${product.title} - ${productPrice.toFixed(
+  //       2
+  //     )}€ | ${brandName} | AS Solutions`,
+  //     description: productDescription,
+  //     keywords,
+  //     image: productImage,
+  //     productUrl: `${BASE_URL}/product/${product.slug}`,
+  //     categoryName,
+  //     categorySlug,
+  //     brandName,
+  //     price: productPrice,
+  //     isInStock,
+  //     sku: product.sku,
+  //     ean: product.ean,
+  //     taxRate: product.tax?.rate || 20,
+  //   };
+  // }, [product, pricingData]);
 
   const handleTouchStart = (e) => {
     setTouchStart({
@@ -268,7 +325,6 @@ function CustomerProductPage() {
         selectedOptions: homeService.formatSelectedOptionsForAPI(options),
         quantity: qty,
       };
-
 
       const response = await homeService.calculateProductPricing(
         product.id,
@@ -594,7 +650,6 @@ function CustomerProductPage() {
         : [...prev, serviceId]
     );
   };
-
 
   const handleQuantityChange = (newQuantity) => {
     const parsedQuantity = parseInt(newQuantity) || 1;
@@ -1303,10 +1358,7 @@ function CustomerProductPage() {
     }
   };
 
-
-
   function getAllowedOptionValueIds(selectedCustomOptions, product, option) {
-
     // Handle "Imposte/allège" filtering based on "Type de fenêtre"
     if (option.option_name === "Imposte/allège") {
       const typeDeFenetre = product.custom_options.find(
@@ -1321,7 +1373,6 @@ function CustomerProductPage() {
       const selectedTypeValue = typeDeFenetre.option_values.find(
         (v) => v.id === selectedTypeValueId
       );
-
 
       if (!selectedTypeValue) {
         return null;
@@ -1345,32 +1396,22 @@ function CustomerProductPage() {
         (opt) => opt.option_name === "Imposte/allège"
       );
 
-      
-
       if (!imposteAllege) {
         return null;
       }
 
-      
-
       const selectedImposteValueId =
         selectedCustomOptions[imposteAllege.id]?.valueId;
-
-      
 
       const selectedImposteValue = imposteAllege.option_values.find(
         (v) => v.id === selectedImposteValueId
       );
-
-      
 
       if (!selectedImposteValue) {
         return null;
       }
 
       const allowed = selectedImposteValue.additional_data?.show_option_values;
-
-      
 
       return Array.isArray(allowed) ? allowed : null;
     }
@@ -1383,682 +1424,1136 @@ function CustomerProductPage() {
   }
 
   return (
-    <Box minH="100vh" bg="rgba(252, 252, 253, 1)">
-      <Navbar />
+    <>
+      <Helmet>
+        {/* ✅ FIX 2: Wrap title content in curly braces to ensure it's a string */}
+        <title>
+          {product?.title && product?.final_price_gross
+            ? `${product.title} - ${product.final_price_gross.toFixed(2)}€ | AS Solutions Fournitures`
+            : 'Produit | AS Solutions Fournitures'}
+        </title>
+        
+        {/* ✅ FIX 3: Add safety checks for all meta tags */}
+        <meta 
+          name="title" 
+          content={product?.title && product?.final_price_gross
+            ? `${product.title} - ${product.final_price_gross.toFixed(2)}€`
+            : 'Produit - AS Solutions Fournitures'} 
+        />
+        
+        <meta 
+          name="description" 
+          content={
+            product?.description || product?.short_description
+              ? `${(product.description || product.short_description).substring(0, 155)}... ✓ Prix: ${product?.final_price_gross?.toFixed(2) || '0.00'}€ ${product?.is_discounted ? `✓ Économisez ${((product?.regular_price_gross || 0) - (product?.final_price_gross || 0)).toFixed(2)}€ (-${product?.discount_percentage_gross || 0}%)` : ''} ✓ ${product?.is_available_on_stock ? 'En stock' : 'Disponible sur commande'} ✓ Livraison rapide en France ✓ Garantie qualité AS Solutions`
+              : 'Achetez des produits de qualité chez AS Solutions Fournitures. Livraison rapide en France.'
+          } 
+        />
+        
+        <meta 
+          name="keywords" 
+          content={product?.title
+            ? `${product.title}, ${product?.categories?.[0]?.name || 'fournitures'}, ${product?.sku || ''}, ${product?.ean || ''}, achat en ligne, AS Solutions, France`
+            : 'fournitures, achat en ligne, AS Solutions, France'} 
+        />
+        
+        <meta name="author" content="AS Solutions Fournitures" />
+        
+        <link 
+          rel="canonical" 
+          href={product?.slug 
+            ? `https://assolutionsfournitures.fr/product/${product.slug}`
+            : 'https://assolutionsfournitures.fr'} 
+        />
 
-      <Box
-        bg="transparent"
-        borderBottom="0px"
-        borderColor="gray.200"
-        py={4}
-        display={{ base: "none", md: "flex" }}
-      >
-        <Container maxW="1400px">
-          <HStack spacing={3} fontSize="sm" color="gray.600">
-            <Button
-              variant="link"
-              size="xs"
-              onClick={() => navigate("/")}
-              color="gray.600"
-              _hover={{ color: "blue.600" }}
-              fontWeight="medium"
-              fontFamily={"Airbnb Cereal VF"}
-            >
-              Home
-            </Button>
-            <Icon as={FaChevronRight} fontSize="xs" color="gray.400" />
-            {product?.categories?.map((category, index) => (
-              <React.Fragment key={category.id}>
-                <Button
-                  variant="link"
-                  size="xs"
-                  color="gray.600"
-                  _hover={{ color: "blue.600" }}
-                  fontWeight="medium"
-                  onClick={() => {
-                    navigate(`/category/${category.slug}`);
-                  }}
-                >
-                  {category?.name}
-                </Button>
-                {index < product.categories.length - 1 && (
-                  <Icon as={FaChevronRight} fontSize="xs" color="gray.400" />
-                )}
-              </React.Fragment>
-            ))}
-          </HStack>
-        </Container>
-      </Box>
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="product" />
+        <meta 
+          property="og:url" 
+          content={product?.slug 
+            ? `https://assolutionsfournitures.fr/product/${product.slug}`
+            : 'https://assolutionsfournitures.fr'} 
+        />
+        <meta property="og:site_name" content="AS Solutions Fournitures" />
+        <meta
+          property="og:title"
+          content={product?.title && product?.final_price_gross
+            ? `${product.title} - ${product.final_price_gross.toFixed(2)}€`
+            : 'Produit - AS Solutions Fournitures'}
+        />
+        <meta 
+          property="og:description" 
+          content={
+            product?.description || product?.short_description
+              ? (product.description || product.short_description).substring(0, 200)
+              : `Achetez ${product?.title || 'des produits'} chez AS Solutions`
+          } 
+        />
+        <meta 
+          property="og:image" 
+          content={product?.main_image_url || product?.images?.main_image?.url || 'https://assolutionsfournitures.fr/assets/logo-as.png'} 
+        />
+        <meta 
+          property="og:image:secure_url" 
+          content={product?.main_image_url || product?.images?.main_image?.url || 'https://assolutionsfournitures.fr/assets/logo-as.png'} 
+        />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta
+          property="og:image:alt"
+          content={`${product?.title || 'Produit'} - AS Solutions Fournitures`}
+        />
+        <meta property="og:locale" content="fr_FR" />
 
-      <Container maxW="1600px" py={4} display={{ base: "none", md: "block" }}>
-        <Grid
-          templateColumns={{ base: "1fr", lg: "1.25fr 0.9fr 0.70fr" }}
-          gap={0}
-          minH="100vh"
-          alignItems={"start"}
+        {/* Product-specific Open Graph - Only render if product exists */}
+        {product?.final_price_gross && (
+          <meta
+            property="product:price:amount"
+            content={product.final_price_gross.toString()}
+          />
+        )}
+        <meta property="product:price:currency" content="EUR" />
+        {product?.is_available_on_stock !== undefined && (
+          <meta
+            property="product:availability"
+            content={product.is_available_on_stock ? "in stock" : "out of stock"}
+          />
+        )}
+        <meta property="product:condition" content="new" />
+        <meta 
+          property="product:brand" 
+          content={product?.categories?.[0]?.name || "AS Solutions"} 
+        />
+        {product?.sku && (
+          <meta property="product:retailer_item_id" content={product.sku} />
+        )}
+        {product?.ean && <meta property="product:ean" content={product.ean} />}
+        {product?.categories?.[0]?.name && (
+          <meta property="product:category" content={product.categories[0].name} />
+        )}
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@assolutions" />
+        <meta 
+          name="twitter:url" 
+          content={product?.slug 
+            ? `https://assolutionsfournitures.fr/product/${product.slug}`
+            : 'https://assolutionsfournitures.fr'} 
+        />
+        <meta 
+          name="twitter:title" 
+          content={product?.title && product?.final_price_gross
+            ? `${product.title} - ${product.final_price_gross.toFixed(2)}€`
+            : 'Produit - AS Solutions Fournitures'} 
+        />
+        <meta 
+          name="twitter:description" 
+          content={
+            product?.description
+              ? product.description.substring(0, 200)
+              : `Achetez ${product?.title || 'des produits'} à ${product?.final_price_gross?.toFixed(2) || '0.00'}€. ${product?.is_available_on_stock ? 'En stock' : 'Disponible sur commande'}. Livraison rapide.`
+          } 
+        />
+        <meta 
+          name="twitter:image" 
+          content={product?.main_image_url || product?.images?.main_image?.url || 'https://assolutionsfournitures.fr/assets/logo-as.png'} 
+        />
+        <meta name="twitter:image:alt" content={product?.title || 'Produit'} />
+        <meta name="twitter:label1" content="Prix" />
+        <meta 
+          name="twitter:data1" 
+          content={`${product?.final_price_gross?.toFixed(2) || '0.00'}€`} 
+        />
+        <meta name="twitter:label2" content="Disponibilité" />
+        <meta 
+          name="twitter:data2" 
+          content={product?.is_available_on_stock ? "En stock" : "Sur commande"} 
+        />
+
+        {/* Additional SEO Meta Tags */}
+        <meta
+          name="robots"
+          content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+        />
+        <meta name="googlebot" content="index, follow" />
+        <meta name="language" content="French" />
+        <meta name="geo.region" content="FR" />
+        <meta name="geo.placename" content="France" />
+        <meta name="distribution" content="global" />
+        <meta name="rating" content="general" />
+
+        {/* Mobile Optimization */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+        />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
+
+        {/* Theme Color */}
+        <meta name="theme-color" content="#0d00ca" />
+        <meta name="msapplication-navbutton-color" content="#0d00ca" />
+
+        {/* ✅ FIX 4: Only render structured data if product exists */}
+        {product && (
+          <>
+            {/* Structured Data - Product Schema */}
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": product.title || "Produit",
+                "description": product.description || product.short_description || `${product.title} - Fournitures de qualité`,
+                "image": [
+                  product.main_image_url || product.images?.main_image?.url || "https://assolutionsfournitures.fr/assets/logo-as.png",
+                  ...(product.images?.gallery?.slice(1, 5).map((img) => img.url) || []),
+                ],
+                "sku": product.sku || "",
+                "mpn": product.ean || product.sku || "",
+                ...(product.ean && { "gtin13": product.ean }),
+                "brand": {
+                  "@type": "Brand",
+                  "name": product.categories?.[0]?.name || "AS Solutions",
+                },
+                "manufacturer": {
+                  "@type": "Organization",
+                  "name": product.categories?.[0]?.name || "AS Solutions",
+                },
+                "offers": {
+                  "@type": "Offer",
+                  "url": `https://assolutionsfournitures.fr/product/${product.slug}`,
+                  "priceCurrency": "EUR",
+                  "price": product.final_price_gross || 0,
+                  "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                    .toISOString()
+                    .split("T")[0],
+                  "availability": product.is_available_on_stock
+                    ? "https://schema.org/InStock"
+                    : "https://schema.org/OutOfStock",
+                  "itemCondition": "https://schema.org/NewCondition",
+                  "seller": {
+                    "@type": "Organization",
+                    "name": "AS Solutions Fournitures",
+                    "url": "https://assolutionsfournitures.fr",
+                  },
+                  "priceSpecification": {
+                    "@type": "PriceSpecification",
+                    "price": product.final_price_gross || 0,
+                    "priceCurrency": "EUR",
+                    "valueAddedTaxIncluded": true,
+                  },
+                  "shippingDetails": {
+                    "@type": "OfferShippingDetails",
+                    "shippingRate": {
+                      "@type": "MonetaryAmount",
+                      "value": product.shipping_free ? 0 : 5.99,
+                      "currency": "EUR",
+                    },
+                    "shippingDestination": {
+                      "@type": "DefinedRegion",
+                      "addressCountry": "FR",
+                    },
+                    "deliveryTime": {
+                      "@type": "ShippingDeliveryTime",
+                      "handlingTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 1,
+                        "maxValue": 2,
+                        "unitCode": "DAY",
+                      },
+                      "transitTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 2,
+                        "maxValue": 5,
+                        "unitCode": "DAY",
+                      },
+                    },
+                  },
+                  "hasMerchantReturnPolicy": {
+                    "@type": "MerchantReturnPolicy",
+                    "returnPolicyCategory":
+                      "https://schema.org/MerchantReturnFiniteReturnWindow",
+                    "merchantReturnDays": 14,
+                    "returnMethod": "https://schema.org/ReturnByMail",
+                    "returnFees": "https://schema.org/FreeReturn",
+                  },
+                },
+                ...(product.rating && {
+                  "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": product.rating,
+                    "reviewCount": product.review_count || 0,
+                    "bestRating": 5,
+                    "worstRating": 1,
+                  },
+                }),
+                ...(product.custom_details &&
+                  product.custom_details.length > 0 && {
+                    "additionalProperty": product.custom_details
+                      .slice(0, 10)
+                      .map((detail) => ({
+                        "@type": "PropertyValue",
+                        "name": detail.label,
+                        "value": detail.value,
+                      })),
+                  }),
+                "category": product.categories?.[0]?.name || "Fournitures",
+                "url": `https://assolutionsfournitures.fr/product/${product.slug}`,
+              })}
+            </script>
+
+            {/* Structured Data - BreadcrumbList */}
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                  {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Accueil",
+                    "item": "https://assolutionsfournitures.fr",
+                  },
+                  ...(product.categories?.[0]
+                    ? product.categories.map((category, index) => ({
+                        "@type": "ListItem",
+                        "position": index + 2,
+                        "name": category.name,
+                        "item": `https://assolutionsfournitures.fr/category/${category.slug}`,
+                      }))
+                    : []),
+                  {
+                    "@type": "ListItem",
+                    "position": (product.categories?.length || 0) + 2,
+                    "name": product.title,
+                    "item": `https://assolutionsfournitures.fr/product/${product.slug}`,
+                  },
+                ],
+              })}
+            </script>
+
+            {/* Structured Data - Organization (Seller) */}
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                "name": "AS Solutions Fournitures",
+                "url": "https://assolutionsfournitures.fr",
+                "logo": "https://assolutionsfournitures.fr/assets/logo-as.png",
+                "description":
+                  "Fournisseur de produits de qualité pour la maison, bricolage, jardin, auto-moto et plus",
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressCountry": "FR",
+                },
+                "contactPoint": {
+                  "@type": "ContactPoint",
+                  "contactType": "customer service",
+                  "availableLanguage": ["French", "English"],
+                },
+                "sameAs": [
+                  "https://www.facebook.com/assolutions",
+                  "https://www.instagram.com/assolutions"
+                ],
+              })}
+            </script>
+
+            {/* FAQ Schema (if applicable) */}
+            {product.custom_details && product.custom_details.length > 0 && (
+              <script type="application/ld+json">
+                {JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "FAQPage",
+                  "mainEntity": product.custom_details.slice(0, 5).map((detail) => ({
+                    "@type": "Question",
+                    "name": detail.label,
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": detail.value,
+                    },
+                  })),
+                })}
+              </script>
+            )}
+
+            {/* Discount/Offer Schema (if product is on sale) */}
+            {product.is_discounted && (
+              <script type="application/ld+json">
+                {JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "Offer",
+                  "url": `https://assolutionsfournitures.fr/product/${product.slug}`,
+                  "price": product.final_price_gross || 0,
+                  "priceCurrency": "EUR",
+                  "availability": product.is_available_on_stock
+                    ? "https://schema.org/InStock"
+                    : "https://schema.org/OutOfStock",
+                  "priceValidUntil": new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                    .toISOString()
+                    .split("T")[0],
+                  "itemCondition": "https://schema.org/NewCondition",
+                  "hasMerchantReturnPolicy": {
+                    "@type": "MerchantReturnPolicy",
+                    "returnPolicyCategory":
+                      "https://schema.org/MerchantReturnFiniteReturnWindow",
+                    "merchantReturnDays": 14,
+                  },
+                  "shippingDetails": {
+                    "@type": "OfferShippingDetails",
+                    "shippingRate": {
+                      "@type": "MonetaryAmount",
+                      "value": product.shipping_free ? 0 : 5.99,
+                      "currency": "EUR",
+                    },
+                  },
+                  "eligibleRegion": {
+                    "@type": "GeoCircle",
+                    "geoMidpoint": {
+                      "@type": "GeoCoordinates",
+                      "latitude": "46.603354",
+                      "longitude": "1.888334",
+                    },
+                    "geoRadius": "1000000",
+                  },
+                  "discount": {
+                    "@type": "QuantitativeValue",
+                    "value": product.discount_percentage_gross || product.discount_percentage_nett || 0,
+                    "unitText": "PERCENT",
+                  },
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": product.final_price_gross || 0,
+                    "priceCurrency": "EUR",
+                    "valueAddedTaxIncluded": true,
+                  },
+                })}
+              </script>
+            )}
+
+            {/* WebPage Schema */}
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "WebPage",
+                "name": product.title || "Produit",
+                "description": product.description || product.short_description || "",
+                "url": `https://assolutionsfournitures.fr/product/${product.slug}`,
+                "inLanguage": "fr-FR",
+                "isPartOf": {
+                  "@type": "WebSite",
+                  "name": "AS Solutions Fournitures",
+                  "url": "https://assolutionsfournitures.fr",
+                },
+                "breadcrumb": {
+                  "@type": "BreadcrumbList",
+                  "itemListElement": [
+                    {
+                      "@type": "ListItem",
+                      "position": 1,
+                      "name": "Accueil",
+                      "item": "https://assolutionsfournitures.fr",
+                    },
+                    ...(product.categories?.[0]
+                      ? product.categories.map((category, index) => ({
+                          "@type": "ListItem",
+                          "position": index + 2,
+                          "name": category.name,
+                        }))
+                      : []),
+                    {
+                      "@type": "ListItem",
+                      "position": (product.categories?.length || 0) + 2,
+                      "name": product.title,
+                    },
+                  ],
+                },
+              })}
+            </script>
+          </>
+        )}
+      </Helmet>
+
+      <Box minH="100vh" bg="rgba(252, 252, 253, 1)">
+        <Navbar />
+
+        <Box
+          bg="transparent"
+          borderBottom="0px"
+          borderColor="gray.200"
+          py={4}
+          display={{ base: "none", md: "flex" }}
         >
-          {/* Left Column */}
-          <Box
-            top="20px"
-            alignSelf="flex-start"
-            zIndex={100} // Higher z-index
-            h="fit-content"
-            maxH="calc(100vh - 40px)"
-            overflowY="auto"
-            bg="transparent"
-            borderRadius="md"
-            boxShadow="none"
+          <Container maxW="1400px">
+            <HStack spacing={3} fontSize="sm" color="gray.600">
+              <Button
+                variant="link"
+                size="xs"
+                onClick={() => navigate("/")}
+                color="gray.600"
+                _hover={{ color: "blue.600" }}
+                fontWeight="medium"
+                fontFamily={"Airbnb Cereal VF"}
+              >
+                Home
+              </Button>
+              <Icon as={FaChevronRight} fontSize="xs" color="gray.400" />
+              {product?.categories?.map((category, index) => (
+                <React.Fragment key={category.id}>
+                  <Button
+                    variant="link"
+                    size="xs"
+                    color="gray.600"
+                    _hover={{ color: "blue.600" }}
+                    fontWeight="medium"
+                    onClick={() => {
+                      navigate(`/category/${category.slug}`);
+                    }}
+                  >
+                    {category?.name}
+                  </Button>
+                  {index < product.categories.length - 1 && (
+                    <Icon as={FaChevronRight} fontSize="xs" color="gray.400" />
+                  )}
+                </React.Fragment>
+              ))}
+            </HStack>
+          </Container>
+        </Box>
+
+        <Container maxW="1600px" py={4} display={{ base: "none", md: "block" }}>
+          <Grid
+            templateColumns={{ base: "1fr", lg: "1.25fr 0.9fr 0.70fr" }}
+            gap={0}
+            minH="100vh"
+            alignItems={"start"}
           >
-            <Card
-              shadow="none"
+            {/* Left Column */}
+            <Box
+              top="20px"
+              alignSelf="flex-start"
+              zIndex={100} // Higher z-index
+              h="fit-content"
+              maxH="calc(100vh - 40px)"
+              overflowY="auto"
+              bg="transparent"
               borderRadius="md"
-              overflow="hidden"
-              mb={0}
-              border="0px solid"
-              borderColor="gray.200"
-              bg="white"
+              boxShadow="none"
             >
-              <CardBody p={0}>
-                <Grid
-                  templateColumns={{ base: "1fr", md: "120px 1fr" }}
-                  gap={0}
-                >
-                  {isMobile ? (
-                    <Box w="full" position="relative">
-                      <AspectRatio ratio={4 / 3}>
-                        <Box
-                          borderRadius="xl"
-                          overflow="hidden"
-                          position="relative"
-                          bg="transparent"
-                          border="0px"
-                          borderColor="gray.200"
-                        >
-                          <Image
-                            src={
-                              product?.images?.gallery?.[carouselIndex]?.url ||
-                              product?.images?.main_image?.url
-                            }
-                            alt={product?.title}
-                            w="full"
-                            h="full"
-                            objectFit="cover"
-                          />
-                          {/* Carousel navigation arrows */}
-                          {product?.images?.gallery?.length > 1 && (
-                            <>
-                              <IconButton
-                                aria-label="Previous image"
-                                icon={<FaChevronLeft />}
-                                position="absolute"
-                                top="50%"
-                                left="2"
-                                transform="translateY(-50%)"
-                                zIndex={2}
-                                onClick={() => handleCarouselSwipe("left")}
-                                bg="whiteAlpha.800"
-                                _hover={{ bg: "whiteAlpha.900" }}
-                                borderRadius="full"
-                                size="sm"
-                              />
-                              <IconButton
-                                aria-label="Next image"
-                                icon={<FaChevronRight />}
-                                position="absolute"
-                                top="50%"
-                                right="2"
-                                transform="translateY(-50%)"
-                                zIndex={2}
-                                onClick={() => handleCarouselSwipe("right")}
-                                bg="whiteAlpha.800"
-                                _hover={{ bg: "whiteAlpha.900" }}
-                                borderRadius="full"
-                                size="sm"
-                              />
-                            </>
-                          )}
-                          {/* Dots indicator */}
-                          {product?.images?.gallery?.length > 1 && (
-                            <HStack
-                              position="absolute"
-                              bottom="2"
-                              left="50%"
-                              transform="translateX(-50%)"
-                              spacing={1}
-                              zIndex={2}
-                            >
-                              {product?.images.gallery.map((_, idx) => (
-                                <Box
-                                  key={idx}
-                                  w={carouselIndex === idx ? "16px" : "8px"}
-                                  h="8px"
-                                  borderRadius="full"
-                                  bg={
-                                    carouselIndex === idx
-                                      ? "blue.500"
-                                      : "gray.300"
-                                  }
-                                  transition="all 0.2s"
-                                />
-                              ))}
-                            </HStack>
-                          )}
-                        </Box>
-                      </AspectRatio>
-                    </Box>
-                  ) : (
-                    <>
-                      <VStack spacing={3} order={{ base: 2, md: 1 }} py={1}>
-                        {product?.images?.gallery?.map((image, index) => (
+              <Card
+                shadow="none"
+                borderRadius="md"
+                overflow="hidden"
+                mb={0}
+                border="0px solid"
+                borderColor="gray.200"
+                bg="white"
+              >
+                <CardBody p={0}>
+                  <Grid
+                    templateColumns={{ base: "1fr", md: "120px 1fr" }}
+                    gap={0}
+                  >
+                    {isMobile ? (
+                      <Box w="full" position="relative">
+                        <AspectRatio ratio={4 / 3}>
                           <Box
-                            key={index}
-                            w="50px"
-                            h="50px"
                             borderRadius="xl"
                             overflow="hidden"
-                            borderWidth="0px"
-                            cursor="pointer"
-                            onClick={() => {
-                              setSelectedImage(index);
-                              setCarouselIndex(index);
-                            }}
-                            transition="all 0.3s ease"
                             position="relative"
                             bg="transparent"
+                            border="0px"
+                            borderColor="gray.200"
                           >
                             <Image
-                              src={image?.url}
-                              alt={image?.alt_text}
+                              src={
+                                product?.images?.gallery?.[carouselIndex]
+                                  ?.url || product?.images?.main_image?.url
+                              }
+                              alt={product?.title}
                               w="full"
                               h="full"
-                              objectFit="fill"
+                              objectFit="cover"
                             />
-                            {selectedImage === index && (
-                              <Box
+                            {/* Carousel navigation arrows */}
+                            {product?.images?.gallery?.length > 1 && (
+                              <>
+                                <IconButton
+                                  aria-label="Previous image"
+                                  icon={<FaChevronLeft />}
+                                  position="absolute"
+                                  top="50%"
+                                  left="2"
+                                  transform="translateY(-50%)"
+                                  zIndex={2}
+                                  onClick={() => handleCarouselSwipe("left")}
+                                  bg="whiteAlpha.800"
+                                  _hover={{ bg: "whiteAlpha.900" }}
+                                  borderRadius="full"
+                                  size="sm"
+                                />
+                                <IconButton
+                                  aria-label="Next image"
+                                  icon={<FaChevronRight />}
+                                  position="absolute"
+                                  top="50%"
+                                  right="2"
+                                  transform="translateY(-50%)"
+                                  zIndex={2}
+                                  onClick={() => handleCarouselSwipe("right")}
+                                  bg="whiteAlpha.800"
+                                  _hover={{ bg: "whiteAlpha.900" }}
+                                  borderRadius="full"
+                                  size="sm"
+                                />
+                              </>
+                            )}
+                            {/* Dots indicator */}
+                            {product?.images?.gallery?.length > 1 && (
+                              <HStack
                                 position="absolute"
-                                top="2"
-                                right="2"
-                                w="3"
-                                h="3"
-                                bg="blue.500"
-                                borderRadius="full"
-                                border="0px"
-                                borderColor="white"
-                              />
+                                bottom="2"
+                                left="50%"
+                                transform="translateX(-50%)"
+                                spacing={1}
+                                zIndex={2}
+                              >
+                                {product?.images.gallery.map((_, idx) => (
+                                  <Box
+                                    key={idx}
+                                    w={carouselIndex === idx ? "16px" : "8px"}
+                                    h="8px"
+                                    borderRadius="full"
+                                    bg={
+                                      carouselIndex === idx
+                                        ? "blue.500"
+                                        : "gray.300"
+                                    }
+                                    transition="all 0.2s"
+                                  />
+                                ))}
+                              </HStack>
                             )}
                           </Box>
-                        ))}
-                      </VStack>
-
-                      <Box position="relative" order={{ base: 1, md: 2 }}>
-                        <Box
-                          borderRadius="md"
-                          overflow="hidden"
-                          onMouseEnter={() => setIsImageZoomed(true)}
-                          onMouseLeave={() => setIsImageZoomed(false)}
-                          onMouseMove={handleImageMouseMove}
-                          position="relative"
-                          bg="white"
-                          border="0px solid"
-                          borderColor="gray.200"
-                          cursor="zoom-in"
-                          width="100%"
-                          minHeight={{
-                            base: "260px",
-                            md: "400px",
-                            lg: "600px",
-                          }}
-                          maxHeight={{
-                            base: "320px",
-                            md: "500px",
-                            lg: "600px",
-                          }}
-                          display="flex"
-                          alignItems="center"
-                          justifyContent="center"
-                          transition="box-shadow 0.2s"
-                          boxShadow="none"
-                        >
-                          <Image
-                            src={
-                              product?.images?.gallery?.[selectedImage]?.url ||
-                              product?.images?.main_image?.url
-                            }
-                            alt={product?.title}
-                            w="100%"
-                            h="100%"
-                            maxW="100%"
-                            maxH="100%"
-                            minH={{ base: "260px", md: "400px", lg: "600px" }}
-                            objectFit="100%"
-                            borderRadius="md"
-                            transition="transform 0.4s"
-                            transform={
-                              isImageZoomed ? "scale(1.5)" : "scale(1)"
-                            }
-                            transformOrigin={`${mousePosition.x}% ${mousePosition.y}%`}
-                            bg="gray.100"
-                          />
-
-                          {/* Overlay buttons */}
-                          <Box position="absolute" top={4} right={4}>
-                            <HStack spacing={2}>
-                              <IconButton
-                                icon={<FaExpand />}
-                                onClick={onImageModalOpen}
-                                size="md"
-                                bg="blackAlpha.700"
-                                color="white"
-                                _hover={{ bg: "blackAlpha.800" }}
-                                borderRadius="full"
-                                shadow="lg"
-                                aria-label="Expand image"
-                              />
-                            </HStack>
-                          </Box>
-
-                          {/* Badges overlay */}
-                          <Box position="absolute" top={4} left={4}>
-                            <VStack spacing={2} align="flex-start">
-                              {product?.badges?.is_new && (
-                                <Badge
-                                  colorScheme="green"
-                                  variant="solid"
-                                  fontSize="xs"
-                                  px={3}
-                                  py={1}
-                                  borderRadius="full"
-                                  textTransform="uppercase"
-                                  fontWeight="bold"
-                                  shadow="sm"
-                                >
-                                  NOUVELLE
-                                </Badge>
-                              )}
-                              {product?.badges?.is_on_sale && (
-                                <Badge
-                                  colorScheme="red"
-                                  variant="solid"
-                                  fontSize="xs"
-                                  px={3}
-                                  py={1}
-                                  borderRadius="full"
-                                  textTransform="uppercase"
-                                  fontWeight="bold"
-                                  shadow="sm"
-                                >
-                                  VENTE
-                                </Badge>
-                              )}
-                              {product?.badges?.free_shipping && (
-                                <Badge
-                                  colorScheme="blue"
-                                  variant="solid"
-                                  fontSize="xs"
-                                  px={3}
-                                  py={1}
-                                  borderRadius="full"
-                                  textTransform="uppercase"
-                                  fontWeight="bold"
-                                  shadow="sm"
-                                >
-                                  LIVRAISON GRATUITE
-                                </Badge>
-                              )}
-                            </VStack>
-                          </Box>
-
-                          {/* Zoom indicator */}
-                          {isImageZoomed && !is360Mode && (
-                            <Box
-                              position="absolute"
-                              bottom={4}
-                              left={4}
-                              bg="blackAlpha.700"
-                              color="white"
-                              px={3}
-                              py={2}
-                              borderRadius="full"
-                              fontSize="sm"
-                              fontWeight="medium"
-                              shadow="md"
-                            >
-                              <HStack spacing={2}>
-                                <Icon as={FaExpand} fontSize="xs" />
-                                <Text>Zoomed</Text>
-                              </HStack>
-                            </Box>
-                          )}
-                        </Box>
-                      </Box>
-                    </>
-                  )}
-                </Grid>
-              </CardBody>
-            </Card>
-
-            {/* About this item only if product does have custom options */}
-            <Box>
-              <Text
-                fontSize={"md"}
-                fontFamily="Airbnb Cereal VF"
-                fontWeight={"500"}
-                color="black"
-                mt={10}
-                ml={3}
-              >
-                À propos de cet article
-              </Text>
-
-              <Accordion
-                allowMultiple
-                maxW={{ base: "100%", md: "100%" }}
-                mt={5}
-              >
-                {/* Product Details Accordion */}
-                <AccordionItem
-                  borderTopWidth={"1px"}
-                  borderTopColor={"gray.200"}
-                  mb={1}
-                >
-                  <h2>
-                    <AccordionButton
-                      py={4}
-                      px={6}
-                      _hover={{ bg: "gray.50" }}
-                      borderRadius="lg"
-                    >
-                      <Box flex="1" textAlign="left">
-                        <Text
-                          fontSize="md"
-                          fontWeight="500"
-                          fontFamily="Airbnb Cereal VF"
-                          color="gray.800"
-                        >
-                          Détails du produit
-                        </Text>
-                      </Box>
-                      <AccordionIcon />
-                    </AccordionButton>
-                  </h2>
-                  <AccordionPanel pb={6} px={6}>
-                    <Box
-                      fontSize="sm"
-                      color="gray.700"
-                      lineHeight="1.6"
-                      border="none"
-                      fontFamily={"Airbnb Cereal VF"}
-                      sx={{
-                        p: { margin: 0, marginBottom: "1em" },
-                        br: { display: "block", marginBottom: "0.5em" },
-                        strong: { fontWeight: "600" },
-                        em: { fontStyle: "italic" },
-                        ul: { paddingLeft: "1.5em", marginBottom: "1em" },
-                        ol: { paddingLeft: "1.5em", marginBottom: "1em" },
-                        li: { marginBottom: "0.25em" },
-                      }}
-                      dangerouslySetInnerHTML={{
-                        __html: product?.description
-                          ? product.description.replace(/ style="[^"]*"/g, "")
-                          : "No product description available.",
-                      }}
-                    />
-                  </AccordionPanel>
-                </AccordionItem>
-
-                {/* Specifications Accordion */}
-                <AccordionItem
-                  borderTopWidth={"1px"}
-                  borderTopColor={"gray.200"}
-                  mb={1}
-                >
-                  <h2>
-                    <AccordionButton
-                      py={4}
-                      px={6}
-                      _hover={{ bg: "gray.50" }}
-                      borderRadius="lg"
-                    >
-                      <Box flex="1" textAlign="left">
-                        <Text
-                          fontSize="md"
-                          fontWeight="500"
-                          fontFamily="Airbnb Cereal VF"
-                          color="gray.800"
-                        >
-                          Caractéristiques
-                        </Text>
-                      </Box>
-                      <AccordionIcon />
-                    </AccordionButton>
-                  </h2>
-                  <AccordionPanel pb={6} px={6}>
-                    {product?.custom_details &&
-                    product.custom_details.length > 0 ? (
-                      <Box overflowX="auto">
-                        <VStack spacing={0} align="stretch">
-                          {product.custom_details.map((detail, index) => (
-                            <HStack
-                              key={detail.key}
-                              py={3}
-                              px={0}
-                              borderBottom={
-                                index < product.custom_details.length - 1
-                                  ? "1px solid"
-                                  : "none"
-                              }
-                              borderColor="gray.100"
-                              justify="space-between"
-                              align="flex-start"
-                            >
-                              <Text
-                                fontSize="sm"
-                                fontWeight="medium"
-                                color="gray.600"
-                                fontFamily="Bogle"
-                                minW="120px"
-                                maxW="200px"
-                              >
-                                {detail.label}
-                              </Text>
-                              <Text
-                                fontSize="sm"
-                                color="gray.800"
-                                fontFamily="Bogle"
-                                textAlign="right"
-                                flex="1"
-                                wordBreak="break-word"
-                              >
-                                {detail.value}
-                              </Text>
-                            </HStack>
-                          ))}
-                        </VStack>
+                        </AspectRatio>
                       </Box>
                     ) : (
-                      <Text
-                        fontSize="sm"
-                        color="gray.500"
-                        fontStyle="italic"
-                        fontFamily="Bogle"
-                      >
-                        Aucune spécification disponible pour ce produit.
-                      </Text>
-                    )}
-                  </AccordionPanel>
-                </AccordionItem>
-              </Accordion>
-            </Box>
-          </Box>
-
-          {/* Right Column - Enhanced Purchase Card */}
-          <Box bg="white">
-            <Card shadow="none" borderRadius="2xl" overflow="hidden">
-              <CardBody py={1} bg="white">
-                <VStack align="stretch" spacing={0}>
-                  <Box>
-                    {product?.is_available_on_stock ? (
-                      <Button
-                        size="xs"
-                        bg="black"
-                        _hover={{ bg: "black" }}
-                        _focus={{ bg: "black" }}
-                        _active={{ bg: "black" }}
-                        color="white"
-                        fontFamily={"Airbnb Cereal VF"}
-                      >
-                        Disponible
-                      </Button>
-                    ) : null}
-
-                    {product?.is_discounted ? (
-                      <Button
-                        ml={2}
-                        size="xs"
-                        bg="black"
-                        _hover={{ bg: "black" }}
-                        _focus={{ bg: "black" }}
-                        _active={{ bg: "black" }}
-                        color="white"
-                        fontFamily={"Airbnb Cereal VF"}
-                      >
-                        Offres Flash
-                      </Button>
-                    ) : null}
-
-                    {product?.mark_as_new ? (
-                      <Button
-                        ml={2}
-                        size="xs"
-                        bg="black"
-                        _hover={{ bg: "black" }}
-                        _focus={{ bg: "black" }}
-                        _active={{ bg: "black" }}
-                        color="white"
-                        fontFamily={"Airbnb Cereal VF"}
-                      >
-                        Nouvelle
-                      </Button>
-                    ) : null}
-
-                    {product?.discount_percentage_nett >= 25 ? (
-                      <Button
-                        ml={2}
-                        size="xs"
-                        bg="black"
-                        _hover={{ bg: "black" }}
-                        _focus={{ bg: "black" }}
-                        _active={{ bg: "black" }}
-                        color="white"
-                        fontFamily={"Airbnb Cereal VF"}
-                      >
-                        Grande vente
-                      </Button>
-                    ) : null}
-
-                    {product?.categories.length >= 1
-                      ? product.categories.map((category) => (
-                          <Button
-                            key={category.id}
-                            ml={1}
-                            size="xs"
-                            bg="black"
-                            _hover={{ bg: "black" }}
-                            _focus={{ bg: "black" }}
-                            _active={{ bg: "black" }}
-                            color="white"
-                            fontFamily={"Airbnb Cereal VF"}
-                          >
-                            {category.name}
-                          </Button>
-                        ))
-                      : null}
-
-                    <Heading
-                      mt={2}
-                      fontSize="18px"
-                      mb={4}
-                      color="gray.800"
-                      lineHeight="1.2"
-                      fontFamily="Airbnb Cereal VF"
-                    >
-                      {product?.title}
-                    </Heading>
-                  </Box>
-
-                  {Array.isArray(product?.custom_options) &&
-                    product?.custom_options.length > 0 && (
-                      <Box mb={6}>
-                        <Heading
-                          size="sm"
-                          mb={4}
-                          color="gray.800"
-                          fontWeight="500"
-                          letterSpacing="tight"
-                          fontFamily="Airbnb Cereal VF"
-                        >
-                          Options configurables
-                        </Heading>
-
-                        {/* Global scrollable container for all custom options */}
-                        <Box
-                          maxH="600px" // Maximum height for entire options section
-                          overflowY="auto"
-                          overflowX="hidden"
-                          borderRadius="lg"
-                          border="1px"
-                          borderColor="gray.100"
-                          bg="white"
-                          p={3}
-                          css={{
-                            "&::-webkit-scrollbar": {
-                              width: "8px",
-                            },
-                            "&::-webkit-scrollbar-track": {
-                              background: "#f1f1f1",
-                              borderRadius: "4px",
-                            },
-                            "&::-webkit-scrollbar-thumb": {
-                              background: "#cbd5e0",
-                              borderRadius: "4px",
-                            },
-                            "&::-webkit-scrollbar-thumb:hover": {
-                              background: "#a0aec0",
-                            },
-                          }}
-                        >
-                          <VStack align="stretch" spacing={5}>
-                            {product?.is_dimensional_pricing &&
-                              pricingConfig && (
+                      <>
+                        <VStack spacing={3} order={{ base: 2, md: 1 }} py={1}>
+                          {product?.images?.gallery?.map((image, index) => (
+                            <Box
+                              key={index}
+                              w="50px"
+                              h="50px"
+                              borderRadius="xl"
+                              overflow="hidden"
+                              borderWidth="0px"
+                              cursor="pointer"
+                              onClick={() => {
+                                setSelectedImage(index);
+                                setCarouselIndex(index);
+                              }}
+                              transition="all 0.3s ease"
+                              position="relative"
+                              bg="transparent"
+                            >
+                              <Image
+                                src={image?.url}
+                                alt={image?.alt_text}
+                                w="full"
+                                h="full"
+                                objectFit="fill"
+                              />
+                              {selectedImage === index && (
                                 <Box
-                                  mb={6}
-                                  p={4}
-                                  borderWidth={0}
-                                  borderRadius="md"
-                                  bg="white"
-                                  shadow="none"
-                                >
-                                  <Text
-                                    fontSize="lg"
-                                    fontWeight="semibold"
-                                    mb={3}
-                                    fontFamily="Bogle"
-                                  >
-                                    Personnaliser les dimensions
-                                  </Text>
-                                  <Text
-                                    fontSize="sm"
-                                    color="gray.600"
-                                    mb={4}
-                                    fontFamily="Bogle"
-                                  >
-                                    Type de calcul:{" "}
-                                    {
-                                      pricingConfig?.dimensional_calculation_type
-                                    }
-                                  </Text>
+                                  position="absolute"
+                                  top="2"
+                                  right="2"
+                                  w="3"
+                                  h="3"
+                                  bg="blue.500"
+                                  borderRadius="full"
+                                  border="0px"
+                                  borderColor="white"
+                                />
+                              )}
+                            </Box>
+                          ))}
+                        </VStack>
 
-                                  {/* <VStack spacing={4}>
+                        <Box position="relative" order={{ base: 1, md: 2 }}>
+                          <Box
+                            borderRadius="md"
+                            overflow="hidden"
+                            onMouseEnter={() => setIsImageZoomed(true)}
+                            onMouseLeave={() => setIsImageZoomed(false)}
+                            onMouseMove={handleImageMouseMove}
+                            position="relative"
+                            bg="white"
+                            border="0px solid"
+                            borderColor="gray.200"
+                            cursor="zoom-in"
+                            width="100%"
+                            minHeight={{
+                              base: "260px",
+                              md: "400px",
+                              lg: "600px",
+                            }}
+                            maxHeight={{
+                              base: "320px",
+                              md: "500px",
+                              lg: "600px",
+                            }}
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            transition="box-shadow 0.2s"
+                            boxShadow="none"
+                          >
+                            <Image
+                              src={
+                                product?.images?.gallery?.[selectedImage]
+                                  ?.url || product?.images?.main_image?.url
+                              }
+                              alt={product?.title}
+                              w="100%"
+                              h="100%"
+                              maxW="100%"
+                              maxH="100%"
+                              minH={{ base: "260px", md: "400px", lg: "600px" }}
+                              objectFit="100%"
+                              borderRadius="md"
+                              transition="transform 0.4s"
+                              transform={
+                                isImageZoomed ? "scale(1.5)" : "scale(1)"
+                              }
+                              transformOrigin={`${mousePosition.x}% ${mousePosition.y}%`}
+                              bg="gray.100"
+                            />
+
+                            {/* Overlay buttons */}
+                            <Box position="absolute" top={4} right={4}>
+                              <HStack spacing={2}>
+                                <IconButton
+                                  icon={<FaExpand />}
+                                  onClick={onImageModalOpen}
+                                  size="md"
+                                  bg="blackAlpha.700"
+                                  color="white"
+                                  _hover={{ bg: "blackAlpha.800" }}
+                                  borderRadius="full"
+                                  shadow="lg"
+                                  aria-label="Expand image"
+                                />
+                              </HStack>
+                            </Box>
+
+                            {/* Badges overlay */}
+                            <Box position="absolute" top={4} left={4}>
+                              <VStack spacing={2} align="flex-start">
+                                {product?.badges?.is_new && (
+                                  <Badge
+                                    colorScheme="green"
+                                    variant="solid"
+                                    fontSize="xs"
+                                    px={3}
+                                    py={1}
+                                    borderRadius="full"
+                                    textTransform="uppercase"
+                                    fontWeight="bold"
+                                    shadow="sm"
+                                  >
+                                    NOUVELLE
+                                  </Badge>
+                                )}
+                                {product?.badges?.is_on_sale && (
+                                  <Badge
+                                    colorScheme="red"
+                                    variant="solid"
+                                    fontSize="xs"
+                                    px={3}
+                                    py={1}
+                                    borderRadius="full"
+                                    textTransform="uppercase"
+                                    fontWeight="bold"
+                                    shadow="sm"
+                                  >
+                                    VENTE
+                                  </Badge>
+                                )}
+                                {product?.badges?.free_shipping && (
+                                  <Badge
+                                    colorScheme="blue"
+                                    variant="solid"
+                                    fontSize="xs"
+                                    px={3}
+                                    py={1}
+                                    borderRadius="full"
+                                    textTransform="uppercase"
+                                    fontWeight="bold"
+                                    shadow="sm"
+                                  >
+                                    LIVRAISON GRATUITE
+                                  </Badge>
+                                )}
+                              </VStack>
+                            </Box>
+
+                            {/* Zoom indicator */}
+                            {isImageZoomed && !is360Mode && (
+                              <Box
+                                position="absolute"
+                                bottom={4}
+                                left={4}
+                                bg="blackAlpha.700"
+                                color="white"
+                                px={3}
+                                py={2}
+                                borderRadius="full"
+                                fontSize="sm"
+                                fontWeight="medium"
+                                shadow="md"
+                              >
+                                <HStack spacing={2}>
+                                  <Icon as={FaExpand} fontSize="xs" />
+                                  <Text>Zoomed</Text>
+                                </HStack>
+                              </Box>
+                            )}
+                          </Box>
+                        </Box>
+                      </>
+                    )}
+                  </Grid>
+                </CardBody>
+              </Card>
+
+              {/* About this item only if product does have custom options */}
+              <Box>
+                <Text
+                  fontSize={"md"}
+                  fontFamily="Airbnb Cereal VF"
+                  fontWeight={"500"}
+                  color="black"
+                  mt={10}
+                  ml={3}
+                >
+                  À propos de cet article
+                </Text>
+
+                <Accordion
+                  allowMultiple
+                  maxW={{ base: "100%", md: "100%" }}
+                  mt={5}
+                >
+                  {/* Product Details Accordion */}
+                  <AccordionItem
+                    borderTopWidth={"1px"}
+                    borderTopColor={"gray.200"}
+                    mb={1}
+                  >
+                    <h2>
+                      <AccordionButton
+                        py={4}
+                        px={6}
+                        _hover={{ bg: "gray.50" }}
+                        borderRadius="lg"
+                      >
+                        <Box flex="1" textAlign="left">
+                          <Text
+                            fontSize="md"
+                            fontWeight="500"
+                            fontFamily="Airbnb Cereal VF"
+                            color="gray.800"
+                          >
+                            Détails du produit
+                          </Text>
+                        </Box>
+                        <AccordionIcon />
+                      </AccordionButton>
+                    </h2>
+                    <AccordionPanel pb={6} px={6}>
+                      <Box
+                        fontSize="sm"
+                        color="gray.700"
+                        lineHeight="1.6"
+                        border="none"
+                        fontFamily={"Airbnb Cereal VF"}
+                        sx={{
+                          p: { margin: 0, marginBottom: "1em" },
+                          br: { display: "block", marginBottom: "0.5em" },
+                          strong: { fontWeight: "600" },
+                          em: { fontStyle: "italic" },
+                          ul: { paddingLeft: "1.5em", marginBottom: "1em" },
+                          ol: { paddingLeft: "1.5em", marginBottom: "1em" },
+                          li: { marginBottom: "0.25em" },
+                        }}
+                        dangerouslySetInnerHTML={{
+                          __html: product?.description
+                            ? product.description.replace(/ style="[^"]*"/g, "")
+                            : "No product description available.",
+                        }}
+                      />
+                    </AccordionPanel>
+                  </AccordionItem>
+
+                  {/* Specifications Accordion */}
+                  <AccordionItem
+                    borderTopWidth={"1px"}
+                    borderTopColor={"gray.200"}
+                    mb={1}
+                  >
+                    <h2>
+                      <AccordionButton
+                        py={4}
+                        px={6}
+                        _hover={{ bg: "gray.50" }}
+                        borderRadius="lg"
+                      >
+                        <Box flex="1" textAlign="left">
+                          <Text
+                            fontSize="md"
+                            fontWeight="500"
+                            fontFamily="Airbnb Cereal VF"
+                            color="gray.800"
+                          >
+                            Caractéristiques
+                          </Text>
+                        </Box>
+                        <AccordionIcon />
+                      </AccordionButton>
+                    </h2>
+                    <AccordionPanel pb={6} px={6}>
+                      {product?.custom_details &&
+                      product.custom_details.length > 0 ? (
+                        <Box overflowX="auto">
+                          <VStack spacing={0} align="stretch">
+                            {product.custom_details.map((detail, index) => (
+                              <HStack
+                                key={detail.key}
+                                py={3}
+                                px={0}
+                                borderBottom={
+                                  index < product.custom_details.length - 1
+                                    ? "1px solid"
+                                    : "none"
+                                }
+                                borderColor="gray.100"
+                                justify="space-between"
+                                align="flex-start"
+                              >
+                                <Text
+                                  fontSize="sm"
+                                  fontWeight="medium"
+                                  color="gray.600"
+                                  fontFamily="Bogle"
+                                  minW="120px"
+                                  maxW="200px"
+                                >
+                                  {detail.label}
+                                </Text>
+                                <Text
+                                  fontSize="sm"
+                                  color="gray.800"
+                                  fontFamily="Bogle"
+                                  textAlign="right"
+                                  flex="1"
+                                  wordBreak="break-word"
+                                >
+                                  {detail.value}
+                                </Text>
+                              </HStack>
+                            ))}
+                          </VStack>
+                        </Box>
+                      ) : (
+                        <Text
+                          fontSize="sm"
+                          color="gray.500"
+                          fontStyle="italic"
+                          fontFamily="Bogle"
+                        >
+                          Aucune spécification disponible pour ce produit.
+                        </Text>
+                      )}
+                    </AccordionPanel>
+                  </AccordionItem>
+                </Accordion>
+              </Box>
+            </Box>
+
+            {/* Right Column - Enhanced Purchase Card */}
+            <Box bg="white">
+              <Card shadow="none" borderRadius="2xl" overflow="hidden">
+                <CardBody py={1} bg="white">
+                  <VStack align="stretch" spacing={0}>
+                    <Box>
+                      {product?.is_available_on_stock ? (
+                        <Button
+                          size="xs"
+                          bg="black"
+                          _hover={{ bg: "black" }}
+                          _focus={{ bg: "black" }}
+                          _active={{ bg: "black" }}
+                          color="white"
+                          fontFamily={"Airbnb Cereal VF"}
+                        >
+                          Disponible
+                        </Button>
+                      ) : null}
+
+                      {product?.is_discounted ? (
+                        <Button
+                          ml={2}
+                          size="xs"
+                          bg="black"
+                          _hover={{ bg: "black" }}
+                          _focus={{ bg: "black" }}
+                          _active={{ bg: "black" }}
+                          color="white"
+                          fontFamily={"Airbnb Cereal VF"}
+                        >
+                          Offres Flash
+                        </Button>
+                      ) : null}
+
+                      {product?.mark_as_new ? (
+                        <Button
+                          ml={2}
+                          size="xs"
+                          bg="black"
+                          _hover={{ bg: "black" }}
+                          _focus={{ bg: "black" }}
+                          _active={{ bg: "black" }}
+                          color="white"
+                          fontFamily={"Airbnb Cereal VF"}
+                        >
+                          Nouvelle
+                        </Button>
+                      ) : null}
+
+                      {product?.discount_percentage_nett >= 25 ? (
+                        <Button
+                          ml={2}
+                          size="xs"
+                          bg="black"
+                          _hover={{ bg: "black" }}
+                          _focus={{ bg: "black" }}
+                          _active={{ bg: "black" }}
+                          color="white"
+                          fontFamily={"Airbnb Cereal VF"}
+                        >
+                          Grande vente
+                        </Button>
+                      ) : null}
+
+                      {product?.categories.length >= 1
+                        ? product.categories.map((category) => (
+                            <Button
+                              key={category.id}
+                              ml={1}
+                              size="xs"
+                              bg="black"
+                              _hover={{ bg: "black" }}
+                              _focus={{ bg: "black" }}
+                              _active={{ bg: "black" }}
+                              color="white"
+                              fontFamily={"Airbnb Cereal VF"}
+                            >
+                              {category.name}
+                            </Button>
+                          ))
+                        : null}
+
+                      <Heading
+                        mt={2}
+                        fontSize="18px"
+                        mb={4}
+                        color="gray.800"
+                        lineHeight="1.2"
+                        fontFamily="Airbnb Cereal VF"
+                      >
+                        {product?.title}
+                      </Heading>
+                    </Box>
+
+                    {Array.isArray(product?.custom_options) &&
+                      product?.custom_options.length > 0 && (
+                        <Box mb={6}>
+                          <Heading
+                            size="sm"
+                            mb={4}
+                            color="gray.800"
+                            fontWeight="500"
+                            letterSpacing="tight"
+                            fontFamily="Airbnb Cereal VF"
+                          >
+                            Options configurables
+                          </Heading>
+
+                          {/* Global scrollable container for all custom options */}
+                          <Box
+                            maxH="600px" // Maximum height for entire options section
+                            overflowY="auto"
+                            overflowX="hidden"
+                            borderRadius="lg"
+                            border="1px"
+                            borderColor="gray.100"
+                            bg="white"
+                            p={3}
+                            css={{
+                              "&::-webkit-scrollbar": {
+                                width: "8px",
+                              },
+                              "&::-webkit-scrollbar-track": {
+                                background: "#f1f1f1",
+                                borderRadius: "4px",
+                              },
+                              "&::-webkit-scrollbar-thumb": {
+                                background: "#cbd5e0",
+                                borderRadius: "4px",
+                              },
+                              "&::-webkit-scrollbar-thumb:hover": {
+                                background: "#a0aec0",
+                              },
+                            }}
+                          >
+                            <VStack align="stretch" spacing={5}>
+                              {product?.is_dimensional_pricing &&
+                                pricingConfig && (
+                                  <Box
+                                    mb={6}
+                                    p={4}
+                                    borderWidth={0}
+                                    borderRadius="md"
+                                    bg="white"
+                                    shadow="none"
+                                  >
+                                    <Text
+                                      fontSize="lg"
+                                      fontWeight="semibold"
+                                      mb={3}
+                                      fontFamily="Bogle"
+                                    >
+                                      Personnaliser les dimensions
+                                    </Text>
+                                    <Text
+                                      fontSize="sm"
+                                      color="gray.600"
+                                      mb={4}
+                                      fontFamily="Bogle"
+                                    >
+                                      Type de calcul:{" "}
+                                      {
+                                        pricingConfig?.dimensional_calculation_type
+                                      }
+                                    </Text>
+
+                                    {/* <VStack spacing={4}>
                                     {pricingConfig?.required_dimensions.map(
                                       (dimension) => (
                                         <FormControl key={dimension}>
@@ -2119,1359 +2614,1384 @@ function CustomerProductPage() {
                                     )}
                                   </VStack> */}
 
-                                  <VStack spacing={4}>
-                                    {pricingConfig?.required_dimensions.map(
-                                      (dimension) => (
-                                        <FormControl key={dimension}>
-                                          <FormLabel
-                                            textTransform="capitalize"
-                                            fontSize="sm"
-                                            fontWeight="medium"
-                                            fontFamily={"Bogle"}
-                                          >
-                                            {dimensionLabels[dimension] ||
-                                              dimension}{" "}
-                                            (cm)
-                                          </FormLabel>
-                                          <Input
-                                            type="number"
-                                            placeholder={`Entrer ${
-                                              dimensionLabels[dimension] ||
-                                              dimension
-                                            }`}
-                                            value={
-                                              customDimensions[dimension] || ""
-                                            }
-                                            onChange={(e) =>
-                                              handleDimensionChange(
-                                                dimension,
-                                                e.target.value
-                                              )
-                                            }
-                                            min={
-                                              pricingConfig
-                                                .dimension_constraints[
+                                    <VStack spacing={4}>
+                                      {pricingConfig?.required_dimensions.map(
+                                        (dimension) => (
+                                          <FormControl key={dimension}>
+                                            <FormLabel
+                                              textTransform="capitalize"
+                                              fontSize="sm"
+                                              fontWeight="medium"
+                                              fontFamily={"Bogle"}
+                                            >
+                                              {dimensionLabels[dimension] ||
+                                                dimension}{" "}
+                                              (cm)
+                                            </FormLabel>
+                                            <Input
+                                              type="number"
+                                              placeholder={`Entrer ${
+                                                dimensionLabels[dimension] ||
                                                 dimension
-                                              ]?.min || 0
-                                            }
-                                            max={
-                                              pricingConfig
-                                                .dimension_constraints[
-                                                dimension
-                                              ]?.max || undefined
-                                            }
-                                            size="md"
-                                          />
-                                          {pricingConfig.dimension_constraints[
-                                            dimension
-                                          ] && (
-                                            <FormHelperText fontSize="xs">
-                                              Min:{" "}
-                                              {
+                                              }`}
+                                              value={
+                                                customDimensions[dimension] ||
+                                                ""
+                                              }
+                                              onChange={(e) =>
+                                                handleDimensionChange(
+                                                  dimension,
+                                                  e.target.value
+                                                )
+                                              }
+                                              min={
                                                 pricingConfig
                                                   .dimension_constraints[
                                                   dimension
-                                                ].min
-                                              }{" "}
-                                              - Max:{" "}
-                                              {pricingConfig
-                                                .dimension_constraints[
-                                                dimension
-                                              ].max || "Pas de limite"}
-                                            </FormHelperText>
-                                          )}
-                                        </FormControl>
-                                      )
-                                    )}
-                                  </VStack>
-
-                                  {calculationError && (
-                                    <Alert status="error" mt={4}>
-                                      <AlertIcon />
-                                      {calculationError}
-                                    </Alert>
-                                  )}
-                                </Box>
-                              )}
-
-                            {/* Sort custom options by sort_order before mapping */}
-                            {product.custom_options
-                              .sort(
-                                (a, b) =>
-                                  (a.sort_order || 0) - (b.sort_order || 0)
-                              )
-                              .map((option) => {
-                                // Filter option values for "Imposte/allège" if needed
-                                let filteredOptionValues = option.option_values;
-                                const allowedIds = getAllowedOptionValueIds(
-                                  selectedCustomOptions,
-                                  product,
-                                  option
-                                );
-                                if (allowedIds) {
-                                  filteredOptionValues =
-                                    filteredOptionValues.filter((v) =>
-                                      allowedIds.includes(v.id)
-                                    );
-                                }
-
-                                // Sort filtered option values by sort_order
-                                filteredOptionValues =
-                                  filteredOptionValues.sort(
-                                    (a, b) =>
-                                      (a.sort_order || 0) - (b.sort_order || 0)
-                                  );
-
-                                return (
-                                  <Box
-                                    key={option.id}
-                                    p={1}
-                                    borderRadius="md"
-                                    bg="white"
-                                    shadow="none"
-                                    border="0px"
-                                    borderColor="gray.200"
-                                  >
-                                    <Text
-                                      fontWeight="400"
-                                      fontSize="sm"
-                                      fontFamily={"Bogle"}
-                                      mb={3}
-                                      color="gray.900"
-                                    >
-                                      {option.option_name}
-                                      {option.is_required && (
-                                        <Text as="span" color="red.500" ml={1}>
-                                          *
-                                        </Text>
-                                      )}
-                                    </Text>
-
-                                    {option.option_type === "radio" && (
-                                      <RadioGroup
-                                        value={
-                                          selectedCustomOptions[option.id]
-                                            ?.valueId || ""
-                                        }
-                                        onChange={(valueId) => {
-                                          const selectedValue =
-                                            filteredOptionValues.find(
-                                              (v) => v.id === valueId
-                                            );
-                                          if (selectedValue) {
-                                            handleCustomOptionChange(
-                                              option.id,
-                                              valueId,
-                                              selectedValue.option_value,
-                                              selectedValue.price_modifier,
-                                              selectedValue.price_modifier_type
-                                            );
-                                          }
-                                        }}
-                                      >
-                                        <Box
-                                          maxH="300px"
-                                          overflowY="auto"
-                                          overflowX="hidden"
-                                          borderRadius="md"
-                                          css={{
-                                            "&::-webkit-scrollbar": {
-                                              width: "6px",
-                                            },
-                                            "&::-webkit-scrollbar-track": {
-                                              background: "#f7fafc",
-                                              borderRadius: "3px",
-                                            },
-                                            "&::-webkit-scrollbar-thumb": {
-                                              background: "#e2e8f0",
-                                              borderRadius: "3px",
-                                            },
-                                            "&::-webkit-scrollbar-thumb:hover":
-                                              {
-                                                background: "#cbd5e0",
-                                              },
-                                          }}
-                                        >
-                                          <SimpleGrid
-                                            columns={4}
-                                            spacing={2}
-                                            p={1}
-                                          >
-                                            {filteredOptionValues.map(
-                                              (value) => (
-                                                <Box
-                                                  key={value.id}
-                                                  as="label"
-                                                  cursor="pointer"
-                                                >
-                                                  <Card
-                                                    p={0}
-                                                    borderRadius="2.5px"
-                                                    border="0px"
-                                                    borderColor={
-                                                      selectedCustomOptions[
-                                                        option.id
-                                                      ]?.valueId === value.id
-                                                        ? "gray.400"
-                                                        : "gray.400"
-                                                    }
-                                                    _hover={{
-                                                      borderColor: "red.600",
-                                                    }}
-                                                    transition="all 0.2s"
-                                                    bg="transparent"
-                                                    position="relative"
-                                                    minH="100px"
-                                                    maxH="200px"
-                                                    display="flex"
-                                                    shadow="none"
-                                                    flexDirection="column"
-                                                    alignItems="center"
-                                                    justifyContent="center"
-                                                  >
-                                                    {value.image_url && (
-                                                      <Box
-                                                        w="full"
-                                                        h="auto"
-                                                        borderRadius="0px"
-                                                        overflow="hidden"
-                                                        bg="transparent"
-                                                        mb={0}
-                                                      >
-                                                        <Image
-                                                          src={value.image_url}
-                                                          alt={
-                                                            value.display_name ||
-                                                            value.option_value
-                                                          }
-                                                          w="full"
-                                                          h="100px"
-                                                          maxH="100px"
-                                                          objectFit="100%"
-                                                        />
-                                                      </Box>
-                                                    )}
-                                                    <Text
-                                                      fontSize="xs"
-                                                      fontWeight="medium"
-                                                      textAlign="center"
-                                                      noOfLines={2}
-                                                      fontFamily={"Bogle"}
-                                                      mb={1}
-                                                    >
-                                                      {value.display_name ||
-                                                        value.option_value}
-                                                    </Text>
-                                                    {(() => {
-                                                      const priceModifier =
-                                                        parseFloat(
-                                                          value.price_modifier ||
-                                                            0
-                                                        );
-                                                      const pricePerM2 =
-                                                        parseFloat(
-                                                          value.price_per_m2 ||
-                                                            0
-                                                        );
-                                                      const pricePerM3 =
-                                                        parseFloat(
-                                                          value.price_per_m3 ||
-                                                            0
-                                                        );
-                                                      const pricePerLinearMeter =
-                                                        parseFloat(
-                                                          value.price_per_linear_meter ||
-                                                            0
-                                                        );
-                                                      const pricePerMeter =
-                                                        parseFloat(
-                                                          value.price_per_meter ||
-                                                            0
-                                                        );
-
-                                                      let displayPrice = 0;
-                                                      let displayUnit = "";
-
-                                                      switch (
-                                                        value.price_modifier_type
-                                                      ) {
-                                                        case "m2":
-                                                          displayPrice =
-                                                            pricePerM2;
-                                                          displayUnit = "€/m²";
-                                                          break;
-                                                        case "m3":
-                                                          displayPrice =
-                                                            pricePerM3;
-                                                          displayUnit = "€/m³";
-                                                          break;
-                                                        case "linear-meter":
-                                                          displayPrice =
-                                                            pricePerLinearMeter;
-                                                          displayUnit = "€/m";
-                                                          break;
-                                                        case "meter":
-                                                          displayPrice =
-                                                            pricePerMeter;
-                                                          displayUnit = "€/m";
-                                                          break;
-                                                        case "percentage":
-                                                          displayPrice =
-                                                            priceModifier;
-                                                          displayUnit = "%";
-                                                          break;
-                                                        case "fixed":
-                                                        default:
-                                                          displayPrice =
-                                                            priceModifier;
-                                                          displayUnit = "€";
-                                                      }
-
-                                                      if (displayPrice > 0) {
-                                                        return (
-                                                          <Text
-                                                            fontSize="xs"
-                                                            fontWeight="bold"
-                                                            color="green.600"
-                                                            fontFamily={
-                                                              "Bricolage Grotesque"
-                                                            }
-                                                          >
-                                                            {/* +{displayPrice.toFixed(2)}
-                                        {displayUnit} */}
-                                                          </Text>
-                                                        );
-                                                      } else if (
-                                                        displayPrice < 0
-                                                      ) {
-                                                        return (
-                                                          <Text
-                                                            fontSize="xs"
-                                                            fontWeight="bold"
-                                                            color="red.600"
-                                                            fontFamily={
-                                                              "Bricolage Grotesque"
-                                                            }
-                                                          >
-                                                            {/* {displayPrice.toFixed(2)}
-                                        {displayUnit} */}
-                                                          </Text>
-                                                        );
-                                                      } else {
-                                                        return (
-                                                          <Text
-                                                            fontSize="xs"
-                                                            color="gray.500"
-                                                            fontFamily={
-                                                              "Bricolage Grotesque"
-                                                            }
-                                                          >
-                                                            Included
-                                                          </Text>
-                                                        );
-                                                      }
-                                                    })()}
-                                                    <Radio
-                                                      value={value.id}
-                                                      colorScheme="blue"
-                                                      position="absolute"
-                                                      top={2}
-                                                      right={2}
-                                                      size="sm"
-                                                    />
-                                                  </Card>
-                                                </Box>
-                                              )
+                                                ]?.min || 0
+                                              }
+                                              max={
+                                                pricingConfig
+                                                  .dimension_constraints[
+                                                  dimension
+                                                ]?.max || undefined
+                                              }
+                                              size="md"
+                                            />
+                                            {pricingConfig
+                                              .dimension_constraints[
+                                              dimension
+                                            ] && (
+                                              <FormHelperText fontSize="xs">
+                                                Min:{" "}
+                                                {
+                                                  pricingConfig
+                                                    .dimension_constraints[
+                                                    dimension
+                                                  ].min
+                                                }{" "}
+                                                - Max:{" "}
+                                                {pricingConfig
+                                                  .dimension_constraints[
+                                                  dimension
+                                                ].max || "Pas de limite"}
+                                              </FormHelperText>
                                             )}
-                                          </SimpleGrid>
-                                        </Box>
-                                      </RadioGroup>
-                                    )}
+                                          </FormControl>
+                                        )
+                                      )}
+                                    </VStack>
 
-                                    {option.option_type === "select" && (
-                                      <Select
-                                        placeholder={`Choose ${option.option_name}`}
-                                        size="lg"
-                                        borderRadius="lg"
-                                        value={
-                                          selectedCustomOptions[option.id]
-                                            ?.valueId || ""
-                                        }
-                                        onChange={(e) => {
-                                          const selectedValue =
-                                            filteredOptionValues.find(
-                                              (v) => v.id === e.target.value
-                                            );
-                                          if (selectedValue) {
-                                            handleCustomOptionChange(
-                                              option.id,
-                                              e.target.value,
-                                              selectedValue.option_value,
-                                              selectedValue.price_modifier,
-                                              selectedValue.price_modifier_type
-                                            );
-                                          }
-                                        }}
-                                      >
-                                        {filteredOptionValues.map((value) => (
-                                          <option
-                                            key={value.id}
-                                            value={value.id}
-                                          >
-                                            {value.display_name ||
-                                              value.option_value}
-                                            {parseFloat(value.price_modifier) >
-                                              0 &&
-                                              (value.price_modifier_type ===
-                                              "percentage"
-                                                ? ` (+${value.price_modifier}%)`
-                                                : ` (+${value.price_modifier}€)`)}
-                                          </option>
-                                        ))}
-                                      </Select>
+                                    {calculationError && (
+                                      <Alert status="error" mt={4}>
+                                        <AlertIcon />
+                                        {calculationError}
+                                      </Alert>
                                     )}
                                   </Box>
-                                );
-                              })}
-                          </VStack>
-                        </Box>
-                      </Box>
-                    )}
-                  <Divider />
-                  <br />
-
-                  {product?.description && (
-                    <Box>
-                      <Text
-                        fontWeight="500"
-                        fontSize="sm"
-                        color="black"
-                        fontFamily="Bricolage Grotesque"
-                        mb={2}
-                      >
-                        À propos de ce produit:
-                      </Text>
-                      <Box
-                        fontWeight="500"
-                        fontSize="sm"
-                        color="black"
-                        fontFamily="Bricolage Grotesque"
-                        sx={{
-                          p: { margin: 0, marginBottom: "0.6em" },
-                          br: { display: "block", marginBottom: "0.6em" },
-                          overflow: "hidden",
-                          display: "-webkit-box",
-                          WebkitBoxOrient: "vertical",
-                          WebkitLineClamp: 5,
-                          maxHeight: "7.5em", // ~5 lines
-                          transition: "max-height 0.3s",
-                        }}
-                        dangerouslySetInnerHTML={{
-                          __html: product.description
-                            ? product.description.replace(/ style="[^"]*"/g, "")
-                            : "",
-                        }}
-                      />
-                    </Box>
-                  )}
-
-                  <br />
-                  <Divider />
-
-                  <br />
-
-                  {product?.custom_details.length >= 1 && (
-                    <Text
-                      fontSize={"sm"}
-                      fontWeight={"bold"}
-                      fontFamily={"Bricolage Grotesque"}
-                    >
-                      En un coup d'oeil
-                    </Text>
-                  )}
-
-                  <SimpleGrid
-                    columns={{ base: 1, sm: 2, md: 3 }}
-                    spacing={4}
-                    mb={2}
-                    mt={5}
-                  >
-                    {product?.custom_details?.slice(0, 6).map((detail) => (
-                      <Card
-                        key={detail.key}
-                        p={3}
-                        borderRadius="lg"
-                        border="0px"
-                        borderColor="gray.200"
-                        bg="gray.100"
-                        shadow="sm"
-                      >
-                        <Text
-                          fontSize="xs"
-                          color="gray.500"
-                          fontWeight="semibold"
-                          mb={1}
-                          textAlign={"center"}
-                          fontFamily={"Bricolage Grotesque"}
-                        >
-                          {detail.label}
-                        </Text>
-                        <Text
-                          fontSize="sm"
-                          color="gray.800"
-                          fontWeight="bold"
-                          noOfLines={2}
-                          textAlign={"center"}
-                          fontFamily={"Bricolage Grotesque"}
-                        >
-                          {detail.value}
-                        </Text>
-                      </Card>
-                    ))}
-                  </SimpleGrid>
-
-                  {product?.custom_details &&
-                    product.custom_details.length > 6 && (
-                      <Button
-                        size="sm"
-                        variant="link"
-                        color="blue.600"
-                        fontWeight="semibold"
-                        align="start"
-                        onClick={() => setIsCustomDetailsModalOpen(true)}
-                        mb={4}
-                      >
-                        Tout voir
-                      </Button>
-                    )}
-                </VStack>
-              </CardBody>
-            </Card>
-          </Box>
-
-          {/* 3 Column */}
-          <Box>
-            <Card
-              shadow="none"
-              borderRadius="2xl"
-              overflow="hidden"
-              border="1px solid rgba(145, 158, 171, 0.2)"
-              bg="rgb(255,255,255)"
-            >
-              <CardBody p={2}>
-                <VStack align="stretch" spacing={8}>
-                  <Box>
-                    <Heading
-                      fontSize="25px"
-                      mb={0}
-                      color="gray.800"
-                      lineHeight="1.2"
-                      fontFamily="Bogle"
-                    >
-                      <Box mb={0}>
-                        <Box
-                          p={3}
-                          borderRadius="xl"
-                          bg="transparent"
-                          boxShadow="none"
-                          border="0px solid"
-                          borderColor="gray.200"
-                        >
-                          <VStack align="stretch" spacing={3}>
-                            <HStack justify="space-between" align="center">
-                              <VStack align="start" spacing={1}>
-                                <Text
-                                  fontSize="lg"
-                                  fontWeight="600"
-                                  fontFamily="Airbnb Cereal VF"
-                                >
-                                  Prix total: €
-                                  {calculateTotalPrice().toFixed(2)}
-                                </Text>
-                                {isCalculating && (
-                                  <HStack>
-                                    <Spinner size="sm" />
-                                    <Text
-                                      fontSize="sm"
-                                      color="gray.600"
-                                      fontFamily="Airbnb Cereal VF"
-                                    >
-                                      Calculatrice...
-                                    </Text>
-                                  </HStack>
                                 )}
-                              </VStack>
-                            </HStack>
 
-                            <Divider my={0} />
-                            <HStack spacing={2}>
-                              <Text fontSize="sm" color="gray.600">
-                                TVA incluse ({product?.tax.rate}%)
-                              </Text>
-                            </HStack>
-
-                            <Box>
-                              <HStack justify="space-between" mb={2}>
-                                <Text
-                                  fontWeight="500"
-                                  fontSize="sm"
-                                  color="black"
-                                  fontFamily="Airbnb Cereal VF"
-                                >
-                                  SKU:
-                                </Text>
-                                <Text
-                                  fontSize="sm"
-                                  fontWeight="500"
-                                  color="black"
-                                >
-                                  {product?.sku}
-                                </Text>
-                              </HStack>
-
-                              <HStack justify="space-between" mb={2}>
-                                <Text
-                                  fontWeight="500"
-                                  fontSize="sm"
-                                  color="black"
-                                  fontFamily="Airbnb Cereal VF"
-                                >
-                                  EAN numéro:
-                                </Text>
-                                <Text
-                                  fontSize="sm"
-                                  fontWeight="500"
-                                  color="black"
-                                >
-                                  {product?.ean}
-                                </Text>
-                              </HStack>
-
-                              <HStack justify="space-between" mb={2}>
-                                <Text
-                                  fontWeight="500"
-                                  fontSize="sm"
-                                  color="black"
-                                  fontFamily="Airbnb Cereal VF"
-                                >
-                                  Disponibilité
-                                </Text>
-                                <Text
-                                  fontSize="sm"
-                                  fontWeight="500"
-                                  color="black"
-                                >
-                                  {product?.is_available_on_stock ? "🟢" : "🔴"}
-                                </Text>
-                              </HStack>
-
-                              <HStack justify="space-between" mb={2}>
-                                <Text
-                                  fontWeight="500"
-                                  fontSize="sm"
-                                  color="black"
-                                  fontFamily="Airbnb Cereal VF"
-                                >
-                                  Taux d'imposition
-                                </Text>
-                                <Text
-                                  fontSize="sm"
-                                  fontWeight="500"
-                                  color="black"
-                                >
-                                  {product?.tax.rate}%
-                                </Text>
-                              </HStack>
-                            </Box>
-
-                            <Box>
-                              <Text
-                                fontWeight="500"
-                                mb={0}
-                                mt={5}
-                                fontSize="sm"
-                                color="gray.900"
-                                fontFamily="Airbnb Cereal VF"
-                              >
-                                Quantité
-                              </Text>
-                              <HStack
-                                maxW="200px"
-                                bg="transparent"
-                                borderRadius="xl"
-                                p={2}
-                                mt={1}
-                              >
-                                <IconButton
-                                  icon={<FaMinus />}
-                                  size="sm"
-                                  onClick={handleQuantityDecrement}
-                                  isDisabled={
-                                    quantity <=
-                                    (pricingConfig?.quantity_constraints
-                                      ?.min_order_quantity || 1)
+                              {/* Sort custom options by sort_order before mapping */}
+                              {product.custom_options
+                                .sort(
+                                  (a, b) =>
+                                    (a.sort_order || 0) - (b.sort_order || 0)
+                                )
+                                .map((option) => {
+                                  // Filter option values for "Imposte/allège" if needed
+                                  let filteredOptionValues =
+                                    option.option_values;
+                                  const allowedIds = getAllowedOptionValueIds(
+                                    selectedCustomOptions,
+                                    product,
+                                    option
+                                  );
+                                  if (allowedIds) {
+                                    filteredOptionValues =
+                                      filteredOptionValues.filter((v) =>
+                                        allowedIds.includes(v.id)
+                                      );
                                   }
-                                  variant="ghost"
-                                  borderRadius="lg"
-                                  aria-label="Decrease quantity"
-                                />
 
-                                <Input
-                                  type="number"
-                                  min={
-                                    pricingConfig?.quantity_constraints
-                                      ?.min_order_quantity || 1
-                                  }
-                                  max={
-                                    pricingConfig?.quantity_constraints
-                                      ?.max_order_quantity || 9999
-                                  }
-                                  value={quantity}
-                                  onChange={(e) =>
-                                    handleQuantityChange(e.target.value)
-                                  }
-                                  fontSize="lg"
-                                  fontWeight="bold"
-                                  color="gray.800"
-                                  textAlign="center"
-                                  border="none"
-                                  bg="transparent"
-                                  p={0}
-                                  _focus={{ boxShadow: "none" }}
-                                />
+                                  // Sort filtered option values by sort_order
+                                  filteredOptionValues =
+                                    filteredOptionValues.sort(
+                                      (a, b) =>
+                                        (a.sort_order || 0) -
+                                        (b.sort_order || 0)
+                                    );
 
-                                <IconButton
-                                  icon={<FaPlus />}
-                                  size="sm"
-                                  onClick={handleQuantityIncrement}
-                                  isDisabled={
-                                    quantity >=
-                                    (pricingConfig?.quantity_constraints
-                                      ?.max_order_quantity || 9999)
-                                  }
-                                  variant="ghost"
-                                  borderRadius="lg"
-                                  aria-label="Increase quantity"
-                                />
-                              </HStack>
-                            </Box>
-
-                            <Button
-                              color="white"
-                              fontFamily="Airbnb Cereal VF"
-                              size="sm"
-                              bg="#000000ff"
-                              _hover={{ bg: "#df0000" }}
-                              _focus={{ bg: "#df0000" }}
-                              _active={{ bg: "#df0000" }}
-                              onClick={handleAddToCart}
-                              isDisabled={!product?.is_available_on_stock}
-                            >
-                              Ajouter au panier
-                            </Button>
-                          </VStack>
-                        </Box>
-                      </Box>
-                    </Heading>
-                  </Box>
-
-                  {Array.isArray(product?.product_services) &&
-                    product?.product_services.length > 0 && (
-                      <Box mb={0} p="3">
-                        <Heading
-                          size="sm"
-                          mb={4}
-                          color="gray.800"
-                          fontWeight="500"
-                          letterSpacing="tight"
-                          fontFamily="Bogle"
-                        >
-                          Services optionnels du produit
-                        </Heading>
-
-                        <VStack
-                          align="stretch"
-                          spacing={3}
-                          bg="#fff"
-                          p="2"
-                          rounded="lg"
-                        >
-                          {product.product_services
-                            .filter((service) => !service.is_required)
-                            .map((service) => (
-                              <Card
-                                key={service.id}
-                                p={0}
-                                borderRadius="lg"
-                                border="1px"
-                                borderColor={
-                                  selectedServices.includes(service.id)
-                                    ? "gray.50"
-                                    : "gray.50"
-                                }
-                                bg={"transparent"}
-                                shadow="none"
-                                transition="all 0.2s"
-                                cursor="pointer"
-                                onClick={() => handleServiceToggle(service.id)}
-                              >
-                                <HStack justify="space-between" align="center">
-                                  <HStack>
-                                    <Checkbox
-                                      isChecked={selectedServices.includes(
-                                        service.id
-                                      )}
-                                      onChange={() =>
-                                        handleServiceToggle(service.id)
-                                      }
-                                      colorScheme="blue"
-                                    />
-                                    <VStack align="start" spacing={0}>
+                                  return (
+                                    <Box
+                                      key={option.id}
+                                      p={1}
+                                      borderRadius="md"
+                                      bg="white"
+                                      shadow="none"
+                                      border="0px"
+                                      borderColor="gray.200"
+                                    >
                                       <Text
-                                        fontWeight="500"
-                                        fontSize="xs"
-                                        fontFamily="Bogle"
+                                        fontWeight="400"
+                                        fontSize="sm"
+                                        fontFamily={"Bogle"}
+                                        mb={3}
+                                        color="gray.900"
                                       >
-                                        {service.title}
+                                        {option.option_name}
+                                        {option.is_required && (
+                                          <Text
+                                            as="span"
+                                            color="red.500"
+                                            ml={1}
+                                          >
+                                            *
+                                          </Text>
+                                        )}
                                       </Text>
-                                    </VStack>
-                                  </HStack>
+
+                                      {option.option_type === "radio" && (
+                                        <RadioGroup
+                                          value={
+                                            selectedCustomOptions[option.id]
+                                              ?.valueId || ""
+                                          }
+                                          onChange={(valueId) => {
+                                            const selectedValue =
+                                              filteredOptionValues.find(
+                                                (v) => v.id === valueId
+                                              );
+                                            if (selectedValue) {
+                                              handleCustomOptionChange(
+                                                option.id,
+                                                valueId,
+                                                selectedValue.option_value,
+                                                selectedValue.price_modifier,
+                                                selectedValue.price_modifier_type
+                                              );
+                                            }
+                                          }}
+                                        >
+                                          <Box
+                                            maxH="300px"
+                                            overflowY="auto"
+                                            overflowX="hidden"
+                                            borderRadius="md"
+                                            css={{
+                                              "&::-webkit-scrollbar": {
+                                                width: "6px",
+                                              },
+                                              "&::-webkit-scrollbar-track": {
+                                                background: "#f7fafc",
+                                                borderRadius: "3px",
+                                              },
+                                              "&::-webkit-scrollbar-thumb": {
+                                                background: "#e2e8f0",
+                                                borderRadius: "3px",
+                                              },
+                                              "&::-webkit-scrollbar-thumb:hover":
+                                                {
+                                                  background: "#cbd5e0",
+                                                },
+                                            }}
+                                          >
+                                            <SimpleGrid
+                                              columns={4}
+                                              spacing={2}
+                                              p={1}
+                                            >
+                                              {filteredOptionValues.map(
+                                                (value) => (
+                                                  <Box
+                                                    key={value.id}
+                                                    as="label"
+                                                    cursor="pointer"
+                                                  >
+                                                    <Card
+                                                      p={0}
+                                                      borderRadius="2.5px"
+                                                      border="0px"
+                                                      borderColor={
+                                                        selectedCustomOptions[
+                                                          option.id
+                                                        ]?.valueId === value.id
+                                                          ? "gray.400"
+                                                          : "gray.400"
+                                                      }
+                                                      _hover={{
+                                                        borderColor: "red.600",
+                                                      }}
+                                                      transition="all 0.2s"
+                                                      bg="transparent"
+                                                      position="relative"
+                                                      minH="100px"
+                                                      maxH="200px"
+                                                      display="flex"
+                                                      shadow="none"
+                                                      flexDirection="column"
+                                                      alignItems="center"
+                                                      justifyContent="center"
+                                                    >
+                                                      {value.image_url && (
+                                                        <Box
+                                                          w="full"
+                                                          h="auto"
+                                                          borderRadius="0px"
+                                                          overflow="hidden"
+                                                          bg="transparent"
+                                                          mb={0}
+                                                        >
+                                                          <Image
+                                                            src={
+                                                              value.image_url
+                                                            }
+                                                            alt={
+                                                              value.display_name ||
+                                                              value.option_value
+                                                            }
+                                                            w="full"
+                                                            h="100px"
+                                                            maxH="100px"
+                                                            objectFit="100%"
+                                                          />
+                                                        </Box>
+                                                      )}
+                                                      <Text
+                                                        fontSize="xs"
+                                                        fontWeight="medium"
+                                                        textAlign="center"
+                                                        noOfLines={2}
+                                                        fontFamily={"Bogle"}
+                                                        mb={1}
+                                                      >
+                                                        {value.display_name ||
+                                                          value.option_value}
+                                                      </Text>
+                                                      {(() => {
+                                                        const priceModifier =
+                                                          parseFloat(
+                                                            value.price_modifier ||
+                                                              0
+                                                          );
+                                                        const pricePerM2 =
+                                                          parseFloat(
+                                                            value.price_per_m2 ||
+                                                              0
+                                                          );
+                                                        const pricePerM3 =
+                                                          parseFloat(
+                                                            value.price_per_m3 ||
+                                                              0
+                                                          );
+                                                        const pricePerLinearMeter =
+                                                          parseFloat(
+                                                            value.price_per_linear_meter ||
+                                                              0
+                                                          );
+                                                        const pricePerMeter =
+                                                          parseFloat(
+                                                            value.price_per_meter ||
+                                                              0
+                                                          );
+
+                                                        let displayPrice = 0;
+                                                        let displayUnit = "";
+
+                                                        switch (
+                                                          value.price_modifier_type
+                                                        ) {
+                                                          case "m2":
+                                                            displayPrice =
+                                                              pricePerM2;
+                                                            displayUnit =
+                                                              "€/m²";
+                                                            break;
+                                                          case "m3":
+                                                            displayPrice =
+                                                              pricePerM3;
+                                                            displayUnit =
+                                                              "€/m³";
+                                                            break;
+                                                          case "linear-meter":
+                                                            displayPrice =
+                                                              pricePerLinearMeter;
+                                                            displayUnit = "€/m";
+                                                            break;
+                                                          case "meter":
+                                                            displayPrice =
+                                                              pricePerMeter;
+                                                            displayUnit = "€/m";
+                                                            break;
+                                                          case "percentage":
+                                                            displayPrice =
+                                                              priceModifier;
+                                                            displayUnit = "%";
+                                                            break;
+                                                          case "fixed":
+                                                          default:
+                                                            displayPrice =
+                                                              priceModifier;
+                                                            displayUnit = "€";
+                                                        }
+
+                                                        if (displayPrice > 0) {
+                                                          return (
+                                                            <Text
+                                                              fontSize="xs"
+                                                              fontWeight="bold"
+                                                              color="green.600"
+                                                              fontFamily={
+                                                                "Bricolage Grotesque"
+                                                              }
+                                                            >
+                                                              {/* +{displayPrice.toFixed(2)}
+                                        {displayUnit} */}
+                                                            </Text>
+                                                          );
+                                                        } else if (
+                                                          displayPrice < 0
+                                                        ) {
+                                                          return (
+                                                            <Text
+                                                              fontSize="xs"
+                                                              fontWeight="bold"
+                                                              color="red.600"
+                                                              fontFamily={
+                                                                "Bricolage Grotesque"
+                                                              }
+                                                            >
+                                                              {/* {displayPrice.toFixed(2)}
+                                        {displayUnit} */}
+                                                            </Text>
+                                                          );
+                                                        } else {
+                                                          return (
+                                                            <Text
+                                                              fontSize="xs"
+                                                              color="gray.500"
+                                                              fontFamily={
+                                                                "Bricolage Grotesque"
+                                                              }
+                                                            >
+                                                              Included
+                                                            </Text>
+                                                          );
+                                                        }
+                                                      })()}
+                                                      <Radio
+                                                        value={value.id}
+                                                        colorScheme="blue"
+                                                        position="absolute"
+                                                        top={2}
+                                                        right={2}
+                                                        size="sm"
+                                                      />
+                                                    </Card>
+                                                  </Box>
+                                                )
+                                              )}
+                                            </SimpleGrid>
+                                          </Box>
+                                        </RadioGroup>
+                                      )}
+
+                                      {option.option_type === "select" && (
+                                        <Select
+                                          placeholder={`Choose ${option.option_name}`}
+                                          size="lg"
+                                          borderRadius="lg"
+                                          value={
+                                            selectedCustomOptions[option.id]
+                                              ?.valueId || ""
+                                          }
+                                          onChange={(e) => {
+                                            const selectedValue =
+                                              filteredOptionValues.find(
+                                                (v) => v.id === e.target.value
+                                              );
+                                            if (selectedValue) {
+                                              handleCustomOptionChange(
+                                                option.id,
+                                                e.target.value,
+                                                selectedValue.option_value,
+                                                selectedValue.price_modifier,
+                                                selectedValue.price_modifier_type
+                                              );
+                                            }
+                                          }}
+                                        >
+                                          {filteredOptionValues.map((value) => (
+                                            <option
+                                              key={value.id}
+                                              value={value.id}
+                                            >
+                                              {value.display_name ||
+                                                value.option_value}
+                                              {parseFloat(
+                                                value.price_modifier
+                                              ) > 0 &&
+                                                (value.price_modifier_type ===
+                                                "percentage"
+                                                  ? ` (+${value.price_modifier}%)`
+                                                  : ` (+${value.price_modifier}€)`)}
+                                            </option>
+                                          ))}
+                                        </Select>
+                                      )}
+                                    </Box>
+                                  );
+                                })}
+                            </VStack>
+                          </Box>
+                        </Box>
+                      )}
+                    <Divider />
+                    <br />
+
+                    {product?.description && (
+                      <Box>
+                        <Text
+                          fontWeight="500"
+                          fontSize="sm"
+                          color="black"
+                          fontFamily="Bricolage Grotesque"
+                          mb={2}
+                        >
+                          À propos de ce produit:
+                        </Text>
+                        <Box
+                          fontWeight="500"
+                          fontSize="sm"
+                          color="black"
+                          fontFamily="Bricolage Grotesque"
+                          sx={{
+                            p: { margin: 0, marginBottom: "0.6em" },
+                            br: { display: "block", marginBottom: "0.6em" },
+                            overflow: "hidden",
+                            display: "-webkit-box",
+                            WebkitBoxOrient: "vertical",
+                            WebkitLineClamp: 5,
+                            maxHeight: "7.5em", // ~5 lines
+                            transition: "max-height 0.3s",
+                          }}
+                          dangerouslySetInnerHTML={{
+                            __html: product.description
+                              ? product.description.replace(
+                                  / style="[^"]*"/g,
+                                  ""
+                                )
+                              : "",
+                          }}
+                        />
+                      </Box>
+                    )}
+
+                    <br />
+                    <Divider />
+
+                    <br />
+
+                    {product?.custom_details.length >= 1 && (
+                      <Text
+                        fontSize={"sm"}
+                        fontWeight={"bold"}
+                        fontFamily={"Bricolage Grotesque"}
+                      >
+                        En un coup d'oeil
+                      </Text>
+                    )}
+
+                    <SimpleGrid
+                      columns={{ base: 1, sm: 2, md: 3 }}
+                      spacing={4}
+                      mb={2}
+                      mt={5}
+                    >
+                      {product?.custom_details?.slice(0, 6).map((detail) => (
+                        <Card
+                          key={detail.key}
+                          p={3}
+                          borderRadius="lg"
+                          border="0px"
+                          borderColor="gray.200"
+                          bg="gray.100"
+                          shadow="sm"
+                        >
+                          <Text
+                            fontSize="xs"
+                            color="gray.500"
+                            fontWeight="semibold"
+                            mb={1}
+                            textAlign={"center"}
+                            fontFamily={"Bricolage Grotesque"}
+                          >
+                            {detail.label}
+                          </Text>
+                          <Text
+                            fontSize="sm"
+                            color="gray.800"
+                            fontWeight="bold"
+                            noOfLines={2}
+                            textAlign={"center"}
+                            fontFamily={"Bricolage Grotesque"}
+                          >
+                            {detail.value}
+                          </Text>
+                        </Card>
+                      ))}
+                    </SimpleGrid>
+
+                    {product?.custom_details &&
+                      product.custom_details.length > 6 && (
+                        <Button
+                          size="sm"
+                          variant="link"
+                          color="blue.600"
+                          fontWeight="semibold"
+                          align="start"
+                          onClick={() => setIsCustomDetailsModalOpen(true)}
+                          mb={4}
+                        >
+                          Tout voir
+                        </Button>
+                      )}
+                  </VStack>
+                </CardBody>
+              </Card>
+            </Box>
+
+            {/* 3 Column */}
+            <Box>
+              <Card
+                shadow="none"
+                borderRadius="2xl"
+                overflow="hidden"
+                border="1px solid rgba(145, 158, 171, 0.2)"
+                bg="rgb(255,255,255)"
+              >
+                <CardBody p={2}>
+                  <VStack align="stretch" spacing={8}>
+                    <Box>
+                      <Heading
+                        fontSize="25px"
+                        mb={0}
+                        color="gray.800"
+                        lineHeight="1.2"
+                        fontFamily="Bogle"
+                      >
+                        <Box mb={0}>
+                          <Box
+                            p={3}
+                            borderRadius="xl"
+                            bg="transparent"
+                            boxShadow="none"
+                            border="0px solid"
+                            borderColor="gray.200"
+                          >
+                            <VStack align="stretch" spacing={3}>
+                              <HStack justify="space-between" align="center">
+                                <VStack align="start" spacing={1}>
                                   <Text
+                                    fontSize="lg"
                                     fontWeight="600"
-                                    color="gray.700"
-                                    fontSize="xs"
-                                    fontFamily="Bogle"
+                                    fontFamily="Airbnb Cereal VF"
                                   >
-                                    +{parseFloat(service.price).toFixed(2)} €
+                                    Prix total: €
+                                    {calculateTotalPrice().toFixed(2)}
+                                  </Text>
+                                  {isCalculating && (
+                                    <HStack>
+                                      <Spinner size="sm" />
+                                      <Text
+                                        fontSize="sm"
+                                        color="gray.600"
+                                        fontFamily="Airbnb Cereal VF"
+                                      >
+                                        Calculatrice...
+                                      </Text>
+                                    </HStack>
+                                  )}
+                                </VStack>
+                              </HStack>
+
+                              <Divider my={0} />
+                              <HStack spacing={2}>
+                                <Text fontSize="sm" color="gray.600">
+                                  TVA incluse ({product?.tax.rate}%)
+                                </Text>
+                              </HStack>
+
+                              <Box>
+                                <HStack justify="space-between" mb={2}>
+                                  <Text
+                                    fontWeight="500"
+                                    fontSize="sm"
+                                    color="black"
+                                    fontFamily="Airbnb Cereal VF"
+                                  >
+                                    SKU:
+                                  </Text>
+                                  <Text
+                                    fontSize="sm"
+                                    fontWeight="500"
+                                    color="black"
+                                  >
+                                    {product?.sku}
                                   </Text>
                                 </HStack>
-                              </Card>
-                            ))}
-                        </VStack>
-                      </Box>
-                    )}
-                </VStack>
-              </CardBody>
-            </Card>
-          </Box>
-        </Grid>
-      </Container>
 
-      <Box bg="white" pl={2} pr={2} display={{ base: "block", md: "none" }}>
-        <Card
-          shadow="none"
-          borderRadius="none"
-          overflow="hidden"
-          bg="gray"
-          sx={{
-            padding: "0 !important",
-          }}
-        >
-          <CardBody
-            bg="white"
+                                <HStack justify="space-between" mb={2}>
+                                  <Text
+                                    fontWeight="500"
+                                    fontSize="sm"
+                                    color="black"
+                                    fontFamily="Airbnb Cereal VF"
+                                  >
+                                    EAN numéro:
+                                  </Text>
+                                  <Text
+                                    fontSize="sm"
+                                    fontWeight="500"
+                                    color="black"
+                                  >
+                                    {product?.ean}
+                                  </Text>
+                                </HStack>
+
+                                <HStack justify="space-between" mb={2}>
+                                  <Text
+                                    fontWeight="500"
+                                    fontSize="sm"
+                                    color="black"
+                                    fontFamily="Airbnb Cereal VF"
+                                  >
+                                    Disponibilité
+                                  </Text>
+                                  <Text
+                                    fontSize="sm"
+                                    fontWeight="500"
+                                    color="black"
+                                  >
+                                    {product?.is_available_on_stock
+                                      ? "🟢"
+                                      : "🔴"}
+                                  </Text>
+                                </HStack>
+
+                                <HStack justify="space-between" mb={2}>
+                                  <Text
+                                    fontWeight="500"
+                                    fontSize="sm"
+                                    color="black"
+                                    fontFamily="Airbnb Cereal VF"
+                                  >
+                                    Taux d'imposition
+                                  </Text>
+                                  <Text
+                                    fontSize="sm"
+                                    fontWeight="500"
+                                    color="black"
+                                  >
+                                    {product?.tax.rate}%
+                                  </Text>
+                                </HStack>
+                              </Box>
+
+                              <Box>
+                                <Text
+                                  fontWeight="500"
+                                  mb={0}
+                                  mt={5}
+                                  fontSize="sm"
+                                  color="gray.900"
+                                  fontFamily="Airbnb Cereal VF"
+                                >
+                                  Quantité
+                                </Text>
+                                <HStack
+                                  maxW="200px"
+                                  bg="transparent"
+                                  borderRadius="xl"
+                                  p={2}
+                                  mt={1}
+                                >
+                                  <IconButton
+                                    icon={<FaMinus />}
+                                    size="sm"
+                                    onClick={handleQuantityDecrement}
+                                    isDisabled={
+                                      quantity <=
+                                      (pricingConfig?.quantity_constraints
+                                        ?.min_order_quantity || 1)
+                                    }
+                                    variant="ghost"
+                                    borderRadius="lg"
+                                    aria-label="Decrease quantity"
+                                  />
+
+                                  <Input
+                                    type="number"
+                                    min={
+                                      pricingConfig?.quantity_constraints
+                                        ?.min_order_quantity || 1
+                                    }
+                                    max={
+                                      pricingConfig?.quantity_constraints
+                                        ?.max_order_quantity || 9999
+                                    }
+                                    value={quantity}
+                                    onChange={(e) =>
+                                      handleQuantityChange(e.target.value)
+                                    }
+                                    fontSize="lg"
+                                    fontWeight="bold"
+                                    color="gray.800"
+                                    textAlign="center"
+                                    border="none"
+                                    bg="transparent"
+                                    p={0}
+                                    _focus={{ boxShadow: "none" }}
+                                  />
+
+                                  <IconButton
+                                    icon={<FaPlus />}
+                                    size="sm"
+                                    onClick={handleQuantityIncrement}
+                                    isDisabled={
+                                      quantity >=
+                                      (pricingConfig?.quantity_constraints
+                                        ?.max_order_quantity || 9999)
+                                    }
+                                    variant="ghost"
+                                    borderRadius="lg"
+                                    aria-label="Increase quantity"
+                                  />
+                                </HStack>
+                              </Box>
+
+                              <Button
+                                color="white"
+                                fontFamily="Airbnb Cereal VF"
+                                size="sm"
+                                bg="#000000ff"
+                                _hover={{ bg: "#df0000" }}
+                                _focus={{ bg: "#df0000" }}
+                                _active={{ bg: "#df0000" }}
+                                onClick={handleAddToCart}
+                                isDisabled={!product?.is_available_on_stock}
+                              >
+                                Ajouter au panier
+                              </Button>
+                            </VStack>
+                          </Box>
+                        </Box>
+                      </Heading>
+                    </Box>
+
+                    {Array.isArray(product?.product_services) &&
+                      product?.product_services.length > 0 && (
+                        <Box mb={0} p="3">
+                          <Heading
+                            size="sm"
+                            mb={4}
+                            color="gray.800"
+                            fontWeight="500"
+                            letterSpacing="tight"
+                            fontFamily="Bogle"
+                          >
+                            Services optionnels du produit
+                          </Heading>
+
+                          <VStack
+                            align="stretch"
+                            spacing={3}
+                            bg="#fff"
+                            p="2"
+                            rounded="lg"
+                          >
+                            {product.product_services
+                              .filter((service) => !service.is_required)
+                              .map((service) => (
+                                <Card
+                                  key={service.id}
+                                  p={0}
+                                  borderRadius="lg"
+                                  border="1px"
+                                  borderColor={
+                                    selectedServices.includes(service.id)
+                                      ? "gray.50"
+                                      : "gray.50"
+                                  }
+                                  bg={"transparent"}
+                                  shadow="none"
+                                  transition="all 0.2s"
+                                  cursor="pointer"
+                                  onClick={() =>
+                                    handleServiceToggle(service.id)
+                                  }
+                                >
+                                  <HStack
+                                    justify="space-between"
+                                    align="center"
+                                  >
+                                    <HStack>
+                                      <Checkbox
+                                        isChecked={selectedServices.includes(
+                                          service.id
+                                        )}
+                                        onChange={() =>
+                                          handleServiceToggle(service.id)
+                                        }
+                                        colorScheme="blue"
+                                      />
+                                      <VStack align="start" spacing={0}>
+                                        <Text
+                                          fontWeight="500"
+                                          fontSize="xs"
+                                          fontFamily="Bogle"
+                                        >
+                                          {service.title}
+                                        </Text>
+                                      </VStack>
+                                    </HStack>
+                                    <Text
+                                      fontWeight="600"
+                                      color="gray.700"
+                                      fontSize="xs"
+                                      fontFamily="Bogle"
+                                    >
+                                      +{parseFloat(service.price).toFixed(2)} €
+                                    </Text>
+                                  </HStack>
+                                </Card>
+                              ))}
+                          </VStack>
+                        </Box>
+                      )}
+                  </VStack>
+                </CardBody>
+              </Card>
+            </Box>
+          </Grid>
+        </Container>
+
+        <Box bg="white" pl={2} pr={2} display={{ base: "block", md: "none" }}>
+          <Card
+            shadow="none"
+            borderRadius="none"
+            overflow="hidden"
+            bg="gray"
             sx={{
               padding: "0 !important",
             }}
           >
-            <VStack
-              align="stretch"
-              spacing={0}
+            <CardBody
+              bg="white"
               sx={{
                 padding: "0 !important",
               }}
             >
-              <Box p={2}>
-                {product?.is_available_on_stock ? (
-                  <Button
-                    size="xs"
-                    bg="black"
-                    _hover={{ bg: "black" }}
-                    _focus={{ bg: "black" }}
-                    _active={{ bg: "black" }}
-                    color="white"
-                    fontFamily="Airbnb Cereal VF"
-                  >
-                    Available
-                  </Button>
-                ) : null}
-
-                {product?.is_discounted ? (
-                  <Button
-                    ml={2}
-                    size="xs"
-                    bg="black"
-                    _hover={{ bg: "black" }}
-                    _focus={{ bg: "black" }}
-                    _active={{ bg: "black" }}
-                    color="white"
-                    fontFamily="Airbnb Cereal VF"
-                  >
-                    Flash Deals
-                  </Button>
-                ) : null}
-
-                {product?.mark_as_new ? (
-                  <Button
-                    ml={2}
-                    size="xs"
-                    bg="black"
-                    _hover={{ bg: "black" }}
-                    _focus={{ bg: "black" }}
-                    _active={{ bg: "black" }}
-                    color="white"
-                    fontFamily="Airbnb Cereal VF"
-                  >
-                    New
-                  </Button>
-                ) : null}
-
-                {product?.discount_percentage_nett >= 25 ? (
-                  <Button
-                    ml={2}
-                    size="xs"
-                    bg="black"
-                    _hover={{ bg: "black" }}
-                    _focus={{ bg: "black" }}
-                    _active={{ bg: "black" }}
-                    color="white"
-                    fontFamily="Airbnb Cereal VF"
-                  >
-                    Big Sale
-                  </Button>
-                ) : null}
-
-                <Heading
-                  mt={2}
-                  fontSize="18px"
-                  mb={4}
-                  color="gray.800"
-                  lineHeight="1.2"
-                  fontFamily={"Airbnb Cereal VF"}
-                >
-                  {product?.title}
-                </Heading>
-              </Box>
-
-              <Card
-                shadow="none"
-                borderRadius="5px"
-                overflow="hidden"
-                mb={0}
-                border="0px solid"
-                borderColor="gray.200"
-                bg="white"
+              <VStack
+                align="stretch"
+                spacing={0}
+                sx={{
+                  padding: "0 !important",
+                }}
               >
-                <CardBody p={0}>
-                  <Grid
-                    templateColumns={{ base: "1fr", md: "120px 1fr" }}
-                    gap={0}
-                  >
-                    {isMobile ? (
-                      <Box w="full" position="relative">
-                        <Box
-                          borderRadius="none"
-                          overflow="hidden"
-                          position="relative"
-                          bg="transparent"
-                          border="0px"
-                          borderColor="gray.200"
-                          w="100%"
-                          h="100%"
-                          maxH="600px"
-                          minH="300px"
-                          p={0}
-                          onTouchStart={handleTouchStart}
-                          onTouchMove={handleTouchMove}
-                          onTouchEnd={handleTouchEnd}
-                        >
-                          <Image
-                            src={
-                              product?.images?.gallery?.[carouselIndex]?.url ||
-                              product?.images?.main_image?.url
-                            }
-                            alt={product?.title}
-                            w="full"
-                            h="full"
-                            objectFit="100%"
-                            minH="300px"
-                            maxH="600px"
-                          />
-                          {/* Carousel navigation arrows */}
-                          {product?.images?.gallery?.length > 1 && (
-                            <>
-                              <IconButton
-                                aria-label="Previous image"
-                                icon={<FaChevronLeft />}
-                                position="absolute"
-                                top="50%"
-                                left="2"
-                                transform="translateY(-50%)"
-                                zIndex={2}
-                                onClick={() => handleCarouselSwipe("left")}
-                                bg="gray.900"
-                                _hover={{ bg: "red.600" }}
-                                borderRadius="full"
-                                size="sm"
-                                color="white"
-                              />
-                              <IconButton
-                                aria-label="Next image"
-                                icon={<FaChevronRight />}
-                                position="absolute"
-                                top="50%"
-                                right="2"
-                                transform="translateY(-50%)"
-                                zIndex={2}
-                                onClick={() => handleCarouselSwipe("right")}
-                                bg="gray.900"
-                                _hover={{ bg: "red.600" }}
-                                borderRadius="full"
-                                size="sm"
-                                color="white"
-                              />
-                            </>
-                          )}
-                          {/* Dots indicator */}
-                          {product?.images?.gallery?.length > 1 && (
-                            <HStack
-                              position="absolute"
-                              bottom="2"
-                              left="50%"
-                              transform="translateX(-50%)"
-                              spacing={1}
-                              zIndex={2}
-                            >
-                              {product?.images.gallery.map((_, idx) => (
-                                <Box
-                                  key={idx}
-                                  w={carouselIndex === idx ? "16px" : "8px"}
-                                  h="8px"
-                                  borderRadius="full"
-                                  bg={
-                                    carouselIndex === idx
-                                      ? "blue.500"
-                                      : "gray.300"
-                                  }
-                                  transition="all 0.2s"
-                                />
-                              ))}
-                            </HStack>
-                          )}
-                        </Box>
-                      </Box>
-                    ) : (
-                      <>
-                        <VStack spacing={3} order={{ base: 2, md: 1 }} py={1}>
-                          {product?.images?.gallery?.map((image, index) => (
-                            <Box
-                              key={index}
-                              w="50px"
-                              h="50px"
-                              borderRadius="xl"
-                              overflow="hidden"
-                              borderWidth="0px"
-                              cursor="pointer"
-                              onClick={() => {
-                                setSelectedImage(index);
-                                setCarouselIndex(index);
-                              }}
-                              transition="all 0.3s ease"
-                              position="relative"
-                              bg="transparent"
-                            >
-                              <Image
-                                src={image.url}
-                                alt={image.alt_text}
-                                w="full"
-                                h="full"
-                                objectFit="cover"
-                              />
-                              {selectedImage === index && (
-                                <Box
-                                  position="absolute"
-                                  top="2"
-                                  right="2"
-                                  w="3"
-                                  h="3"
-                                  bg="blue.500"
-                                  borderRadius="full"
-                                  border="0px"
-                                  borderColor="white"
-                                />
-                              )}
-                            </Box>
-                          ))}
-                        </VStack>
+                <Box p={2}>
+                  {product?.is_available_on_stock ? (
+                    <Button
+                      size="xs"
+                      bg="black"
+                      _hover={{ bg: "black" }}
+                      _focus={{ bg: "black" }}
+                      _active={{ bg: "black" }}
+                      color="white"
+                      fontFamily="Airbnb Cereal VF"
+                    >
+                      Available
+                    </Button>
+                  ) : null}
 
-                        <Box position="relative" order={{ base: 1, md: 2 }}>
+                  {product?.is_discounted ? (
+                    <Button
+                      ml={2}
+                      size="xs"
+                      bg="black"
+                      _hover={{ bg: "black" }}
+                      _focus={{ bg: "black" }}
+                      _active={{ bg: "black" }}
+                      color="white"
+                      fontFamily="Airbnb Cereal VF"
+                    >
+                      Flash Deals
+                    </Button>
+                  ) : null}
+
+                  {product?.mark_as_new ? (
+                    <Button
+                      ml={2}
+                      size="xs"
+                      bg="black"
+                      _hover={{ bg: "black" }}
+                      _focus={{ bg: "black" }}
+                      _active={{ bg: "black" }}
+                      color="white"
+                      fontFamily="Airbnb Cereal VF"
+                    >
+                      New
+                    </Button>
+                  ) : null}
+
+                  {product?.discount_percentage_nett >= 25 ? (
+                    <Button
+                      ml={2}
+                      size="xs"
+                      bg="black"
+                      _hover={{ bg: "black" }}
+                      _focus={{ bg: "black" }}
+                      _active={{ bg: "black" }}
+                      color="white"
+                      fontFamily="Airbnb Cereal VF"
+                    >
+                      Big Sale
+                    </Button>
+                  ) : null}
+
+                  <Heading
+                    mt={2}
+                    fontSize="18px"
+                    mb={4}
+                    color="gray.800"
+                    lineHeight="1.2"
+                    fontFamily={"Airbnb Cereal VF"}
+                  >
+                    {product?.title}
+                  </Heading>
+                </Box>
+
+                <Card
+                  shadow="none"
+                  borderRadius="5px"
+                  overflow="hidden"
+                  mb={0}
+                  border="0px solid"
+                  borderColor="gray.200"
+                  bg="white"
+                >
+                  <CardBody p={0}>
+                    <Grid
+                      templateColumns={{ base: "1fr", md: "120px 1fr" }}
+                      gap={0}
+                    >
+                      {isMobile ? (
+                        <Box w="full" position="relative">
                           <Box
-                            borderRadius="md"
+                            borderRadius="none"
                             overflow="hidden"
-                            onMouseEnter={() => setIsImageZoomed(true)}
-                            onMouseLeave={() => setIsImageZoomed(false)}
-                            onMouseMove={handleImageMouseMove}
                             position="relative"
-                            bg="white"
-                            border="0px solid"
+                            bg="transparent"
+                            border="0px"
                             borderColor="gray.200"
-                            cursor="zoom-in"
-                            width="100%"
-                            minHeight={{
-                              base: "260px",
-                              md: "400px",
-                              lg: "600px",
-                            }}
-                            maxHeight={{
-                              base: "320px",
-                              md: "500px",
-                              lg: "600px",
-                            }}
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            transition="box-shadow 0.2s"
-                            boxShadow="none"
+                            w="100%"
+                            h="100%"
+                            maxH="600px"
+                            minH="300px"
+                            p={0}
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
                           >
                             <Image
                               src={
-                                product?.images?.gallery?.[selectedImage]
+                                product?.images?.gallery?.[carouselIndex]
                                   ?.url || product?.images?.main_image?.url
                               }
                               alt={product?.title}
-                              w="100%"
-                              h="100%"
-                              maxW="100%"
-                              maxH="100%"
-                              minH={{
+                              w="full"
+                              h="full"
+                              objectFit="100%"
+                              minH="300px"
+                              maxH="600px"
+                            />
+                            {/* Carousel navigation arrows */}
+                            {product?.images?.gallery?.length > 1 && (
+                              <>
+                                <IconButton
+                                  aria-label="Previous image"
+                                  icon={<FaChevronLeft />}
+                                  position="absolute"
+                                  top="50%"
+                                  left="2"
+                                  transform="translateY(-50%)"
+                                  zIndex={2}
+                                  onClick={() => handleCarouselSwipe("left")}
+                                  bg="gray.900"
+                                  _hover={{ bg: "red.600" }}
+                                  borderRadius="full"
+                                  size="sm"
+                                  color="white"
+                                />
+                                <IconButton
+                                  aria-label="Next image"
+                                  icon={<FaChevronRight />}
+                                  position="absolute"
+                                  top="50%"
+                                  right="2"
+                                  transform="translateY(-50%)"
+                                  zIndex={2}
+                                  onClick={() => handleCarouselSwipe("right")}
+                                  bg="gray.900"
+                                  _hover={{ bg: "red.600" }}
+                                  borderRadius="full"
+                                  size="sm"
+                                  color="white"
+                                />
+                              </>
+                            )}
+                            {/* Dots indicator */}
+                            {product?.images?.gallery?.length > 1 && (
+                              <HStack
+                                position="absolute"
+                                bottom="2"
+                                left="50%"
+                                transform="translateX(-50%)"
+                                spacing={1}
+                                zIndex={2}
+                              >
+                                {product?.images.gallery.map((_, idx) => (
+                                  <Box
+                                    key={idx}
+                                    w={carouselIndex === idx ? "16px" : "8px"}
+                                    h="8px"
+                                    borderRadius="full"
+                                    bg={
+                                      carouselIndex === idx
+                                        ? "blue.500"
+                                        : "gray.300"
+                                    }
+                                    transition="all 0.2s"
+                                  />
+                                ))}
+                              </HStack>
+                            )}
+                          </Box>
+                        </Box>
+                      ) : (
+                        <>
+                          <VStack spacing={3} order={{ base: 2, md: 1 }} py={1}>
+                            {product?.images?.gallery?.map((image, index) => (
+                              <Box
+                                key={index}
+                                w="50px"
+                                h="50px"
+                                borderRadius="xl"
+                                overflow="hidden"
+                                borderWidth="0px"
+                                cursor="pointer"
+                                onClick={() => {
+                                  setSelectedImage(index);
+                                  setCarouselIndex(index);
+                                }}
+                                transition="all 0.3s ease"
+                                position="relative"
+                                bg="transparent"
+                              >
+                                <Image
+                                  src={image.url}
+                                  alt={image.alt_text}
+                                  w="full"
+                                  h="full"
+                                  objectFit="cover"
+                                />
+                                {selectedImage === index && (
+                                  <Box
+                                    position="absolute"
+                                    top="2"
+                                    right="2"
+                                    w="3"
+                                    h="3"
+                                    bg="blue.500"
+                                    borderRadius="full"
+                                    border="0px"
+                                    borderColor="white"
+                                  />
+                                )}
+                              </Box>
+                            ))}
+                          </VStack>
+
+                          <Box position="relative" order={{ base: 1, md: 2 }}>
+                            <Box
+                              borderRadius="md"
+                              overflow="hidden"
+                              onMouseEnter={() => setIsImageZoomed(true)}
+                              onMouseLeave={() => setIsImageZoomed(false)}
+                              onMouseMove={handleImageMouseMove}
+                              position="relative"
+                              bg="white"
+                              border="0px solid"
+                              borderColor="gray.200"
+                              cursor="zoom-in"
+                              width="100%"
+                              minHeight={{
                                 base: "260px",
                                 md: "400px",
                                 lg: "600px",
                               }}
-                              objectFit="100%"
-                              borderRadius="md"
-                              transition="transform 0.4s"
-                              transform={
-                                isImageZoomed ? "scale(1.5)" : "scale(1)"
-                              }
-                              transformOrigin={`${mousePosition.x}% ${mousePosition.y}%`}
-                              bg="gray.100"
-                            />
+                              maxHeight={{
+                                base: "320px",
+                                md: "500px",
+                                lg: "600px",
+                              }}
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              transition="box-shadow 0.2s"
+                              boxShadow="none"
+                            >
+                              <Image
+                                src={
+                                  product?.images?.gallery?.[selectedImage]
+                                    ?.url || product?.images?.main_image?.url
+                                }
+                                alt={product?.title}
+                                w="100%"
+                                h="100%"
+                                maxW="100%"
+                                maxH="100%"
+                                minH={{
+                                  base: "260px",
+                                  md: "400px",
+                                  lg: "600px",
+                                }}
+                                objectFit="100%"
+                                borderRadius="md"
+                                transition="transform 0.4s"
+                                transform={
+                                  isImageZoomed ? "scale(1.5)" : "scale(1)"
+                                }
+                                transformOrigin={`${mousePosition.x}% ${mousePosition.y}%`}
+                                bg="gray.100"
+                              />
 
-                            {/* Overlay buttons */}
-                            <Box position="absolute" top={4} right={4}>
-                              <HStack spacing={2}>
-                                <IconButton
-                                  icon={<FaExpand />}
-                                  onClick={onImageModalOpen}
-                                  size="md"
-                                  bg="blackAlpha.700"
-                                  color="white"
-                                  _hover={{ bg: "blackAlpha.800" }}
-                                  borderRadius="full"
-                                  shadow="lg"
-                                  aria-label="Expand image"
-                                />
-                              </HStack>
-                            </Box>
-
-                            {/* Badges overlay */}
-                            <Box position="absolute" top={4} left={4}>
-                              <VStack spacing={2} align="flex-start">
-                                {product?.badges?.is_new && (
-                                  <Badge
-                                    colorScheme="green"
-                                    variant="solid"
-                                    fontSize="xs"
-                                    px={3}
-                                    py={1}
-                                    borderRadius="full"
-                                    textTransform="uppercase"
-                                    fontWeight="bold"
-                                    shadow="sm"
-                                  >
-                                    NEW
-                                  </Badge>
-                                )}
-                                {product?.badges?.is_on_sale && (
-                                  <Badge
-                                    colorScheme="red"
-                                    variant="solid"
-                                    fontSize="xs"
-                                    px={3}
-                                    py={1}
-                                    borderRadius="full"
-                                    textTransform="uppercase"
-                                    fontWeight="bold"
-                                    shadow="sm"
-                                  >
-                                    SALE
-                                  </Badge>
-                                )}
-                                {product?.badges?.free_shipping && (
-                                  <Badge
-                                    colorScheme="blue"
-                                    variant="solid"
-                                    fontSize="xs"
-                                    px={3}
-                                    py={1}
-                                    borderRadius="full"
-                                    textTransform="uppercase"
-                                    fontWeight="bold"
-                                    shadow="sm"
-                                  >
-                                    FREE SHIPPING
-                                  </Badge>
-                                )}
-                              </VStack>
-                            </Box>
-
-                            {/* Zoom indicator */}
-                            {isImageZoomed && !is360Mode && (
-                              <Box
-                                position="absolute"
-                                bottom={4}
-                                left={4}
-                                bg="blackAlpha.700"
-                                color="white"
-                                px={3}
-                                py={2}
-                                borderRadius="full"
-                                fontSize="sm"
-                                fontWeight="medium"
-                                shadow="md"
-                              >
+                              {/* Overlay buttons */}
+                              <Box position="absolute" top={4} right={4}>
                                 <HStack spacing={2}>
-                                  <Icon as={FaExpand} fontSize="xs" />
-                                  <Text>Zoomed</Text>
+                                  <IconButton
+                                    icon={<FaExpand />}
+                                    onClick={onImageModalOpen}
+                                    size="md"
+                                    bg="blackAlpha.700"
+                                    color="white"
+                                    _hover={{ bg: "blackAlpha.800" }}
+                                    borderRadius="full"
+                                    shadow="lg"
+                                    aria-label="Expand image"
+                                  />
                                 </HStack>
                               </Box>
-                            )}
+
+                              {/* Badges overlay */}
+                              <Box position="absolute" top={4} left={4}>
+                                <VStack spacing={2} align="flex-start">
+                                  {product?.badges?.is_new && (
+                                    <Badge
+                                      colorScheme="green"
+                                      variant="solid"
+                                      fontSize="xs"
+                                      px={3}
+                                      py={1}
+                                      borderRadius="full"
+                                      textTransform="uppercase"
+                                      fontWeight="bold"
+                                      shadow="sm"
+                                    >
+                                      NEW
+                                    </Badge>
+                                  )}
+                                  {product?.badges?.is_on_sale && (
+                                    <Badge
+                                      colorScheme="red"
+                                      variant="solid"
+                                      fontSize="xs"
+                                      px={3}
+                                      py={1}
+                                      borderRadius="full"
+                                      textTransform="uppercase"
+                                      fontWeight="bold"
+                                      shadow="sm"
+                                    >
+                                      SALE
+                                    </Badge>
+                                  )}
+                                  {product?.badges?.free_shipping && (
+                                    <Badge
+                                      colorScheme="blue"
+                                      variant="solid"
+                                      fontSize="xs"
+                                      px={3}
+                                      py={1}
+                                      borderRadius="full"
+                                      textTransform="uppercase"
+                                      fontWeight="bold"
+                                      shadow="sm"
+                                    >
+                                      FREE SHIPPING
+                                    </Badge>
+                                  )}
+                                </VStack>
+                              </Box>
+
+                              {/* Zoom indicator */}
+                              {isImageZoomed && !is360Mode && (
+                                <Box
+                                  position="absolute"
+                                  bottom={4}
+                                  left={4}
+                                  bg="blackAlpha.700"
+                                  color="white"
+                                  px={3}
+                                  py={2}
+                                  borderRadius="full"
+                                  fontSize="sm"
+                                  fontWeight="medium"
+                                  shadow="md"
+                                >
+                                  <HStack spacing={2}>
+                                    <Icon as={FaExpand} fontSize="xs" />
+                                    <Text>Zoomed</Text>
+                                  </HStack>
+                                </Box>
+                              )}
+                            </Box>
                           </Box>
-                        </Box>
-                      </>
-                    )}
-                  </Grid>
-                </CardBody>
-              </Card>
-            </VStack>
-          </CardBody>
-        </Card>
+                        </>
+                      )}
+                    </Grid>
+                  </CardBody>
+                </Card>
+              </VStack>
+            </CardBody>
+          </Card>
 
-        <Box p={5}>
-          <HStack justify="space-between" mb={2}>
-            <Text
-              fontWeight="500"
-              fontSize="sm"
-              color="black"
-              fontFamily={"Airbnb Cereal VF"}
-            >
-              SKU:
-            </Text>
-            <Text fontSize="sm" fontWeight="500" color="black">
-              {product?.sku}
-            </Text>
-          </HStack>
+          <Box p={5}>
+            <HStack justify="space-between" mb={2}>
+              <Text
+                fontWeight="500"
+                fontSize="sm"
+                color="black"
+                fontFamily={"Airbnb Cereal VF"}
+              >
+                SKU:
+              </Text>
+              <Text fontSize="sm" fontWeight="500" color="black">
+                {product?.sku}
+              </Text>
+            </HStack>
 
-          <HStack justify="space-between" mb={2}>
-            <Text
-              fontWeight="500"
-              fontSize="sm"
-              color="black"
-              fontFamily={"Airbnb Cereal VF"}
-            >
-              EAN number:
-            </Text>
-            <Text fontSize="sm" fontWeight="500" color="black">
-              {product?.ean}
-            </Text>
-          </HStack>
+            <HStack justify="space-between" mb={2}>
+              <Text
+                fontWeight="500"
+                fontSize="sm"
+                color="black"
+                fontFamily={"Airbnb Cereal VF"}
+              >
+                EAN number:
+              </Text>
+              <Text fontSize="sm" fontWeight="500" color="black">
+                {product?.ean}
+              </Text>
+            </HStack>
 
-          <HStack justify="space-between" mb={2}>
-            <Text
-              fontWeight="500"
-              fontSize="sm"
-              color="black"
-              fontFamily={"Airbnb Cereal VF"}
-            >
-              Disponibilité
-            </Text>
+            <HStack justify="space-between" mb={2}>
+              <Text
+                fontWeight="500"
+                fontSize="sm"
+                color="black"
+                fontFamily={"Airbnb Cereal VF"}
+              >
+                Disponibilité
+              </Text>
 
-            {/* <Text fontSize="sm" fontWeight="500" color="black">
+              {/* <Text fontSize="sm" fontWeight="500" color="black">
                   {product.is_available_on_stock ? "🟢" : "🔴"}
                 </Text> */}
 
-            <Image
-              src={
-                product?.is_available_on_stock
-                  ? "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/icons/3dicons-tick-dynamic-color.png"
-                  : "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/icons/no-stock.png"
-              }
-              alt="Availability Icon"
-              boxSize="20px"
-              objectFit="contain"
-              filter={
-                product?.is_available_on_stock ? "grayscale(0)" : "grayscale(1)"
-              }
-            />
-          </HStack>
+              <Image
+                src={
+                  product?.is_available_on_stock
+                    ? "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/icons/3dicons-tick-dynamic-color.png"
+                    : "https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/icons/no-stock.png"
+                }
+                alt="Availability Icon"
+                boxSize="20px"
+                objectFit="contain"
+                filter={
+                  product?.is_available_on_stock
+                    ? "grayscale(0)"
+                    : "grayscale(1)"
+                }
+              />
+            </HStack>
 
-          <HStack justify="space-between" mb={2}>
-            <Text
-              fontWeight="500"
-              fontSize="sm"
-              color="black"
-              fontFamily={"Airbnb Cereal VF"}
-            >
-              Taux d'imposition
-            </Text>
-            <Text fontSize="sm" fontWeight="500" color="black">
-              {product?.tax.rate}%
-            </Text>
-          </HStack>
-        </Box>
+            <HStack justify="space-between" mb={2}>
+              <Text
+                fontWeight="500"
+                fontSize="sm"
+                color="black"
+                fontFamily={"Airbnb Cereal VF"}
+              >
+                Taux d'imposition
+              </Text>
+              <Text fontSize="sm" fontWeight="500" color="black">
+                {product?.tax.rate}%
+              </Text>
+            </HStack>
+          </Box>
 
-        <Box p={4}>
-          {Array.isArray(product?.custom_options) &&
-            product?.custom_options.length > 0 && (
-              <Box mb={6}>
-                <Heading
-                  size="md"
-                  mb={4}
-                  color="gray.800"
-                  fontWeight="500"
-                  letterSpacing="tight"
-                  fontFamily={"Airbnb Cereal VF"}
-                >
-                  Options configurables
-                </Heading>
-                <VStack align="stretch" spacing={5}>
-                  {product?.is_dimensional_pricing && pricingConfig && (
-                    <Box
-                      mb={6}
-                      p={4}
-                      borderWidth={0}
-                      borderRadius="md"
-                      bg="transparent"
-                    >
-                      <Text
-                        fontSize="md"
-                        fontWeight="500"
-                        mb={3}
-                        fontFamily={"Bogle"}
+          <Box p={4}>
+            {Array.isArray(product?.custom_options) &&
+              product?.custom_options.length > 0 && (
+                <Box mb={6}>
+                  <Heading
+                    size="md"
+                    mb={4}
+                    color="gray.800"
+                    fontWeight="500"
+                    letterSpacing="tight"
+                    fontFamily={"Airbnb Cereal VF"}
+                  >
+                    Options configurables
+                  </Heading>
+                  <VStack align="stretch" spacing={5}>
+                    {product?.is_dimensional_pricing && pricingConfig && (
+                      <Box
+                        mb={6}
+                        p={4}
+                        borderWidth={0}
+                        borderRadius="md"
+                        bg="transparent"
                       >
-                        Personnaliser les dimensions
-                      </Text>
-                      <Text
-                        fontSize="sm"
-                        color="gray.600"
-                        mb={4}
-                        fontFamily={"Bogle"}
-                      >
-                        Calculation Type:{" "}
-                        {pricingConfig?.dimensional_calculation_type}
-                      </Text>
+                        <Text
+                          fontSize="md"
+                          fontWeight="500"
+                          mb={3}
+                          fontFamily={"Bogle"}
+                        >
+                          Personnaliser les dimensions
+                        </Text>
+                        <Text
+                          fontSize="sm"
+                          color="gray.600"
+                          mb={4}
+                          fontFamily={"Bogle"}
+                        >
+                          Calculation Type:{" "}
+                          {pricingConfig?.dimensional_calculation_type}
+                        </Text>
 
-                      {/* <VStack spacing={4}>
+                        {/* <VStack spacing={4}>
                         {pricingConfig?.required_dimensions.map((dimension) => (
                           <FormControl key={dimension}>
                             <FormLabel
@@ -3515,392 +4035,408 @@ function CustomerProductPage() {
                         ))}
                       </VStack> */}
 
-                      <VStack spacing={4}>
-                        {pricingConfig?.required_dimensions.map((dimension) => (
-                          <FormControl key={dimension}>
-                            <FormLabel
-                              textTransform="capitalize"
-                              fontSize="sm"
-                              fontWeight="medium"
-                              fontFamily={"Bogle"}
-                            >
-                              {dimensionLabels[dimension] || dimension} (cm)
-                            </FormLabel>
-                            <Input
-                              type="number"
-                              placeholder={`Entrer ${
-                                dimensionLabels[dimension] || dimension
-                              }`}
-                              value={customDimensions[dimension] || ""}
-                              onChange={(e) =>
-                                handleDimensionChange(dimension, e.target.value)
-                              }
-                              min={
-                                pricingConfig.dimension_constraints[dimension]
-                                  ?.min || 0
-                              }
-                              max={
-                                pricingConfig.dimension_constraints[dimension]
-                                  ?.max || undefined
-                              }
-                              size="md"
-                            />
-                            {pricingConfig.dimension_constraints[dimension] && (
-                              <FormHelperText fontSize="xs">
-                                Min:{" "}
-                                {
-                                  pricingConfig.dimension_constraints[dimension]
-                                    .min
-                                }{" "}
-                                - Max:{" "}
-                                {pricingConfig.dimension_constraints[dimension]
-                                  .max || "Pas de limite"}
-                              </FormHelperText>
-                            )}
-                          </FormControl>
-                        ))}
-                      </VStack>
+                        <VStack spacing={4}>
+                          {pricingConfig?.required_dimensions.map(
+                            (dimension) => (
+                              <FormControl key={dimension}>
+                                <FormLabel
+                                  textTransform="capitalize"
+                                  fontSize="sm"
+                                  fontWeight="medium"
+                                  fontFamily={"Bogle"}
+                                >
+                                  {dimensionLabels[dimension] || dimension} (cm)
+                                </FormLabel>
+                                <Input
+                                  type="number"
+                                  placeholder={`Entrer ${
+                                    dimensionLabels[dimension] || dimension
+                                  }`}
+                                  value={customDimensions[dimension] || ""}
+                                  onChange={(e) =>
+                                    handleDimensionChange(
+                                      dimension,
+                                      e.target.value
+                                    )
+                                  }
+                                  min={
+                                    pricingConfig.dimension_constraints[
+                                      dimension
+                                    ]?.min || 0
+                                  }
+                                  max={
+                                    pricingConfig.dimension_constraints[
+                                      dimension
+                                    ]?.max || undefined
+                                  }
+                                  size="md"
+                                />
+                                {pricingConfig.dimension_constraints[
+                                  dimension
+                                ] && (
+                                  <FormHelperText fontSize="xs">
+                                    Min:{" "}
+                                    {
+                                      pricingConfig.dimension_constraints[
+                                        dimension
+                                      ].min
+                                    }{" "}
+                                    - Max:{" "}
+                                    {pricingConfig.dimension_constraints[
+                                      dimension
+                                    ].max || "Pas de limite"}
+                                  </FormHelperText>
+                                )}
+                              </FormControl>
+                            )
+                          )}
+                        </VStack>
 
-                      {calculationError && (
-                        <Alert status="error" mt={4}>
-                          <AlertIcon />
-                          {calculationError}
-                        </Alert>
-                      )}
-                    </Box>
-                  )}
+                        {calculationError && (
+                          <Alert status="error" mt={4}>
+                            <AlertIcon />
+                            {calculationError}
+                          </Alert>
+                        )}
+                      </Box>
+                    )}
 
-                  {product.custom_options
-                    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-                    .map((option) => {
-                      let filteredOptionValues = option.option_values;
-                      const allowedIds = getAllowedOptionValueIds(
-                        selectedCustomOptions,
-                        product,
-                        option
-                      );
-                      if (allowedIds) {
-                        filteredOptionValues = filteredOptionValues.filter(
-                          (v) => allowedIds.includes(v.id)
+                    {product.custom_options
+                      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+                      .map((option) => {
+                        let filteredOptionValues = option.option_values;
+                        const allowedIds = getAllowedOptionValueIds(
+                          selectedCustomOptions,
+                          product,
+                          option
                         );
-                      }
+                        if (allowedIds) {
+                          filteredOptionValues = filteredOptionValues.filter(
+                            (v) => allowedIds.includes(v.id)
+                          );
+                        }
 
-                      // Sort filtered option values by sort_order
-                      filteredOptionValues = filteredOptionValues.sort(
-                        (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
-                      );
-                      return (
-                        <Box key={option.id}>
-                          <Text
-                            fontWeight="500"
-                            fontSize="sm"
-                            fontFamily={"Airbnb Cereal VF"}
-                            mb={3}
-                            color="gray.900"
-                          >
-                            {option?.option_name}
-                            {option?.is_required && (
-                              <Text as="span" color="red.500" ml={1}>
-                                *
-                              </Text>
-                            )}
-                          </Text>
-
-                          {option?.option_type === "radio" && (
-                            <RadioGroup
-                              value={
-                                selectedCustomOptions[option.id]?.valueId || ""
-                              }
-                              onChange={(valueId) => {
-                                const selectedValue = filteredOptionValues.find(
-                                  (v) => v.id === valueId
-                                );
-                                if (selectedValue) {
-                                  handleCustomOptionChange(
-                                    option.id,
-                                    valueId,
-                                    selectedValue.option_value,
-                                    selectedValue.price_modifier,
-                                    selectedValue.price_modifier_type
-                                  );
-                                }
-                              }}
+                        // Sort filtered option values by sort_order
+                        filteredOptionValues = filteredOptionValues.sort(
+                          (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+                        );
+                        return (
+                          <Box key={option.id}>
+                            <Text
+                              fontWeight="500"
+                              fontSize="sm"
+                              fontFamily={"Airbnb Cereal VF"}
+                              mb={3}
+                              color="gray.900"
                             >
-                              <Box
-                                overflowX="auto"
-                                overflowY="hidden"
-                                pb={2}
-                                css={{
-                                  "&::-webkit-scrollbar": {
-                                    height: "6px",
-                                  },
-                                  "&::-webkit-scrollbar-track": {
-                                    background: "#f7fafc",
-                                    borderRadius: "3px",
-                                  },
-                                  "&::-webkit-scrollbar-thumb": {
-                                    background: "#e2e8f0",
-                                    borderRadius: "3px",
-                                  },
-                                  "&::-webkit-scrollbar-thumb:hover": {
-                                    background: "#cbd5e0",
-                                  },
+                              {option?.option_name}
+                              {option?.is_required && (
+                                <Text as="span" color="red.500" ml={1}>
+                                  *
+                                </Text>
+                              )}
+                            </Text>
+
+                            {option?.option_type === "radio" && (
+                              <RadioGroup
+                                value={
+                                  selectedCustomOptions[option.id]?.valueId ||
+                                  ""
+                                }
+                                onChange={(valueId) => {
+                                  const selectedValue =
+                                    filteredOptionValues.find(
+                                      (v) => v.id === valueId
+                                    );
+                                  if (selectedValue) {
+                                    handleCustomOptionChange(
+                                      option.id,
+                                      valueId,
+                                      selectedValue.option_value,
+                                      selectedValue.price_modifier,
+                                      selectedValue.price_modifier_type
+                                    );
+                                  }
                                 }}
                               >
-                                <HStack spacing={3} align="stretch">
-                                  {filteredOptionValues.map((value) => (
-                                    <Box
-                                      key={value.id}
-                                      as="label"
-                                      cursor="pointer"
-                                      minW="110px"
-                                      maxW="110px"
-                                      flexShrink={0}
-                                    >
-                                      <Card
-                                        p={0}
-                                        borderRadius="2.5px"
-                                        border="0px"
-                                        borderColor={
-                                          selectedCustomOptions[option.id]
-                                            ?.valueId === value.id
-                                            ? "gray.400"
-                                            : "gray.400"
-                                        }
-                                        _hover={{
-                                          borderColor: "red.600",
-                                        }}
-                                        transition="all 0.2s"
-                                        bg="transparent"
-                                        position="relative"
-                                        minH="100px"
-                                        maxH="200px"
-                                        display="flex"
-                                        shadow="none"
-                                        flexDirection="column"
-                                        alignItems="center"
-                                        justifyContent="center"
+                                <Box
+                                  overflowX="auto"
+                                  overflowY="hidden"
+                                  pb={2}
+                                  css={{
+                                    "&::-webkit-scrollbar": {
+                                      height: "6px",
+                                    },
+                                    "&::-webkit-scrollbar-track": {
+                                      background: "#f7fafc",
+                                      borderRadius: "3px",
+                                    },
+                                    "&::-webkit-scrollbar-thumb": {
+                                      background: "#e2e8f0",
+                                      borderRadius: "3px",
+                                    },
+                                    "&::-webkit-scrollbar-thumb:hover": {
+                                      background: "#cbd5e0",
+                                    },
+                                  }}
+                                >
+                                  <HStack spacing={3} align="stretch">
+                                    {filteredOptionValues.map((value) => (
+                                      <Box
+                                        key={value.id}
+                                        as="label"
+                                        cursor="pointer"
+                                        minW="110px"
+                                        maxW="110px"
+                                        flexShrink={0}
                                       >
-                                        {value.image_url && (
-                                          <Box
-                                            w="full"
-                                            h="auto"
-                                            borderRadius="0px"
-                                            overflow="hidden"
-                                            bg="transparent"
-                                            mb={0}
-                                          >
-                                            <Image
-                                              src={value.image_url}
-                                              alt={
-                                                value.display_name ||
-                                                value.option_value
-                                              }
-                                              w="full"
-                                              h="100px"
-                                              maxH="100px"
-                                              objectFit="100%"
-                                            />
-                                          </Box>
-                                        )}
-                                        <Text
-                                          fontSize="xs"
-                                          fontWeight="medium"
-                                          textAlign="center"
-                                          noOfLines={2}
-                                          fontFamily={"Airbnb Cereal VF"}
-                                          mb={1}
+                                        <Card
+                                          p={0}
+                                          borderRadius="2.5px"
+                                          border="0px"
+                                          borderColor={
+                                            selectedCustomOptions[option.id]
+                                              ?.valueId === value.id
+                                              ? "gray.400"
+                                              : "gray.400"
+                                          }
+                                          _hover={{
+                                            borderColor: "red.600",
+                                          }}
+                                          transition="all 0.2s"
+                                          bg="transparent"
+                                          position="relative"
+                                          minH="100px"
+                                          maxH="200px"
+                                          display="flex"
+                                          shadow="none"
+                                          flexDirection="column"
+                                          alignItems="center"
+                                          justifyContent="center"
                                         >
-                                          {value.display_name ||
-                                            value.option_value}
-                                        </Text>
-                                        {(() => {
-                                          const priceModifier = parseFloat(
-                                            value.price_modifier || 0
-                                          );
-                                          const pricePerM2 = parseFloat(
-                                            value.price_per_m2 || 0
-                                          );
-                                          const pricePerM3 = parseFloat(
-                                            value.price_per_m3 || 0
-                                          );
-                                          const pricePerLinearMeter =
-                                            parseFloat(
-                                              value.price_per_linear_meter || 0
+                                          {value.image_url && (
+                                            <Box
+                                              w="full"
+                                              h="auto"
+                                              borderRadius="0px"
+                                              overflow="hidden"
+                                              bg="transparent"
+                                              mb={0}
+                                            >
+                                              <Image
+                                                src={value.image_url}
+                                                alt={
+                                                  value.display_name ||
+                                                  value.option_value
+                                                }
+                                                w="full"
+                                                h="100px"
+                                                maxH="100px"
+                                                objectFit="100%"
+                                              />
+                                            </Box>
+                                          )}
+                                          <Text
+                                            fontSize="xs"
+                                            fontWeight="medium"
+                                            textAlign="center"
+                                            noOfLines={2}
+                                            fontFamily={"Airbnb Cereal VF"}
+                                            mb={1}
+                                          >
+                                            {value.display_name ||
+                                              value.option_value}
+                                          </Text>
+                                          {(() => {
+                                            const priceModifier = parseFloat(
+                                              value.price_modifier || 0
                                             );
-                                          const pricePerMeter = parseFloat(
-                                            value.price_per_meter || 0
-                                          );
+                                            const pricePerM2 = parseFloat(
+                                              value.price_per_m2 || 0
+                                            );
+                                            const pricePerM3 = parseFloat(
+                                              value.price_per_m3 || 0
+                                            );
+                                            const pricePerLinearMeter =
+                                              parseFloat(
+                                                value.price_per_linear_meter ||
+                                                  0
+                                              );
+                                            const pricePerMeter = parseFloat(
+                                              value.price_per_meter || 0
+                                            );
 
-                                          let displayPrice = 0;
-                                          let displayUnit = "";
+                                            let displayPrice = 0;
+                                            let displayUnit = "";
 
-                                          switch (value.price_modifier_type) {
-                                            case "m2":
-                                              displayPrice = pricePerM2;
-                                              displayUnit = "€/m²";
-                                              break;
-                                            case "m3":
-                                              displayPrice = pricePerM3;
-                                              displayUnit = "€/m³";
-                                              break;
-                                            case "linear-meter":
-                                              displayPrice =
-                                                pricePerLinearMeter;
-                                              displayUnit = "€/m";
-                                              break;
-                                            case "meter":
-                                              displayPrice = pricePerMeter;
-                                              displayUnit = "€/m";
-                                              break;
-                                            case "percentage":
-                                              displayPrice = priceModifier;
-                                              displayUnit = "%";
-                                              break;
-                                            case "fixed":
-                                            default:
-                                              displayPrice = priceModifier;
-                                              displayUnit = "€";
-                                          }
+                                            switch (value.price_modifier_type) {
+                                              case "m2":
+                                                displayPrice = pricePerM2;
+                                                displayUnit = "€/m²";
+                                                break;
+                                              case "m3":
+                                                displayPrice = pricePerM3;
+                                                displayUnit = "€/m³";
+                                                break;
+                                              case "linear-meter":
+                                                displayPrice =
+                                                  pricePerLinearMeter;
+                                                displayUnit = "€/m";
+                                                break;
+                                              case "meter":
+                                                displayPrice = pricePerMeter;
+                                                displayUnit = "€/m";
+                                                break;
+                                              case "percentage":
+                                                displayPrice = priceModifier;
+                                                displayUnit = "%";
+                                                break;
+                                              case "fixed":
+                                              default:
+                                                displayPrice = priceModifier;
+                                                displayUnit = "€";
+                                            }
 
-                                          if (displayPrice > 0) {
-                                            return (
-                                              <Text
-                                                fontSize="xs"
-                                                fontWeight="bold"
-                                                color="green.600"
-                                                fontFamily="Bogle"
-                                              >
-                                                {/* +{displayPrice.toFixed(2)}
+                                            if (displayPrice > 0) {
+                                              return (
+                                                <Text
+                                                  fontSize="xs"
+                                                  fontWeight="bold"
+                                                  color="green.600"
+                                                  fontFamily="Bogle"
+                                                >
+                                                  {/* +{displayPrice.toFixed(2)}
                                             {displayUnit} */}
-                                              </Text>
-                                            );
-                                          } else if (displayPrice < 0) {
-                                            return (
-                                              <Text
-                                                fontSize="xs"
-                                                fontWeight="bold"
-                                                color="red.600"
-                                                fontFamily="Bogle"
-                                              >
-                                                {/* {displayPrice.toFixed(2)}
+                                                </Text>
+                                              );
+                                            } else if (displayPrice < 0) {
+                                              return (
+                                                <Text
+                                                  fontSize="xs"
+                                                  fontWeight="bold"
+                                                  color="red.600"
+                                                  fontFamily="Bogle"
+                                                >
+                                                  {/* {displayPrice.toFixed(2)}
                                             {displayUnit} */}
-                                              </Text>
-                                            );
-                                          } else {
-                                            return (
-                                              <Text
-                                                fontSize="xs"
-                                                color="gray.500"
-                                                fontFamily="Bogle"
-                                              >
-                                                Included
-                                              </Text>
-                                            );
-                                          }
-                                        })()}
-                                        <Radio
-                                          value={value.id}
-                                          colorScheme="blue"
-                                          position="absolute"
-                                          top={2}
-                                          right={2}
-                                          size="sm"
-                                        />
-                                      </Card>
-                                    </Box>
-                                  ))}
-                                </HStack>
-                              </Box>
-                            </RadioGroup>
-                          )}
+                                                </Text>
+                                              );
+                                            } else {
+                                              return (
+                                                <Text
+                                                  fontSize="xs"
+                                                  color="gray.500"
+                                                  fontFamily="Bogle"
+                                                >
+                                                  Included
+                                                </Text>
+                                              );
+                                            }
+                                          })()}
+                                          <Radio
+                                            value={value.id}
+                                            colorScheme="blue"
+                                            position="absolute"
+                                            top={2}
+                                            right={2}
+                                            size="sm"
+                                          />
+                                        </Card>
+                                      </Box>
+                                    ))}
+                                  </HStack>
+                                </Box>
+                              </RadioGroup>
+                            )}
 
-                          {option.option_type === "select" && (
-                            <Select
-                              placeholder={`Choose ${option.option_name}`}
-                              size="md"
-                              borderRadius="md"
-                              value={
-                                selectedCustomOptions[option.id]?.valueId || ""
-                              }
-                              onChange={(e) => {
-                                const selectedValue =
-                                  option.option_values?.find(
-                                    (v) => v.id === e.target.value
-                                  );
-                                if (selectedValue) {
-                                  handleCustomOptionChange(
-                                    option.id,
-                                    e.target.value,
-                                    selectedValue.option_value,
-                                    selectedValue.price_modifier,
-                                    selectedValue.price_modifier_type
-                                  );
+                            {option.option_type === "select" && (
+                              <Select
+                                placeholder={`Choose ${option.option_name}`}
+                                size="md"
+                                borderRadius="md"
+                                value={
+                                  selectedCustomOptions[option.id]?.valueId ||
+                                  ""
                                 }
-                              }}
-                            >
-                              {option.option_values?.map((value) => (
-                                <option key={value.id} value={value.id}>
-                                  {value.display_name || value.option_value}
-                                  {parseFloat(value.price_modifier) > 0 &&
-                                    (value.price_modifier_type === "percentage"
-                                      ? ` (+${value.price_modifier}%)`
-                                      : ` (+${value.price_modifier}€)`)}
-                                </option>
-                              ))}
-                            </Select>
-                          )}
-                        </Box>
-                      );
+                                onChange={(e) => {
+                                  const selectedValue =
+                                    option.option_values?.find(
+                                      (v) => v.id === e.target.value
+                                    );
+                                  if (selectedValue) {
+                                    handleCustomOptionChange(
+                                      option.id,
+                                      e.target.value,
+                                      selectedValue.option_value,
+                                      selectedValue.price_modifier,
+                                      selectedValue.price_modifier_type
+                                    );
+                                  }
+                                }}
+                              >
+                                {option.option_values?.map((value) => (
+                                  <option key={value.id} value={value.id}>
+                                    {value.display_name || value.option_value}
+                                    {parseFloat(value.price_modifier) > 0 &&
+                                      (value.price_modifier_type ===
+                                      "percentage"
+                                        ? ` (+${value.price_modifier}%)`
+                                        : ` (+${value.price_modifier}€)`)}
+                                  </option>
+                                ))}
+                              </Select>
+                            )}
+                          </Box>
+                        );
+                      })}
+                  </VStack>
+                </Box>
+              )}
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <Box p={4}>
+              <Divider mb={4} />
+
+              {/* Mobile Total Price Display */}
+              <VStack align="stretch" spacing={4}>
+                <HStack justify="space-between" align="center">
+                  <Text
+                    fontSize="lg"
+                    fontWeight="bold"
+                    color="gray.800"
+                    fontFamily="Airbnb Cereal VF"
+                  >
+                    Prix total:
+                  </Text>
+                  <Text
+                    fontSize="xl"
+                    fontWeight="bold"
+                    color="gray.700"
+                    fontFamily="Airbnb Cereal VF"
+                  >
+                    {calculateTotalPrice().toLocaleString("fr-FR", {
+                      style: "currency",
+                      currency: "EUR",
+                      minimumFractionDigits: 2,
                     })}
-                </VStack>
-              </Box>
-            )}
-        </Box>
-
-        <Divider />
-
-        <Box>
-          <Box p={4}>
-            <Divider mb={4} />
-
-            {/* Mobile Total Price Display */}
-            <VStack align="stretch" spacing={4}>
-              <HStack justify="space-between" align="center">
-                <Text
-                  fontSize="lg"
-                  fontWeight="bold"
-                  color="gray.800"
-                  fontFamily="Airbnb Cereal VF"
-                >
-                  Prix total:
-                </Text>
-                <Text
-                  fontSize="xl"
-                  fontWeight="bold"
-                  color="gray.700"
-                  fontFamily="Airbnb Cereal VF"
-                >
-                  {calculateTotalPrice().toLocaleString("fr-FR", {
-                    style: "currency",
-                    currency: "EUR",
-                    minimumFractionDigits: 2,
-                  })}
-                </Text>
-              </HStack>
-
-              {/* Mobile Calculation Loading */}
-              {isCalculating && (
-                <HStack justify="center">
-                  <Spinner size="sm" />
-                  <Text fontSize="sm" color="gray.600">
-                    Calculating...
                   </Text>
                 </HStack>
-              )}
 
-              {/* Mobile Pricing Breakdown */}
-              {/* {pricingData?.pricing && (
+                {/* Mobile Calculation Loading */}
+                {isCalculating && (
+                  <HStack justify="center">
+                    <Spinner size="sm" />
+                    <Text fontSize="sm" color="gray.600">
+                      Calculating...
+                    </Text>
+                  </HStack>
+                )}
+
+                {/* Mobile Pricing Breakdown */}
+                {/* {pricingData?.pricing && (
                 <VStack
                   align="stretch"
                   spacing={2}
@@ -3959,10 +4495,10 @@ function CustomerProductPage() {
                 </VStack>
               )} */}
 
-              {/* Mobile Discount Display */}
-              {product?.pricing.is_discounted && (
-                <VStack align="stretch" spacing={2}>
-                  {/* <HStack justify="space-between">
+                {/* Mobile Discount Display */}
+                {product?.pricing.is_discounted && (
+                  <VStack align="stretch" spacing={2}>
+                    {/* <HStack justify="space-between">
                     <Text
                       fontSize="sm"
                       color="gray.500"
@@ -3985,547 +4521,565 @@ function CustomerProductPage() {
                     </Text>
                   </HStack> */}
 
-                  <Badge
-                    fontSize="sm"
-                    px={2}
-                    py={1}
-                    borderRadius="full"
-                    fontWeight="bold"
-                    bg="red.500"
-                    color="white"
-                    alignSelf="flex-start"
-                  >
-                    -
-                    {product?.pricing.discount.percentage_nett ||
-                      product?.pricing.discount.percentage_gross}
-                    % OFF
-                  </Badge>
+                    <Badge
+                      fontSize="sm"
+                      px={2}
+                      py={1}
+                      borderRadius="full"
+                      fontWeight="bold"
+                      bg="red.500"
+                      color="white"
+                      alignSelf="flex-start"
+                    >
+                      -
+                      {product?.pricing.discount.percentage_nett ||
+                        product?.pricing.discount.percentage_gross}
+                      % OFF
+                    </Badge>
+                  </VStack>
+                )}
+
+                {/* Mobile VAT Info */}
+                <VStack align="stretch" spacing={1}>
+                  <HStack justify="space-between">
+                    <Text fontSize="sm" color="gray.600">
+                      TVA incluse ({product?.tax.rate}%)
+                    </Text>
+                  </HStack>
                 </VStack>
+              </VStack>
+            </Box>
+
+            {/* Services of Product */}
+            <br />
+            {Array.isArray(product?.product_services) &&
+              product?.product_services.length > 0 && (
+                <Box mb={0} p="0">
+                  <Heading
+                    size="sm"
+                    mb={4}
+                    color="gray.800"
+                    fontWeight="500"
+                    letterSpacing="tight"
+                    fontFamily="Airbnb Cereal VF"
+                  >
+                    Optional Services of Product
+                  </Heading>
+
+                  <VStack
+                    align="stretch"
+                    spacing={3}
+                    bg="#fff"
+                    p="2"
+                    rounded="lg"
+                  >
+                    {product.product_services
+                      .filter((service) => !service.is_required)
+                      .map((service) => (
+                        <Card
+                          key={service.id}
+                          p={0}
+                          borderRadius="lg"
+                          border="1px"
+                          borderColor={
+                            selectedServices.includes(service.id)
+                              ? "gray.50"
+                              : "gray.50"
+                          }
+                          bg={"transparent"}
+                          shadow="none"
+                          transition="all 0.2s"
+                          cursor="pointer"
+                          onClick={() => handleServiceToggle(service.id)}
+                        >
+                          <HStack justify="space-between" align="center">
+                            <HStack>
+                              <Checkbox
+                                isChecked={selectedServices.includes(
+                                  service.id
+                                )}
+                                onChange={() => handleServiceToggle(service.id)}
+                                colorScheme="blue"
+                              />
+                              <VStack align="start" spacing={0}>
+                                <Text
+                                  fontWeight="500"
+                                  fontSize="xs"
+                                  fontFamily="Airbnb Cereal VF"
+                                >
+                                  {service.title}
+                                </Text>
+                              </VStack>
+                            </HStack>
+                            <Text
+                              fontWeight="600"
+                              color="gray.700"
+                              fontSize="xs"
+                              fontFamily="Airbnb Cereal VF"
+                            >
+                              +{parseFloat(service.price).toFixed(2)} €
+                            </Text>
+                          </HStack>
+                        </Card>
+                      ))}
+                  </VStack>
+                </Box>
               )}
 
-              {/* Mobile VAT Info */}
-              <VStack align="stretch" spacing={1}>
-                <HStack justify="space-between">
-                  <Text fontSize="sm" color="gray.600">
-                    TVA incluse ({product?.tax.rate}%)
-                  </Text>
-                </HStack>
-              </VStack>
-            </VStack>
-          </Box>
-
-          {/* Services of Product */}
-          <br />
-          {Array.isArray(product?.product_services) &&
-            product?.product_services.length > 0 && (
-              <Box mb={0} p="0">
-                <Heading
-                  size="sm"
-                  mb={4}
-                  color="gray.800"
-                  fontWeight="500"
-                  letterSpacing="tight"
-                  fontFamily="Airbnb Cereal VF"
+            {/* Add to Cart and Quantity */}
+            <HStack spacing={2} w="full" align="stretch" mt={5}>
+              <Box w="30%">
+                <Text
+                  fontWeight="semibold"
+                  mb={2}
+                  fontSize="sm"
+                  color="gray.900"
                 >
-                  Optional Services of Product
-                </Heading>
-
-                <VStack
-                  align="stretch"
-                  spacing={3}
-                  bg="#fff"
-                  p="2"
-                  rounded="lg"
-                >
-                  {product.product_services
-                    .filter((service) => !service.is_required)
-                    .map((service) => (
-                      <Card
-                        key={service.id}
-                        p={0}
-                        borderRadius="lg"
-                        border="1px"
-                        borderColor={
-                          selectedServices.includes(service.id)
-                            ? "gray.50"
-                            : "gray.50"
-                        }
-                        bg={"transparent"}
-                        shadow="none"
-                        transition="all 0.2s"
-                        cursor="pointer"
-                        onClick={() => handleServiceToggle(service.id)}
-                      >
-                        <HStack justify="space-between" align="center">
-                          <HStack>
-                            <Checkbox
-                              isChecked={selectedServices.includes(service.id)}
-                              onChange={() => handleServiceToggle(service.id)}
-                              colorScheme="blue"
-                            />
-                            <VStack align="start" spacing={0}>
-                              <Text
-                                fontWeight="500"
-                                fontSize="xs"
-                                fontFamily="Airbnb Cereal VF"
-                              >
-                                {service.title}
-                              </Text>
-                            </VStack>
-                          </HStack>
-                          <Text
-                            fontWeight="600"
-                            color="gray.700"
-                            fontSize="xs"
-                            fontFamily="Airbnb Cereal VF"
-                          >
-                            +{parseFloat(service.price).toFixed(2)} €
-                          </Text>
-                        </HStack>
-                      </Card>
-                    ))}
+                  Quantité
+                </Text>
+                <VStack spacing={0} align="stretch">
+                  <HStack
+                    w="full"
+                    bg="gray.50"
+                    borderRadius="lg"
+                    py={1}
+                    border="1px"
+                    borderColor="gray.200"
+                  >
+                    <IconButton
+                      icon={<FaMinus />}
+                      size="xs"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      isDisabled={quantity <= 1}
+                      variant="ghost"
+                      borderRadius="md"
+                      aria-label="Decrease quantity"
+                      minW="25px"
+                      h="25px"
+                    />
+                    <Box
+                      flex={1}
+                      textAlign="center"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      bg="transparent"
+                    >
+                      <Input
+                        type="number"
+                        min={1}
+                        max={999}
+                        value={quantity}
+                        onChange={(e) => {
+                          const val = Math.max(
+                            1,
+                            Math.min(999, parseInt(e.target.value) || 1)
+                          );
+                          setQuantity(val);
+                        }}
+                        fontSize="lg"
+                        fontWeight="bold"
+                        color="gray.800"
+                        textAlign="center"
+                        border="none"
+                        bg="transparent"
+                        p={1}
+                        h="32px"
+                        w="full"
+                        _focus={{
+                          boxShadow: "0 0 0 1px rgba(66, 153, 225, 0.6)",
+                          bg: "white",
+                          borderRadius: "md",
+                        }}
+                        _hover={{
+                          bg: "white",
+                          borderRadius: "md",
+                        }}
+                        fontFamily="Bogle"
+                      />
+                    </Box>
+                    <IconButton
+                      icon={<FaPlus />}
+                      size="xs"
+                      onClick={() => setQuantity(quantity + 1)}
+                      variant="ghost"
+                      borderRadius="md"
+                      aria-label="Increase quantity"
+                      minW="25px"
+                      h="25px"
+                    />
+                  </HStack>
                 </VStack>
               </Box>
+
+              <Box w="70%" alignSelf="flex-end">
+                <Button
+                  color="white"
+                  fontFamily="Airbnb Cereal VF"
+                  size="md"
+                  bg="#000000ff"
+                  _hover={{ bg: "#000000ff" }}
+                  _focus={{ bg: "#000000ff" }}
+                  _active={{ bg: "#000000ff" }}
+                  w="full"
+                  h="auto"
+                  py={3}
+                  onClick={handleAddToCart}
+                >
+                  Ajouter au panier
+                </Button>
+              </Box>
+            </HStack>
+
+            {/* At a glance */}
+            {product?.custom_details.length >= 1 && (
+              <Text
+                fontSize={"md"}
+                fontWeight={"600"}
+                fontFamily="Airbnb Cereal VF"
+                mt={5}
+              >
+                At a glance
+              </Text>
             )}
 
-          {/* Add to Cart and Quantity */}
-          <HStack spacing={2} w="full" align="stretch" mt={5}>
-            <Box w="30%">
-              <Text fontWeight="semibold" mb={2} fontSize="sm" color="gray.900">
-                Quantité
-              </Text>
-              <VStack spacing={0} align="stretch">
-                <HStack
-                  w="full"
-                  bg="gray.50"
+            <SimpleGrid columns={{ base: 2 }} spacing={4} mb={2} mt={5}>
+              {product?.custom_details?.slice(0, 6).map((detail) => (
+                <Card
+                  key={detail.key}
+                  p={3}
                   borderRadius="lg"
-                  py={1}
-                  border="1px"
+                  border="0px"
                   borderColor="gray.200"
+                  bg="gray.100"
+                  shadow="sm"
                 >
-                  <IconButton
-                    icon={<FaMinus />}
-                    size="xs"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    isDisabled={quantity <= 1}
-                    variant="ghost"
-                    borderRadius="md"
-                    aria-label="Decrease quantity"
-                    minW="25px"
-                    h="25px"
-                  />
-                  <Box
-                    flex={1}
-                    textAlign="center"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    bg="transparent"
+                  <Text
+                    fontSize="xs"
+                    color="gray.500"
+                    fontWeight="500"
+                    mb={1}
+                    textAlign={"center"}
+                    fontFamily="Airbnb Cereal VF"
                   >
-                    <Input
-                      type="number"
-                      min={1}
-                      max={999}
-                      value={quantity}
-                      onChange={(e) => {
-                        const val = Math.max(
-                          1,
-                          Math.min(999, parseInt(e.target.value) || 1)
-                        );
-                        setQuantity(val);
-                      }}
-                      fontSize="lg"
-                      fontWeight="bold"
-                      color="gray.800"
-                      textAlign="center"
-                      border="none"
-                      bg="transparent"
-                      p={1}
-                      h="32px"
-                      w="full"
-                      _focus={{
-                        boxShadow: "0 0 0 1px rgba(66, 153, 225, 0.6)",
-                        bg: "white",
-                        borderRadius: "md",
-                      }}
-                      _hover={{
-                        bg: "white",
-                        borderRadius: "md",
-                      }}
-                      fontFamily="Bogle"
-                    />
-                  </Box>
-                  <IconButton
-                    icon={<FaPlus />}
-                    size="xs"
-                    onClick={() => setQuantity(quantity + 1)}
-                    variant="ghost"
-                    borderRadius="md"
-                    aria-label="Increase quantity"
-                    minW="25px"
-                    h="25px"
-                  />
-                </HStack>
-              </VStack>
-            </Box>
-
-            <Box w="70%" alignSelf="flex-end">
-              <Button
-                color="white"
-                fontFamily="Airbnb Cereal VF"
-                size="md"
-                bg="#000000ff"
-                _hover={{ bg: "#000000ff" }}
-                _focus={{ bg: "#000000ff" }}
-                _active={{ bg: "#000000ff" }}
-                w="full"
-                h="auto"
-                py={3}
-                onClick={handleAddToCart}
-              >
-                Ajouter au panier
-              </Button>
-            </Box>
-          </HStack>
-
-          {/* At a glance */}
-          {product?.custom_details.length >= 1 && (
-            <Text
-              fontSize={"md"}
-              fontWeight={"600"}
-              fontFamily="Airbnb Cereal VF"
-              mt={5}
-            >
-              At a glance
-            </Text>
-          )}
-
-          <SimpleGrid columns={{ base: 2 }} spacing={4} mb={2} mt={5}>
-            {product?.custom_details?.slice(0, 6).map((detail) => (
-              <Card
-                key={detail.key}
-                p={3}
-                borderRadius="lg"
-                border="0px"
-                borderColor="gray.200"
-                bg="gray.100"
-                shadow="sm"
-              >
-                <Text
-                  fontSize="xs"
-                  color="gray.500"
-                  fontWeight="500"
-                  mb={1}
-                  textAlign={"center"}
-                  fontFamily="Airbnb Cereal VF"
-                >
-                  {detail.label}
-                </Text>
-                <Text
-                  fontSize="sm"
-                  color="gray.800"
-                  fontWeight="500s"
-                  noOfLines={2}
-                  textAlign={"center"}
-                  fontFamily="Airbnb Cereal VF"
-                >
-                  {detail.value}
-                </Text>
-              </Card>
-            ))}
-          </SimpleGrid>
-
-          {product?.custom_details && product.custom_details.length > 6 && (
-            <Button
-              size="sm"
-              variant="link"
-              color="blue.600"
-              fontWeight="500"
-              align="center"
-              fontFamily="Airbnb Cereal VF"
-              justifyContent="center"
-              display="flex"
-              onClick={() => setIsCustomDetailsModalOpen(true)}
-              mb={4}
-            >
-              View all
-            </Button>
-          )}
-
-          {/* About this item. */}
-          <Box>
-            <Text
-              fontSize="md"
-              fontFamily="Airbnb Cereal VF"
-              fontWeight="600"
-              color="black"
-              mt={10}
-              ml={3}
-            >
-              À propos de cet article
-            </Text>
-
-            <Accordion allowMultiple maxW={{ base: "100%", md: "100%" }} mt={5}>
-              {/* Product Details Accordion */}
-              <AccordionItem
-                borderTopWidth={"1px"}
-                borderTopColor={"gray.200"}
-                mb={1}
-              >
-                <h2>
-                  <AccordionButton
-                    py={4}
-                    px={6}
-                    _hover={{ bg: "gray.50" }}
-                    borderRadius="lg"
-                  >
-                    <Box flex="1" textAlign="left">
-                      <Text
-                        fontSize="md"
-                        fontWeight="500"
-                        fontFamily="Airbnb Cereal VF"
-                        color="gray.800"
-                      >
-                        Détails du produit
-                      </Text>
-                    </Box>
-                    <AccordionIcon />
-                  </AccordionButton>
-                </h2>
-                <AccordionPanel pb={6} px={6}>
-                  <Box
+                    {detail.label}
+                  </Text>
+                  <Text
                     fontSize="sm"
-                    color="gray.700"
-                    lineHeight="1.6"
-                    border="none"
-                    fontFamily="Bogle"
-                    sx={{
-                      p: { margin: 0, marginBottom: "1em" },
-                      br: { display: "block", marginBottom: "0.5em" },
-                      strong: { fontWeight: "600" },
-                      em: { fontStyle: "italic" },
-                      ul: { paddingLeft: "1.5em", marginBottom: "1em" },
-                      ol: { paddingLeft: "1.5em", marginBottom: "1em" },
-                      li: { marginBottom: "0.25em" },
-                    }}
-                    dangerouslySetInnerHTML={{
-                      __html: product?.description
-                        ? product.description.replace(/ style="[^"]*"/g, "")
-                        : "No product description available.",
-                    }}
-                  />
-                </AccordionPanel>
-              </AccordionItem>
-
-              {/* Specifications Accordion */}
-              <AccordionItem
-                borderTopWidth={"1px"}
-                borderTopColor={"gray.200"}
-                mb={1}
-              >
-                <h2>
-                  <AccordionButton
-                    py={4}
-                    px={6}
-                    _hover={{ bg: "gray.50" }}
-                    borderRadius="lg"
+                    color="gray.800"
+                    fontWeight="500s"
+                    noOfLines={2}
+                    textAlign={"center"}
+                    fontFamily="Airbnb Cereal VF"
                   >
-                    <Box flex="1" textAlign="left">
-                      <Text
-                        fontSize="md"
-                        fontWeight="500"
-                        fontFamily="Airbnb Cereal VF"
-                        color="gray.800"
-                      >
-                        Caractéristiques
-                      </Text>
-                    </Box>
-                    <AccordionIcon />
-                  </AccordionButton>
-                </h2>
-                <AccordionPanel pb={6} px={6}>
-                  {product?.custom_details &&
-                  product?.custom_details.length > 0 ? (
-                    <Box overflowX="auto">
-                      <VStack spacing={0} align="stretch">
-                        {product?.custom_details?.map((detail, index) => (
-                          <HStack
-                            key={detail.key}
-                            py={3}
-                            px={0}
-                            borderBottom={
-                              index < product.custom_details.length - 1
-                                ? "1px solid"
-                                : "none"
-                            }
-                            borderColor="gray.100"
-                            justify="space-between"
-                            align="flex-start"
-                          >
-                            <Text
-                              fontSize="sm"
-                              fontWeight="medium"
-                              color="gray.600"
-                              fontFamily="Bogle"
-                              minW="120px"
-                              maxW="200px"
-                            >
-                              {detail.label}
-                            </Text>
-                            <Text
-                              fontSize="sm"
-                              color="gray.800"
-                              fontFamily="Bogle"
-                              textAlign="right"
-                              flex="1"
-                              wordBreak="break-word"
-                            >
-                              {detail.value}
-                            </Text>
-                          </HStack>
-                        ))}
-                      </VStack>
-                    </Box>
-                  ) : (
-                    <Text
-                      fontSize="sm"
-                      color="gray.500"
-                      fontStyle="italic"
-                      fontFamily="Bogle"
+                    {detail.value}
+                  </Text>
+                </Card>
+              ))}
+            </SimpleGrid>
+
+            {product?.custom_details && product.custom_details.length > 6 && (
+              <Button
+                size="sm"
+                variant="link"
+                color="blue.600"
+                fontWeight="500"
+                align="center"
+                fontFamily="Airbnb Cereal VF"
+                justifyContent="center"
+                display="flex"
+                onClick={() => setIsCustomDetailsModalOpen(true)}
+                mb={4}
+              >
+                View all
+              </Button>
+            )}
+
+            {/* About this item. */}
+            <Box>
+              <Text
+                fontSize="md"
+                fontFamily="Airbnb Cereal VF"
+                fontWeight="600"
+                color="black"
+                mt={10}
+                ml={3}
+              >
+                À propos de cet article
+              </Text>
+
+              <Accordion
+                allowMultiple
+                maxW={{ base: "100%", md: "100%" }}
+                mt={5}
+              >
+                {/* Product Details Accordion */}
+                <AccordionItem
+                  borderTopWidth={"1px"}
+                  borderTopColor={"gray.200"}
+                  mb={1}
+                >
+                  <h2>
+                    <AccordionButton
+                      py={4}
+                      px={6}
+                      _hover={{ bg: "gray.50" }}
+                      borderRadius="lg"
                     >
-                      Aucune caractéristique disponible pour ce produit.
-                    </Text>
-                  )}
-                </AccordionPanel>
-              </AccordionItem>
-            </Accordion>
+                      <Box flex="1" textAlign="left">
+                        <Text
+                          fontSize="md"
+                          fontWeight="500"
+                          fontFamily="Airbnb Cereal VF"
+                          color="gray.800"
+                        >
+                          Détails du produit
+                        </Text>
+                      </Box>
+                      <AccordionIcon />
+                    </AccordionButton>
+                  </h2>
+                  <AccordionPanel pb={6} px={6}>
+                    <Box
+                      fontSize="sm"
+                      color="gray.700"
+                      lineHeight="1.6"
+                      border="none"
+                      fontFamily="Bogle"
+                      sx={{
+                        p: { margin: 0, marginBottom: "1em" },
+                        br: { display: "block", marginBottom: "0.5em" },
+                        strong: { fontWeight: "600" },
+                        em: { fontStyle: "italic" },
+                        ul: { paddingLeft: "1.5em", marginBottom: "1em" },
+                        ol: { paddingLeft: "1.5em", marginBottom: "1em" },
+                        li: { marginBottom: "0.25em" },
+                      }}
+                      dangerouslySetInnerHTML={{
+                        __html: product?.description
+                          ? product.description.replace(/ style="[^"]*"/g, "")
+                          : "No product description available.",
+                      }}
+                    />
+                  </AccordionPanel>
+                </AccordionItem>
+
+                {/* Specifications Accordion */}
+                <AccordionItem
+                  borderTopWidth={"1px"}
+                  borderTopColor={"gray.200"}
+                  mb={1}
+                >
+                  <h2>
+                    <AccordionButton
+                      py={4}
+                      px={6}
+                      _hover={{ bg: "gray.50" }}
+                      borderRadius="lg"
+                    >
+                      <Box flex="1" textAlign="left">
+                        <Text
+                          fontSize="md"
+                          fontWeight="500"
+                          fontFamily="Airbnb Cereal VF"
+                          color="gray.800"
+                        >
+                          Caractéristiques
+                        </Text>
+                      </Box>
+                      <AccordionIcon />
+                    </AccordionButton>
+                  </h2>
+                  <AccordionPanel pb={6} px={6}>
+                    {product?.custom_details &&
+                    product?.custom_details.length > 0 ? (
+                      <Box overflowX="auto">
+                        <VStack spacing={0} align="stretch">
+                          {product?.custom_details?.map((detail, index) => (
+                            <HStack
+                              key={detail.key}
+                              py={3}
+                              px={0}
+                              borderBottom={
+                                index < product.custom_details.length - 1
+                                  ? "1px solid"
+                                  : "none"
+                              }
+                              borderColor="gray.100"
+                              justify="space-between"
+                              align="flex-start"
+                            >
+                              <Text
+                                fontSize="sm"
+                                fontWeight="medium"
+                                color="gray.600"
+                                fontFamily="Bogle"
+                                minW="120px"
+                                maxW="200px"
+                              >
+                                {detail.label}
+                              </Text>
+                              <Text
+                                fontSize="sm"
+                                color="gray.800"
+                                fontFamily="Bogle"
+                                textAlign="right"
+                                flex="1"
+                                wordBreak="break-word"
+                              >
+                                {detail.value}
+                              </Text>
+                            </HStack>
+                          ))}
+                        </VStack>
+                      </Box>
+                    ) : (
+                      <Text
+                        fontSize="sm"
+                        color="gray.500"
+                        fontStyle="italic"
+                        fontFamily="Bogle"
+                      >
+                        Aucune caractéristique disponible pour ce produit.
+                      </Text>
+                    )}
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
+            </Box>
           </Box>
         </Box>
-      </Box>
 
-      {/* Recommended products */}
-      {product?.slug && (
-        <RecommendedProducts
-          productSlug={product.slug}
-          title="Vous aimerez peut-être aussi"
-        />
-      )}
+        {/* Recommended products */}
+        {product?.slug && (
+          <Box as="section" aria-labelledby="recommended-heading">
+            <RecommendedProducts
+              productSlug={product.slug}
+              title="Vous aimerez peut-être aussi"
+            />
+          </Box>
+        )}
 
-      <Modal isOpen={isImageModalOpen} onClose={onImageModalClose} size="full">
-        <ModalOverlay bg="blackAlpha.900" />
-        <ModalContent bg="transparent" shadow="none" m={0}>
-          <ModalCloseButton
-            color="white"
-            size="lg"
-            top={8}
-            right={8}
-            bg="blackAlpha.600"
-            borderRadius="full"
-            _hover={{ bg: "blackAlpha.800" }}
-          />
-          <ModalBody
-            p={0}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Box maxW="90vw" maxH="90vh">
-              <Image
-                src={
-                  product?.images?.gallery?.[selectedImage]?.url ||
-                  product?.images?.main_image?.url
-                }
-                alt={product?.title}
-                objectFit="contain"
-                borderRadius="lg"
-                maxW="full"
-                maxH="full"
-              />
-            </Box>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+        <Modal
+          isOpen={isImageModalOpen}
+          onClose={onImageModalClose}
+          size="full"
+        >
+          <ModalOverlay bg="blackAlpha.900" />
+          <ModalContent bg="transparent" shadow="none" m={0}>
+            <ModalCloseButton
+              color="white"
+              size="lg"
+              top={8}
+              right={8}
+              bg="blackAlpha.600"
+              borderRadius="full"
+              _hover={{ bg: "blackAlpha.800" }}
+            />
+            <ModalBody
+              p={0}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Box maxW="90vw" maxH="90vh">
+                <Image
+                  src={
+                    product?.images?.gallery?.[selectedImage]?.url ||
+                    product?.images?.main_image?.url
+                  }
+                  alt={product?.title}
+                  objectFit="contain"
+                  borderRadius="lg"
+                  maxW="full"
+                  maxH="full"
+                />
+              </Box>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
 
-      {/* Open Details Of Product Modal */}
-      <Modal
-        isOpen={isCustomDetailsModalOpen}
-        onClose={() => setIsCustomDetailsModalOpen(false)}
-        size={{ base: "sm", md: "4xl" }}
-        isCentered
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader fontFamily="Bricolage Grotesque">
-            Specification Details
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Box overflowX="auto">
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr>
-                    <th
-                      style={{
-                        textAlign: "left",
-                        padding: "8px",
-                        borderBottom: "1px solid #e2e8f0",
-                        fontFamily: "Bricolage Grotesque",
-                        fontSize: "14px",
-                        color: "#4A5568",
-                      }}
-                    >
-                      Label
-                    </th>
-                    <th
-                      style={{
-                        textAlign: "left",
-                        padding: "8px",
-                        borderBottom: "1px solid #e2e8f0",
-                        fontFamily: "Bricolage Grotesque",
-                        fontSize: "14px",
-                        color: "#4A5568",
-                      }}
-                    >
-                      Value
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {product?.custom_details?.map((detail) => (
-                    <tr key={detail.key}>
-                      <td
+        {/* Open Details Of Product Modal */}
+        <Modal
+          isOpen={isCustomDetailsModalOpen}
+          onClose={() => setIsCustomDetailsModalOpen(false)}
+          size={{ base: "sm", md: "4xl" }}
+          isCentered
+        >
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader fontFamily="Bricolage Grotesque">
+              Specification Details
+            </ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Box overflowX="auto">
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th
                         style={{
+                          textAlign: "left",
                           padding: "8px",
-                          borderBottom: "1px solid #f1f1f1",
+                          borderBottom: "1px solid #e2e8f0",
                           fontFamily: "Bricolage Grotesque",
                           fontSize: "14px",
-                          color: "#2D3748",
-                          fontWeight: 500,
+                          color: "#4A5568",
                         }}
                       >
-                        {detail?.label}
-                      </td>
-                      <td
+                        Label
+                      </th>
+                      <th
                         style={{
+                          textAlign: "left",
                           padding: "8px",
-                          borderBottom: "1px solid #f1f1f1",
+                          borderBottom: "1px solid #e2e8f0",
                           fontFamily: "Bricolage Grotesque",
                           fontSize: "14px",
-                          color: "#2D3748",
+                          color: "#4A5568",
                         }}
                       >
-                        {detail?.value}
-                      </td>
+                        Value
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Box>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-      <Footer />
-    </Box>
+                  </thead>
+                  <tbody>
+                    {product?.custom_details?.map((detail) => (
+                      <tr key={detail.key}>
+                        <td
+                          style={{
+                            padding: "8px",
+                            borderBottom: "1px solid #f1f1f1",
+                            fontFamily: "Bricolage Grotesque",
+                            fontSize: "14px",
+                            color: "#2D3748",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {detail?.label}
+                        </td>
+                        <td
+                          style={{
+                            padding: "8px",
+                            borderBottom: "1px solid #f1f1f1",
+                            fontFamily: "Bricolage Grotesque",
+                            fontSize: "14px",
+                            color: "#2D3748",
+                          }}
+                        >
+                          {detail?.value}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Box>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+        <Footer />
+      </Box>
+    </>
   );
 }
 

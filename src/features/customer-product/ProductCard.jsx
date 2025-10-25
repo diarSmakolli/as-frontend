@@ -1,4 +1,4 @@
-// v2.0
+// v3.0 - SEO Optimized
 import React from "react";
 import {
   Box,
@@ -21,14 +21,12 @@ import { useCustomerAuth } from "../customer-account/auth-context/customerAuthCo
 import { customToastContainerStyle } from "../../commons/toastStyles";
 import { homeService } from "../home/services/homeService";
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
   const navigate = useNavigate();
   const toast = useToast();
   const { customer } = useCustomerAuth();
 
-  // const handleProductClick = () => {
-  //   navigate(`/product/${product.slug}`);
-  // };
+  const BASE_URL = 'https://assolutionsfournitures.fr';
 
   const formatPrice = (price) => {
     return parseFloat(price).toFixed(2);
@@ -36,7 +34,6 @@ const ProductCard = ({ product }) => {
 
   // Calculate discount percentage if not provided
   const calculateDiscountPercentage = () => {
-    // First try to get it from the product data
     const providedDiscount =
       product.pricing?.discount_percentage_nett ||
       product.discount_percentage_nett;
@@ -44,7 +41,6 @@ const ProductCard = ({ product }) => {
       return providedDiscount;
     }
 
-    // Calculate it from prices if not provided
     const finalPrice =
       product.pricing?.final_price_gross || product.final_price_gross;
     const regularPrice =
@@ -64,13 +60,13 @@ const ProductCard = ({ product }) => {
     return 0;
   };
 
-  // Transform product data to match ExploreAll format
+  // Transform product data
   const transformedProduct = {
     id: product.id,
     slug: product.slug,
     title: product.title,
-    image: product.main_image_url || product.images?.[0]?.url,
-    price: product.pricing?.final_price_gross || product.final_price_gross,
+    image: product.main_image_url || product.images?.[0]?.url || '/assets/no-image.svg',
+    price: product.pricing?.final_price_gross || product.final_price_gross || 0,
     originalPrice:
       product.pricing?.is_discounted || product.is_discounted
         ? product.pricing?.regular_price_gross || product.regular_price_gross
@@ -85,8 +81,17 @@ const ProductCard = ({ product }) => {
     },
     company: product.company,
     category: product.category,
+    category_name: product.category_name || "Produits",
     is_recently_added: product.is_recently_added,
+    stock_quantity: product.stock_quantity || 0,
+    brand: product.brand || "AS Solutions",
+    sku: product.sku || product.id,
   };
+
+  const isInStock = transformedProduct.stock_quantity > 0;
+  const discountAmount = transformedProduct.originalPrice 
+    ? (transformedProduct.originalPrice - transformedProduct.price).toFixed(2)
+    : 0;
 
   // Determine the main tag to display
   const getMainTag = () => {
@@ -140,153 +145,328 @@ const ProductCard = ({ product }) => {
     }
   };
 
+  // SEO-friendly product URL
+  const productUrl = `/product/${transformedProduct.slug}`;
+  const fullProductUrl = `${BASE_URL}${productUrl}`;
+
+  // Create structured data for the product card
+  const productStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": transformedProduct.title,
+    "image": transformedProduct.image,
+    "description": `${transformedProduct.title} - ${formatPrice(transformedProduct.price)}€`,
+    "sku": transformedProduct.sku,
+    "brand": {
+      "@type": "Brand",
+      "name": transformedProduct.brand
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": fullProductUrl,
+      "priceCurrency": "EUR",
+      "price": transformedProduct.price,
+      "availability": isInStock 
+        ? "https://schema.org/InStock" 
+        : "https://schema.org/OutOfStock",
+      "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      "seller": {
+        "@type": "Organization",
+        "name": "AS Solutions Fournitures"
+      }
+    }
+  };
+
   return (
     <>
-      <a
-        href={`/product/${product.slug}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ textDecoration: "none" }}
+      {/* Add microdata structured data */}
+      <script type="application/ld+json">
+        {JSON.stringify(productStructuredData)}
+      </script>
+
+      <article
+        itemScope
+        itemType="https://schema.org/Product"
+        role="article"
+        aria-label={`${transformedProduct.title} - ${formatPrice(transformedProduct.price)}€`}
       >
-        <Card
-          // onClick={handleProductClick}
-          bg="transparent"
-          overflow="hidden"
-          shadow="none"
-          // transition="all 0.3s ease"
-          cursor="pointer"
-          border="0px solid rgba(145, 158, 171, 0.2)"
-          position="relative"
-          rounded="12px"
-          minW={{ base: "200px", sm: "240px", md: "240px" }}
-          maxW={{ base: "200px", sm: "240px", md: "240px" }}
-          flexShrink={0}
+        {/* Hidden semantic data for SEO */}
+        <meta itemProp="name" content={transformedProduct.title} />
+        <meta itemProp="description" content={`${transformedProduct.title} disponible à ${formatPrice(transformedProduct.price)}€ sur AS Solutions Fournitures`} />
+        <meta itemProp="image" content={transformedProduct.image} />
+        <meta itemProp="sku" content={transformedProduct.sku} />
+        <meta itemProp="brand" content={transformedProduct.brand} />
+        <link itemProp="url" href={fullProductUrl} />
+
+        {/* Offer metadata */}
+        <div itemProp="offers" itemScope itemType="https://schema.org/Offer" style={{ display: 'none' }}>
+          <meta itemProp="priceCurrency" content="EUR" />
+          <meta itemProp="price" content={transformedProduct.price} />
+          <meta itemProp="availability" content={isInStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+          <link itemProp="url" href={fullProductUrl} />
+        </div>
+
+        <Link
+          to={productUrl}
+          style={{ textDecoration: "none" }}
+          aria-label={`Voir les détails de ${transformedProduct.title} - ${formatPrice(transformedProduct.price)}€ ${transformedProduct.isDiscounted ? `(Économisez ${discountAmount}€)` : ''}`}
+          title={`${transformedProduct.title} - ${formatPrice(transformedProduct.price)}€ ${isInStock ? '✓ En stock' : '✗ Rupture de stock'} | AS Solutions`}
         >
-          <Box position="relative">
-            <ProductImage
-              src={transformedProduct?.image}
-              alt={transformedProduct?.title}
-              height={{ base: "150px", sm: "180px", md: "200px" }}
-              bg="rgba(255,255,255,1)"
-            />
-
-            {/* Heart Icon */}
-            <IconButton
-              position="absolute"
-              top="2"
-              right="2"
-              size="sm"
-              icon={<FaRegHeart size="20px" />}
-              bg="white"
-              color="black"
-              _hover={{
-                color: "white",
-                bg: "rgba(255, 0, 0, 1)",
-                fontWeight: "bold",
-              }}
-              borderRadius="full"
-              aria-label="Add to wishlist"
-              shadow="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                handleAddToWishlist(product.id);
-              }}
-            />
-          </Box>
-
-          <CardBody p={3}>
-            <VStack align="start" spacing={2}>
-              {/* <Text
-            fontSize="sm"
-            color="gray.800"
-            noOfLines={2}
-            lineHeight="short"
-            minH="40px"
-            title={transformedProduct.title}
+          <Card
+            bg="transparent"
+            overflow="hidden"
+            shadow="none"
+            cursor="pointer"
+            border="0px solid rgba(145, 158, 171, 0.2)"
+            position="relative"
+            rounded="12px"
+            minW={{ base: "200px", sm: "240px", md: "240px" }}
+            maxW={{ base: "200px", sm: "240px", md: "240px" }}
+            flexShrink={0}
+            transition="transform 0.2s, box-shadow 0.2s"
+            _hover={{
+              transform: "translateY(-4px)",
+              shadow: "lg"
+            }}
+            role="group"
           >
-            {transformedProduct.title}
-          </Text> */}
+            <Box position="relative">
+              {/* Product Image with SEO optimization */}
+              <ProductImage
+                src={transformedProduct.image}
+                alt={`${transformedProduct.title} - ${transformedProduct.category_name} - AS Solutions Fournitures`}
+                title={transformedProduct.title}
+                height={{ base: "150px", sm: "180px", md: "200px" }}
+                bg="rgba(255,255,255,1)"
+                loading={index < 4 ? "eager" : "lazy"}
+                fetchpriority={index < 4 ? "high" : "auto"}
+              />
 
-              <VStack align="start" spacing={1} w="full">
-                <Text
-                  fontSize="sm"
-                  color="black"
-                  noOfLines={2}
-                  lineHeight="short"
-                  minH="40px"
-                  title={product.title}
-                  fontWeight="500"
-                  as="a"
-                  href={`/product/${product.slug}`}
-                  target="_blank"
-                  fontFamily="Airbnb Cereal VF"
+              {/* Badges with semantic meaning */}
+              {(mainTag || transformedProduct.badges?.free_shipping) && (
+                <HStack
+                  position="absolute"
+                  top="2"
+                  left="2"
+                  spacing={1}
+                  role="list"
+                  aria-label="Badges produit"
                 >
-                  {transformedProduct.title}
-                </Text>
+                  {mainTag && (
+                    <Badge
+                      colorScheme={
+                        mainTag === "NEW" ? "green" :
+                        mainTag === "FEATURED" ? "purple" :
+                        "red"
+                      }
+                      fontSize="xs"
+                      px={2}
+                      py={1}
+                      borderRadius="md"
+                      fontWeight="600"
+                      role="listitem"
+                      aria-label={`Badge: ${mainTag}`}
+                    >
+                      {mainTag}
+                    </Badge>
+                  )}
+                  {transformedProduct.badges?.free_shipping && (
+                    <Badge
+                      colorScheme="blue"
+                      fontSize="xs"
+                      px={2}
+                      py={1}
+                      borderRadius="md"
+                      fontWeight="600"
+                      role="listitem"
+                      aria-label="Livraison gratuite"
+                    >
+                      Livraison gratuite
+                    </Badge>
+                  )}
+                </HStack>
+              )}
 
-                <HStack spacing={2} w="full" align="center">
+              {/* Stock indicator */}
+              {!isInStock && (
+                <Badge
+                  position="absolute"
+                  bottom="2"
+                  left="2"
+                  colorScheme="red"
+                  fontSize="xs"
+                  px={2}
+                  py={1}
+                  borderRadius="md"
+                  fontWeight="600"
+                  aria-label="Produit en rupture de stock"
+                >
+                  Rupture de stock
+                </Badge>
+              )}
+
+              {/* Wishlist Button with proper semantics */}
+              <IconButton
+                position="absolute"
+                top="2"
+                right="2"
+                size="sm"
+                icon={<FaRegHeart size="20px" aria-hidden="true" />}
+                bg="white"
+                color="black"
+                _hover={{
+                  color: "white",
+                  bg: "rgba(255, 0, 0, 1)",
+                  fontWeight: "bold",
+                }}
+                borderRadius="full"
+                aria-label={`Ajouter ${transformedProduct.title} à la liste de souhaits`}
+                title={`Ajouter ${transformedProduct.title} à la liste de souhaits`}
+                shadow="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleAddToWishlist(product.id);
+                }}
+              />
+            </Box>
+
+            <CardBody p={3}>
+              <VStack align="start" spacing={2}>
+                <VStack align="start" spacing={1} w="full">
+                  {/* Product Title - SEO optimized */}
                   <Text
-                    fontSize={{ base: "lg", sm: "xl" }}
-                    fontWeight="600"
+                    as="h3"
+                    fontSize="sm"
                     color="black"
+                    noOfLines={2}
+                    lineHeight="short"
+                    minH="40px"
+                    title={transformedProduct.title}
+                    fontWeight="500"
                     fontFamily="Airbnb Cereal VF"
+                    itemProp="name"
                   >
-                    {formatPrice(transformedProduct.price)} €
+                    {transformedProduct.title}
                   </Text>
 
-                  {transformedProduct.originalPrice &&
-                    transformedProduct.isDiscounted && (
-                      // <Text
-                      //   fontSize="sm"
-                      //   color="gray.500"
-                      //   textDecoration="line-through"
-                      // >
-                      //   €{formatPrice(transformedProduct.originalPrice)}
-                      // </Text>
-                      <>
-                        <Badge
-                          bg="rgba(255, 0, 0, 1)"
-                          fontFamily="Airbnb Cereal VF"
-                          color="gray.200"
-                          border="1px solid rgba(33, 1, 1, 0.43)"
-                          fontSize={{ base: "xs", sm: "sm" }}
-                          fontWeight="500"
-                          px={{ base: "1", sm: "2" }}
-                          py="0"
-                          borderRadius="lg"
-                          textTransform="uppercase"
-                          flexShrink={0}
-                        >
-                          - {Math.round(transformedProduct.discountPercentage)}%{" "}
-                        </Badge>
+                  {/* Category badge for context */}
+                  {transformedProduct.category_name && (
+                    <Text
+                      fontSize="xs"
+                      color="gray.600"
+                      fontFamily="Airbnb Cereal VF"
+                      noOfLines={1}
+                      aria-label={`Catégorie: ${transformedProduct.category_name}`}
+                    >
+                      {transformedProduct.category_name}
+                    </Text>
+                  )}
 
-                        <Text
-                          fontSize={{ base: "xs", sm: "sm" }}
-                          color="gray.700"
-                          textDecoration="line-through"
-                          fontFamily="Airbnb Cereal VF"
-                          fontWeight="500"
-                        >
-                          {formatPrice(transformedProduct.originalPrice)} €
-                        </Text>
-                      </>
-                    )}
-                </HStack>
+                  {/* Price Section with semantic markup */}
+                  <HStack spacing={2} w="full" align="center" role="group" aria-label="Prix du produit">
+                    <Text
+                      fontSize={{ base: "lg", sm: "xl" }}
+                      fontWeight="600"
+                      color="black"
+                      fontFamily="Airbnb Cereal VF"
+                      itemProp="price"
+                      content={transformedProduct.price}
+                      aria-label={`Prix: ${formatPrice(transformedProduct.price)} euros`}
+                    >
+                      {formatPrice(transformedProduct.price)} €
+                    </Text>
+
+                    {transformedProduct.originalPrice &&
+                      transformedProduct.isDiscounted && (
+                        <>
+                          {/* Discount Badge */}
+                          <Badge
+                            bg="rgba(255, 0, 0, 1)"
+                            fontFamily="Airbnb Cereal VF"
+                            color="gray.200"
+                            border="1px solid rgba(33, 1, 1, 0.43)"
+                            fontSize={{ base: "xs", sm: "sm" }}
+                            fontWeight="500"
+                            px={{ base: "1", sm: "2" }}
+                            py="0"
+                            borderRadius="lg"
+                            textTransform="uppercase"
+                            flexShrink={0}
+                            aria-label={`Réduction de ${Math.round(transformedProduct.discountPercentage)} pourcent`}
+                            title={`Économisez ${discountAmount}€`}
+                          >
+                            - {Math.round(transformedProduct.discountPercentage)}%
+                          </Badge>
+
+                          {/* Original Price */}
+                          <Text
+                            fontSize={{ base: "xs", sm: "sm" }}
+                            color="gray.700"
+                            textDecoration="line-through"
+                            fontFamily="Airbnb Cereal VF"
+                            fontWeight="500"
+                            aria-label={`Prix original: ${formatPrice(transformedProduct.originalPrice)} euros`}
+                          >
+                            {formatPrice(transformedProduct.originalPrice)} €
+                          </Text>
+                        </>
+                      )}
+                  </HStack>
+
+                  {/* Savings indicator for discounted products */}
+                  {transformedProduct.isDiscounted && discountAmount > 0 && (
+                    <Text
+                      fontSize="xs"
+                      color="green.600"
+                      fontWeight="500"
+                      fontFamily="Airbnb Cereal VF"
+                      aria-label={`Économisez ${discountAmount} euros`}
+                    >
+                      Économisez {discountAmount}€
+                    </Text>
+                  )}
+
+                  {/* Stock availability with low stock warning */}
+                  {isInStock && transformedProduct.stock_quantity < 10 && (
+                    <HStack spacing={1}>
+                      <Box
+                        w={2}
+                        h={2}
+                        borderRadius="full"
+                        bg="orange.500"
+                        aria-hidden="true"
+                      />
+                      <Text
+                        fontSize="xs"
+                        color="orange.600"
+                        fontWeight="500"
+                        fontFamily="Airbnb Cereal VF"
+                        aria-label={`Stock limité: seulement ${transformedProduct.stock_quantity} articles restants`}
+                      >
+                        Seulement {transformedProduct.stock_quantity} restant{transformedProduct.stock_quantity > 1 ? 's' : ''}
+                      </Text>
+                    </HStack>
+                  )}
+                </VStack>
               </VStack>
-            </VStack>
-          </CardBody>
-        </Card>
-      </a>
+            </CardBody>
+          </Card>
+        </Link>
+      </article>
     </>
   );
 };
 
+// Enhanced ProductImage component with SEO
 function ProductImage({
   src,
   alt,
+  title,
   height = { base: "150px", sm: "180px", md: "200px" },
   bg = "transparent",
+  loading = "lazy",
+  fetchpriority = "auto",
   ...props
 }) {
   return (
@@ -306,10 +486,15 @@ function ProductImage({
       <Image
         src={src}
         alt={alt}
+        title={title}
         w="full"
         h="full"
         objectFit="contain"
         objectPosition="center"
+        loading={loading}
+        fetchpriority={fetchpriority}
+        decoding="async"
+        itemProp="image"
         fallback={
           <Box
             w="full"
@@ -318,7 +503,11 @@ function ProductImage({
             display="flex"
             alignItems="center"
             justifyContent="center"
-          />
+          >
+            <Text fontSize="xs" color="gray.400">
+              Image non disponible
+            </Text>
+          </Box>
         }
       />
     </Box>

@@ -54,8 +54,9 @@ import {
   FaChevronDown,
   FaChevronUp,
 } from "react-icons/fa";
+import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useSEO, generateSearchSEO } from '../../hooks/useSEO';
+import { useSEO, generateSearchSEO } from "../../hooks/useSEO";
 import { homeService } from "../home/services/homeService";
 import Navbar from "../../shared-customer/components/Navbar";
 import Footer from "../../shared-customer/components/Footer";
@@ -103,7 +104,7 @@ const FilterSidebar = React.memo(
             fontSize="md"
             fontWeight="500"
             fontFamily={"Airbnb Cereal VF"}
-            color='gray.700'
+            color="gray.700"
           >
             Filtres{" "}
             {getSelectedFiltersCount() > 0 && `(${getSelectedFiltersCount()})`}
@@ -113,8 +114,8 @@ const FilterSidebar = React.memo(
             variant="ghost"
             onClick={clearFilters}
             fontFamily={"Airbnb Cereal VF"}
-            fontSize={'sm'}
-            color='gray.700'
+            fontSize={"sm"}
+            color="gray.700"
           >
             Tout effacer
           </Button>
@@ -153,8 +154,7 @@ const FilterSidebar = React.memo(
                 {Object.entries(selectedFilters.specifications || {}).map(
                   ([specKey, specValues]) =>
                     // specValues.slice(0, 8)
-                    specValues
-                    .map((value) => (
+                    specValues.map((value) => (
                       <WrapItem key={`${specKey}-${value}`}>
                         <Tag size="sm" colorScheme="purple" variant="solid">
                           <TagLabel noOfLines={1} maxW="120px">
@@ -201,7 +201,12 @@ const FilterSidebar = React.memo(
           </HStack>
 
           {availableFilters?.price_range && (
-            <Text fontSize="xs" color="gray.600" mb={2} fontFamily={"Airbnb Cereal VF"}>
+            <Text
+              fontSize="xs"
+              color="gray.600"
+              mb={2}
+              fontFamily={"Airbnb Cereal VF"}
+            >
               {availableFilters.price_range.formatted_range}
             </Text>
           )}
@@ -209,7 +214,11 @@ const FilterSidebar = React.memo(
           <VStack spacing={3}>
             <HStack spacing={2} w="full">
               <VStack spacing={1} flex={1}>
-                <Text fontSize="xs" color="gray.500" fontFamily={"Airbnb Cereal VF"}>
+                <Text
+                  fontSize="xs"
+                  color="gray.500"
+                  fontFamily={"Airbnb Cereal VF"}
+                >
                   Prix minimum
                 </Text>
                 <Input
@@ -222,11 +231,20 @@ const FilterSidebar = React.memo(
                   autoComplete="off"
                 />
               </VStack>
-              <Text alignSelf="end" pb={2} color="gray.400" fontFamily={"Airbnb Cereal VF"}>
+              <Text
+                alignSelf="end"
+                pb={2}
+                color="gray.400"
+                fontFamily={"Airbnb Cereal VF"}
+              >
                 à
               </Text>
               <VStack spacing={1} flex={1}>
-                <Text fontSize="xs" color="gray.500" fontFamily={"Airbnb Cereal VF"}>
+                <Text
+                  fontSize="xs"
+                  color="gray.500"
+                  fontFamily={"Airbnb Cereal VF"}
+                >
                   Prix maximum
                 </Text>
                 <Input
@@ -243,11 +261,11 @@ const FilterSidebar = React.memo(
             <HStack spacing={2} w="full">
               <Button
                 size="sm"
-                bg='#0d00caff'
-                color='white'
-                _hover={{ bg: '#0d00caff' }}
-                _active={{ bg: '#0d00caff' }}
-                _focus={{ bg: '#0d00caff' }}
+                bg="#0d00caff"
+                color="white"
+                _hover={{ bg: "#0d00caff" }}
+                _active={{ bg: "#0d00caff" }}
+                _focus={{ bg: "#0d00caff" }}
                 onClick={applyPriceRange}
                 flex={1}
                 fontFamily={"Airbnb Cereal VF"}
@@ -256,11 +274,11 @@ const FilterSidebar = React.memo(
               </Button>
               <Button
                 size="sm"
-                bg='#0d00caff'
-                color='white'
-                _hover={{ bg: '#0d00caff' }}
-                _active={{ bg: '#0d00caff' }}
-                _focus={{ bg: '#0d00caff' }}
+                bg="#0d00caff"
+                color="white"
+                _hover={{ bg: "#0d00caff" }}
+                _active={{ bg: "#0d00caff" }}
+                _focus={{ bg: "#0d00caff" }}
                 onClick={clearPriceRange}
                 flex={1}
               >
@@ -311,7 +329,11 @@ const FilterSidebar = React.memo(
             </VStack>
           ) : (
             <HStack justify="space-between" align="center">
-              <Text fontSize="sm" color="gray.600" fontFamily="Airbnb Cereal VF">
+              <Text
+                fontSize="sm"
+                color="gray.600"
+                fontFamily="Airbnb Cereal VF"
+              >
                 Inclure les produits en rupture de stock
               </Text>
               <Box
@@ -366,10 +388,7 @@ const FilterSidebar = React.memo(
                   <HStack>
                     <FaCog color="gray.500" />
                     <VStack align="start" spacing={0}>
-                      <Text
-                        fontWeight="500"
-                        fontFamily="Airbnb Cereal VF"
-                      >
+                      <Text fontWeight="500" fontFamily="Airbnb Cereal VF">
                         Filtrer par spécifications
                       </Text>
                       {/* <Text fontSize="xs" color="gray.500" fontFamily="Airbnb Cereal VF">
@@ -525,7 +544,15 @@ const FilterSidebar = React.memo(
           )}
 
         {isMobile && (
-          <Button bg="#0d00caff" _hover={{ bg: '#0d00caff'}} _active={{bg: '#0d00caff'}} _focus={{bg: '#0d00caff'}} onClick={applyFilters} size="lg" fontFamily={"Airbnb Cereal VF"}>
+          <Button
+            bg="#0d00caff"
+            _hover={{ bg: "#0d00caff" }}
+            _active={{ bg: "#0d00caff" }}
+            _focus={{ bg: "#0d00caff" }}
+            onClick={applyFilters}
+            size="lg"
+            fontFamily={"Airbnb Cereal VF"}
+          >
             Appliquer des filtres
           </Button>
         )}
@@ -548,10 +575,36 @@ const CustomerSearchPage = () => {
   const [offset, setOffset] = useState(0);
   const [availableFilters, setAvailableFilters] = useState(null);
   const [query, setQuery] = useState(searchParams.get("q") || "");
-  
+
   // SEO for search page
-  const searchSEO = useMemo(() => generateSearchSEO(query, products), [query, products]);
-  
+  const searchSEO = useMemo(
+    () => generateSearchSEO(query, products),
+    [query, products]
+  );
+  const BASE_URL = "https://assolutionsfournitures.fr";
+  const productPrice = product.pricing?.final_price_gross || product.price || 0;
+  const originalPrice = product.pricing?.original_price || productPrice;
+  const productImage =
+    product.main_image_url ||
+    product.images?.[0] ||
+    `${BASE_URL}/assets/logo-as.png`;
+  const isInStock = product.stock_quantity > 0;
+  const discount = product.pricing?.discount_percentage || 0;
+  const savings = originalPrice - productPrice;
+
+  const formattedPrice = productPrice.toFixed(2);
+  const formattedOriginalPrice = originalPrice.toFixed(2);
+
+  // Get additional product images
+  const additionalImages = product.images?.slice(1, 5) || [];
+
+  // Product brand
+  const brand = product.brand || "AS Solutions";
+
+  // Category breadcrumb
+  const categoryName = product.category_name || "Produits";
+  const categorySlug = product.category_slug || "";
+
   const [sortBy, setSortBy] = useState(
     searchParams.get("sort_by") || "relevance"
   );
@@ -565,13 +618,12 @@ const CustomerSearchPage = () => {
     searchParams.get("include_out_of_stock") === "true"
   );
   const [selectedFilters, setSelectedFilters] = useState({
-    specifications: {}, 
+    specifications: {},
   });
   const [tempMinPrice, setTempMinPrice] = useState("");
   const [tempMaxPrice, setTempMaxPrice] = useState("");
   const impressionRefs = useRef([]);
   const sentImpressions = useRef(new Set());
-  
 
   // Watch for URL changes
   useEffect(() => {
@@ -587,10 +639,7 @@ const CustomerSearchPage = () => {
       homeService
         .createProductEvent({
           event_type: "search_result",
-          session_id:
-            typeof window !== "undefined"
-              ? customer?.id
-              : null,
+          session_id: typeof window !== "undefined" ? customer?.id : null,
           customer_id: customer?.id || null,
           search_query: query,
           page_type: "search_results",
@@ -624,8 +673,10 @@ const CustomerSearchPage = () => {
                 product_id: product.id,
                 position: index,
                 page_type: "search_results",
-                page_url: typeof window !== "undefined" ? window.location.href : null,
-                referrer_url: typeof document !== "undefined" ? document.referrer : null,
+                page_url:
+                  typeof window !== "undefined" ? window.location.href : null,
+                referrer_url:
+                  typeof document !== "undefined" ? document.referrer : null,
                 timestamp: new Date().toISOString(),
               });
               sentImpressions.current.add(uniqueKey);
@@ -651,15 +702,18 @@ const CustomerSearchPage = () => {
 
   // Product hover event
   const handleProductHover = (product, index) => {
-    homeService.createProductEvent({
-      event_type: "hover",
-      product_id: product.id,
-      position: index,
-      page_type: "search_results",
-      page_url: typeof window !== "undefined" ? window.location.href : null,
-      referrer_url: typeof document !== "undefined" ? document.referrer : null,
-      timestamp: new Date().toISOString(),
-    }).catch(() => {});
+    homeService
+      .createProductEvent({
+        event_type: "hover",
+        product_id: product.id,
+        position: index,
+        page_type: "search_results",
+        page_url: typeof window !== "undefined" ? window.location.href : null,
+        referrer_url:
+          typeof document !== "undefined" ? document.referrer : null,
+        timestamp: new Date().toISOString(),
+      })
+      .catch(() => {});
   };
 
   // Search function
@@ -846,7 +900,8 @@ const CustomerSearchPage = () => {
     if (max > 0 && min > max) {
       toast({
         title: "Gamme de prix non valide",
-        description: "Le prix minimum ne peut pas être supérieur au prix maximum.",
+        description:
+          "Le prix minimum ne peut pas être supérieur au prix maximum.",
         status: "error",
         duration: 3000,
         variant: "custom",
@@ -1302,203 +1357,391 @@ const CustomerSearchPage = () => {
 
   return (
     <>
-      <SEO {...searchSEO} />
+      <Helmet>
+        {/* Primary Meta Tags */}
+        <title>
+          {product.title} - {formattedPrice}€ | AS Solutions Fournitures
+        </title>
+        <meta
+          name="title"
+          content={`${product.title} - ${formattedPrice}€ | AS Solutions Fournitures`}
+        />
+        <meta
+          name="description"
+          content={`${
+            product.description?.substring(0, 155) ||
+            product.short_description ||
+            `Achetez ${product.title}`
+          }... ✓ Prix: ${formattedPrice}€ ${
+            discount > 0
+              ? `✓ Économisez ${savings.toFixed(2)}€ (-${discount}%)`
+              : ""
+          } ✓ ${
+            isInStock ? "En stock" : "Disponible sur commande"
+          } ✓ Livraison rapide en France ✓ Garantie qualité AS Solutions`}
+        />
+        <meta
+          name="keywords"
+          content={`${product.title}, ${categoryName}, fournitures, ${brand}, achat en ligne, ${product.title} pas cher, ${categoryName} France, AS Solutions`}
+        />
+        <meta name="author" content="AS Solutions Fournitures" />
+        <link rel="canonical" href={`${BASE_URL}/product/${product.slug}`} />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="product" />
+        <meta
+          property="og:url"
+          content={`${BASE_URL}/product/${product.slug}`}
+        />
+        <meta property="og:site_name" content="AS Solutions Fournitures" />
+        <meta
+          property="og:title"
+          content={`${product.title} - ${formattedPrice}€`}
+        />
+        <meta
+          property="og:description"
+          content={
+            product.description?.substring(0, 200) ||
+            product.short_description ||
+            `Achetez ${product.title} à ${formattedPrice}€`
+          }
+        />
+        <meta property="og:image" content={productImage} />
+        <meta property="og:image:secure_url" content={productImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta
+          property="og:image:alt"
+          content={`${product.title} - AS Solutions Fournitures`}
+        />
+        <meta property="og:locale" content="fr_FR" />
+
+        {/* Product-specific Open Graph tags */}
+        <meta
+          property="product:price:amount"
+          content={productPrice.toString()}
+        />
+        <meta property="product:price:currency" content="EUR" />
+        <meta
+          property="product:availability"
+          content={isInStock ? "in stock" : "out of stock"}
+        />
+        <meta property="product:condition" content="new" />
+        <meta
+          property="product:retailer_item_id"
+          content={product.sku || product.id}
+        />
+        <meta property="product:brand" content={brand} />
+        {categoryName && (
+          <meta property="product:category" content={categoryName} />
+        )}
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@assolutions" />
+        <meta
+          name="twitter:url"
+          content={`${BASE_URL}/product/${product.slug}`}
+        />
+        <meta
+          name="twitter:title"
+          content={`${product.title} - ${formattedPrice}€`}
+        />
+        <meta
+          name="twitter:description"
+          content={
+            product.description?.substring(0, 200) ||
+            `Achetez ${product.title} à ${formattedPrice}€. ${
+              isInStock ? "En stock" : "Disponible sur commande"
+            }. Livraison rapide.`
+          }
+        />
+        <meta name="twitter:image" content={productImage} />
+        <meta name="twitter:image:alt" content={product.title} />
+        <meta name="twitter:label1" content="Prix" />
+        <meta name="twitter:data1" content={`${formattedPrice}€`} />
+        <meta name="twitter:label2" content="Disponibilité" />
+        <meta
+          name="twitter:data2"
+          content={isInStock ? "En stock" : "Sur commande"}
+        />
+
+        {/* Additional SEO Tags */}
+        <meta
+          name="robots"
+          content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+        />
+        <meta name="googlebot" content="index, follow" />
+        <meta name="language" content="French" />
+        <meta name="geo.region" content="FR" />
+        <meta name="geo.placename" content="France" />
+
+        {/* Mobile Optimization */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+        />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
+
+        {/* Theme Color */}
+        <meta name="theme-color" content="#0d00ca" />
+
+        {/* Product Structured Data (JSON-LD) */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: product.title,
+            description:
+              product.description ||
+              product.short_description ||
+              `${product.title} - Fournitures de qualité`,
+            image: [productImage, ...additionalImages],
+            sku: product.sku || product.id,
+            mpn: product.sku || product.id,
+            brand: {
+              "@type": "Brand",
+              name: brand,
+            },
+            offers: {
+              "@type": "Offer",
+              url: `${BASE_URL}/product/${product.slug}`,
+              priceCurrency: "EUR",
+              price: productPrice,
+              priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                .toISOString()
+                .split("T")[0],
+              availability: isInStock
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock",
+              itemCondition: "https://schema.org/NewCondition",
+              seller: {
+                "@type": "Organization",
+                name: "AS Solutions Fournitures",
+                url: BASE_URL,
+              },
+              ...(discount > 0 && {
+                priceSpecification: {
+                  "@type": "PriceSpecification",
+                  price: productPrice,
+                  priceCurrency: "EUR",
+                  valueAddedTaxIncluded: true,
+                },
+              }),
+            },
+            ...(product.rating &&
+              product.review_count && {
+                aggregateRating: {
+                  "@type": "AggregateRating",
+                  ratingValue: product.rating,
+                  reviewCount: product.review_count,
+                  bestRating: "5",
+                  worstRating: "1",
+                },
+              }),
+            ...(categoryName && {
+              category: categoryName,
+            }),
+          })}
+        </script>
+
+        {/* Breadcrumb Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Accueil",
+                item: BASE_URL,
+              },
+              ...(categorySlug
+                ? [
+                    {
+                      "@type": "ListItem",
+                      position: 2,
+                      name: categoryName,
+                      item: `${BASE_URL}/category/${categorySlug}`,
+                    },
+                  ]
+                : []),
+              {
+                "@type": "ListItem",
+                position: categorySlug ? 3 : 2,
+                name: product.title,
+                item: `${BASE_URL}/product/${product.slug}`,
+              },
+            ],
+          })}
+        </script>
+
+        {/* Additional Structured Data - WebPage */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            name: product.title,
+            description: product.description || product.short_description,
+            url: `${BASE_URL}/product/${product.slug}`,
+            mainEntity: {
+              "@type": "Product",
+              name: product.title,
+            },
+            breadcrumb: {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Accueil",
+                  item: BASE_URL,
+                },
+                ...(categorySlug
+                  ? [
+                      {
+                        "@type": "ListItem",
+                        position: 2,
+                        name: categoryName,
+                        item: `${BASE_URL}/category/${categorySlug}`,
+                      },
+                    ]
+                  : []),
+                {
+                  "@type": "ListItem",
+                  position: categorySlug ? 3 : 2,
+                  name: product.title,
+                },
+              ],
+            },
+          })}
+        </script>
+
+        {/* Organization Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "AS Solutions Fournitures",
+            url: BASE_URL,
+            logo: `${BASE_URL}/assets/logo-as.png`,
+            sameAs: [
+              "https://www.facebook.com/assolutions",
+              "https://www.instagram.com/assolutions",
+            ],
+          })}
+        </script>
+
+        {/* FAQ Schema if product has common questions */}
+        {product.faq && product.faq.length > 0 && (
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: product.faq.map((faq) => ({
+                "@type": "Question",
+                name: faq.question,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: faq.answer,
+                },
+              })),
+            })}
+          </script>
+        )}
+      </Helmet>
+
       <Box minH="100vh" bg="rgba(252, 252, 253, 1)">
         <Navbar />
 
         <Container maxW="8xl" py={6}>
-        {/* Search Results Header */}
-        <VStack spacing={6} mb={8}>
-          <Flex
-            w="full"
-            justify="space-between"
-            align="center"
-            wrap="wrap"
-            gap={4}
-          >
-            <VStack align="start" spacing={1}>
-              <Text
-                fontSize="xl"
-                fontWeight="500"
-                fontFamily={"Airbnb Cereal VF"}
-              >
-                {loading ? "Recherche..." : `${totalCount} Résultats trouvés`}
-                {query && `à "${query}"`}
-              </Text>
-              {getSelectedFiltersCount() > 0 && (
-                <Text fontSize="sm" color="gray.600">
-                  {getSelectedFiltersCount()} filtres
-                </Text>
-              )}
-              {availableFilters && (
+          {/* Search Results Header */}
+          <VStack spacing={6} mb={8}>
+            <Flex
+              w="full"
+              justify="space-between"
+              align="center"
+              wrap="wrap"
+              gap={4}
+            >
+              <VStack align="start" spacing={1}>
                 <Text
-                  fontSize="xs"
-                  color="gray.500"
+                  fontSize="xl"
+                  fontWeight="500"
                   fontFamily={"Airbnb Cereal VF"}
                 >
-                  {Object.keys(availableFilters.specifications || {}).length}{" "}
-                  types de spécifications disponibles
+                  {loading ? "Recherche..." : `${totalCount} Résultats trouvés`}
+                  {query && `à "${query}"`}
                 </Text>
-              )}
-            </VStack>
-
-            <HStack spacing={4}>
-              {/* Mobile Filter Button */}
-              <Button
-                leftIcon={<FaFilter />}
-                variant="outline"
-                display={{ base: "flex", lg: "none" }}
-                onClick={onOpen}
-                fontFamily="Bogle"
-              >
-                Filters{" "}
-                {getSelectedFiltersCount() > 0 &&
-                  `(${getSelectedFiltersCount()})`}
-              </Button>
-
-              {/* Sort Options */}
-              <HStack>
-                <Text fontSize="sm" display={{ base: "none", md: "block" }}>
-                  Sort:
-                </Text>
-                <Select
-                  value={sortBy}
-                  onChange={(e) => handleSortChange(e.target.value)}
-                  w={{ base: "160px", md: "200px" }}
-                  bg="white"
-                  size="sm"
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
-              </HStack>
-            </HStack>
-          </Flex>
-        </VStack>
-
-        {/* Main Content */}
-        <Grid
-          templateColumns={{ base: "1fr", lg: "300px 1fr" }}
-          gap={{ base: 6, md: 6 }}
-        >
-          {/* Desktop Filters */}
-          <Box display={{ base: "none", lg: "block" }}>
-            <FilterSidebar
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              tempMinPrice={tempMinPrice}
-              tempMaxPrice={tempMaxPrice}
-              includeOutOfStock={includeOutOfStock}
-              availableFilters={availableFilters}
-              selectedFilters={selectedFilters}
-              getSelectedFiltersCount={getSelectedFiltersCount}
-              clearFilters={clearFilters}
-              handleMinPriceChange={handleMinPriceChange}
-              handleMaxPriceChange={handleMaxPriceChange}
-              applyPriceRange={applyPriceRange}
-              clearPriceRange={clearPriceRange}
-              applyFilters={applyFilters}
-              setIncludeOutOfStock={setIncludeOutOfStock}
-              handleSpecificationChange={handleSpecificationChange}
-              clearSpecificationFilter={clearSpecificationFilter}
-            />
-          </Box>
-
-          {/* Products Grid */}
-          <Box>
-            {loading ? (
-              <VStack py={20}>
-                <Spinner size="xl" color="blue.500" />
-                <Text>Searching products...</Text>
-              </VStack>
-            ) : products.length === 0 ? (
-              <>
-                <Center>
-                  <Text fontFamily="Bogle" fontSize={"xl"}>
-                    Aucun produit trouvé dans {query}.
+                {getSelectedFiltersCount() > 0 && (
+                  <Text fontSize="sm" color="gray.600">
+                    {getSelectedFiltersCount()} filtres
                   </Text>
-                </Center>
-                <Center>
-                  <Text
-                    fontFamily="Bogle"
-                    fontSize={"md"}
-                    mt={5}
-                    color="gray.600"
-                  >
-                    Essayez de rechercher des produits ou d’ajuster vos filtres.
-                  </Text>
-                </Center>
-                <Center>
-                  <Text
-                    fontFamily="Bogle"
-                    fontSize={"md"}
-                    mt={5}
-                    color="gray.600"
-                    as="a"
-                    href="/"
-                  >
-                    Retour à l'accueil
-                  </Text>
-                </Center>
-              </>
-            ) : (
-              <>
-                <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} mb={8}>
-                  {products.map((product, idx) => (
-                    <Box
-                      key={product.id}
-                      ref={el => (impressionRefs.current[idx] = el)}
-                      data-index={idx}
-                      data-impression="not-sent"
-                      onMouseEnter={() => handleProductHover(product, idx)}
-                    >
-                      <ProductCard
-                        key={product.id}
-                        product={homeService.formatProductData(product)}
-                      />
-                    </Box>
-                  ))}
-                </SimpleGrid>
-
-                {hasMore && (
-                  <VStack spacing={4}>
-                    <Button
-                      size="sm"
-                      onClick={loadMore}
-                      isLoading={loadingMore}
-                      loadingText="Loading more..."
-                      w="auto"
-                      maxW="auto"
-                      borderColor="blue.500"
-                      borderWidth={0}
-                      color="white"
-                      rounded="3px"
-                      p={5}
-                      _hover={{ bg: "rgb(241, 36, 36)" }}
-                      bg="rgb(241, 36, 36)"
-                      fontFamily={"Bogle"}
-                    >
-                      Afficher plus de produits
-                    </Button>
-                  </VStack>
                 )}
-              </>
-            )}
-          </Box>
-        </Grid>
+                {availableFilters && (
+                  <Text
+                    fontSize="xs"
+                    color="gray.500"
+                    fontFamily={"Airbnb Cereal VF"}
+                  >
+                    {Object.keys(availableFilters.specifications || {}).length}{" "}
+                    types de spécifications disponibles
+                  </Text>
+                )}
+              </VStack>
 
-        {/* Mobile Filter Drawer */}
-        <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="sm">
-          <DrawerOverlay />
-          <DrawerContent>
-            <DrawerCloseButton />
-            <DrawerHeader>Filtrer les produits</DrawerHeader>
-            <DrawerBody>
+              <HStack spacing={4}>
+                {/* Mobile Filter Button */}
+                <Button
+                  leftIcon={<FaFilter />}
+                  variant="outline"
+                  display={{ base: "flex", lg: "none" }}
+                  onClick={onOpen}
+                  fontFamily="Bogle"
+                >
+                  Filters{" "}
+                  {getSelectedFiltersCount() > 0 &&
+                    `(${getSelectedFiltersCount()})`}
+                </Button>
+
+                {/* Sort Options */}
+                <HStack>
+                  <Text fontSize="sm" display={{ base: "none", md: "block" }}>
+                    Sort:
+                  </Text>
+                  <Select
+                    value={sortBy}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                    w={{ base: "160px", md: "200px" }}
+                    bg="white"
+                    size="sm"
+                  >
+                    {sortOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </Select>
+                </HStack>
+              </HStack>
+            </Flex>
+          </VStack>
+
+          {/* Main Content */}
+          <Grid
+            templateColumns={{ base: "1fr", lg: "300px 1fr" }}
+            gap={{ base: 6, md: 6 }}
+          >
+            {/* Desktop Filters */}
+            <Box display={{ base: "none", lg: "block" }}>
               <FilterSidebar
-                isMobile={true}
                 minPrice={minPrice}
                 maxPrice={maxPrice}
                 tempMinPrice={tempMinPrice}
@@ -1517,9 +1760,122 @@ const CustomerSearchPage = () => {
                 handleSpecificationChange={handleSpecificationChange}
                 clearSpecificationFilter={clearSpecificationFilter}
               />
-            </DrawerBody>
-          </DrawerContent>
-        </Drawer>
+            </Box>
+
+            {/* Products Grid */}
+            <Box>
+              {loading ? (
+                <VStack py={20}>
+                  <Spinner size="xl" color="blue.500" />
+                  <Text>Searching products...</Text>
+                </VStack>
+              ) : products.length === 0 ? (
+                <>
+                  <Center>
+                    <Text fontFamily="Bogle" fontSize={"xl"}>
+                      Aucun produit trouvé dans {query}.
+                    </Text>
+                  </Center>
+                  <Center>
+                    <Text
+                      fontFamily="Bogle"
+                      fontSize={"md"}
+                      mt={5}
+                      color="gray.600"
+                    >
+                      Essayez de rechercher des produits ou d’ajuster vos
+                      filtres.
+                    </Text>
+                  </Center>
+                  <Center>
+                    <Text
+                      fontFamily="Bogle"
+                      fontSize={"md"}
+                      mt={5}
+                      color="gray.600"
+                      as="a"
+                      href="/"
+                    >
+                      Retour à l'accueil
+                    </Text>
+                  </Center>
+                </>
+              ) : (
+                <>
+                  <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} mb={8}>
+                    {products.map((product, idx) => (
+                      <Box
+                        key={product.id}
+                        ref={(el) => (impressionRefs.current[idx] = el)}
+                        data-index={idx}
+                        data-impression="not-sent"
+                        onMouseEnter={() => handleProductHover(product, idx)}
+                      >
+                        <ProductCard
+                          key={product.id}
+                          product={homeService.formatProductData(product)}
+                        />
+                      </Box>
+                    ))}
+                  </SimpleGrid>
+
+                  {hasMore && (
+                    <VStack spacing={4}>
+                      <Button
+                        size="sm"
+                        onClick={loadMore}
+                        isLoading={loadingMore}
+                        loadingText="Loading more..."
+                        w="auto"
+                        maxW="auto"
+                        borderColor="blue.500"
+                        borderWidth={0}
+                        color="white"
+                        rounded="3px"
+                        p={5}
+                        _hover={{ bg: "rgb(241, 36, 36)" }}
+                        bg="rgb(241, 36, 36)"
+                        fontFamily={"Bogle"}
+                      >
+                        Afficher plus de produits
+                      </Button>
+                    </VStack>
+                  )}
+                </>
+              )}
+            </Box>
+          </Grid>
+
+          {/* Mobile Filter Drawer */}
+          <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="sm">
+            <DrawerOverlay />
+            <DrawerContent>
+              <DrawerCloseButton />
+              <DrawerHeader>Filtrer les produits</DrawerHeader>
+              <DrawerBody>
+                <FilterSidebar
+                  isMobile={true}
+                  minPrice={minPrice}
+                  maxPrice={maxPrice}
+                  tempMinPrice={tempMinPrice}
+                  tempMaxPrice={tempMaxPrice}
+                  includeOutOfStock={includeOutOfStock}
+                  availableFilters={availableFilters}
+                  selectedFilters={selectedFilters}
+                  getSelectedFiltersCount={getSelectedFiltersCount}
+                  clearFilters={clearFilters}
+                  handleMinPriceChange={handleMinPriceChange}
+                  handleMaxPriceChange={handleMaxPriceChange}
+                  applyPriceRange={applyPriceRange}
+                  clearPriceRange={clearPriceRange}
+                  applyFilters={applyFilters}
+                  setIncludeOutOfStock={setIncludeOutOfStock}
+                  handleSpecificationChange={handleSpecificationChange}
+                  clearSpecificationFilter={clearSpecificationFilter}
+                />
+              </DrawerBody>
+            </DrawerContent>
+          </Drawer>
         </Container>
         <Footer />
       </Box>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Helmet } from 'react-helmet-async';
 import { SEO } from '../../hooks/useSEO';
 import {
   Box,
@@ -1191,7 +1192,186 @@ const CustomerDealsPage = () => {
 
   return (
     <>
-      <SEO {...flashDealsSEO} />
+      <Helmet>
+        {/* Primary Meta Tags */}
+        <title>Offres Flash - Jusqu'à 70% de Réduction sur {totalCount} Produits | AS Solutions Fournitures</title>
+        <meta 
+          name="title" 
+          content={`Offres Flash - Jusqu'à 70% de Réduction sur ${totalCount} Produits | AS Solutions Fournitures`} 
+        />
+        <meta 
+          name="description" 
+          content={`🔥 Découvrez ${totalCount} offres flash exclusives avec jusqu'à 70% de réduction ! ✓ Stock limité ✓ Livraison rapide ✓ Promotions exceptionnelles ✓ Économisez sur bricolage, maison, jardin et plus`} 
+        />
+        <meta 
+          name="keywords" 
+          content="offres flash, promotions, réductions, ventes flash, prix bas, liquidation, destockage, soldes, bons plans, bricolage pas cher, fournitures promotion, AS Solutions" 
+        />
+        <link rel="canonical" href={`${BASE_URL}/flash-deals`} />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AS Solutions Fournitures" />
+        <meta property="og:title" content={`🔥 Offres Flash - Jusqu'à 70% de Réduction sur ${totalCount} Produits`} />
+        <meta 
+          property="og:description" 
+          content={`Profitez de nos ${totalCount} offres flash exceptionnelles ! Stock limité, livraison rapide, économies garanties sur bricolage, maison, jardin et plus.`} 
+        />
+        <meta property="og:image" content={dealsImageUrl} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Offres Flash AS Solutions - Réductions jusqu'à 70%" />
+        <meta property="og:locale" content="fr_FR" />
+
+        
+
+        {/* Additional SEO Tags */}
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow" />
+        <meta name="author" content="AS Solutions Fournitures" />
+        <meta name="language" content="French" />
+        <meta name="revisit-after" content="1 days" />
+        <meta name="distribution" content="global" />
+
+        {/* Structured Data - OfferCatalog */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "OfferCatalog",
+            "name": "Offres Flash AS Solutions Fournitures",
+            "description": `Découvrez ${totalCount} offres flash exceptionnelles avec jusqu'à 70% de réduction`,
+            "url": `${BASE_URL}/flash-deals`,
+            "numberOfItems": totalCount,
+            "itemListElement": deals.slice(0, 10).map((product, index) => {
+              const formattedProduct = homeService.formatFlashDealProductData(product);
+              const dealPrice = formattedProduct.pricing?.final_price_gross || formattedProduct.price || 0;
+              const originalPrice = formattedProduct.pricing?.original_price || dealPrice;
+              const discount = formattedProduct.pricing?.discount_percentage || 0;
+              
+              return {
+                "@type": "Offer",
+                "position": index + 1,
+                "itemOffered": {
+                  "@type": "Product",
+                  "name": formattedProduct.title,
+                  "description": formattedProduct.description || formattedProduct.short_description,
+                  "image": formattedProduct.main_image_url,
+                  "sku": formattedProduct.sku || formattedProduct.id,
+                  "brand": {
+                    "@type": "Brand",
+                    "name": formattedProduct.brand || "AS Solutions"
+                  }
+                },
+                "price": dealPrice,
+                "priceCurrency": "EUR",
+                "priceValidUntil": new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                "availability": formattedProduct.stock_quantity > 0 
+                  ? "https://schema.org/InStock" 
+                  : "https://schema.org/OutOfStock",
+                "url": `${BASE_URL}/product/${formattedProduct.slug}`,
+                "seller": {
+                  "@type": "Organization",
+                  "name": "AS Solutions Fournitures"
+                },
+                "priceSpecification": {
+                  "@type": "PriceSpecification",
+                  "price": dealPrice,
+                  "priceCurrency": "EUR",
+                  "valueAddedTaxIncluded": true
+                },
+                ...(discount > 0 && {
+                  "eligibleQuantity": {
+                    "@type": "QuantitativeValue",
+                    "value": formattedProduct.stock_quantity
+                  }
+                })
+              };
+            }),
+            "provider": {
+              "@type": "Organization",
+              "name": "AS Solutions Fournitures",
+              "url": BASE_URL,
+              "logo": `${BASE_URL}/assets/logo-as.png`
+            }
+          })}
+        </script>
+
+        {/* Structured Data - WebPage */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "name": "Offres Flash - AS Solutions Fournitures",
+            "description": `Découvrez ${totalCount} offres flash exceptionnelles avec jusqu'à 70% de réduction`,
+            "url": `${BASE_URL}/flash-deals`,
+            "mainEntity": {
+              "@type": "ItemList",
+              "numberOfItems": totalCount,
+              "itemListElement": deals.slice(0, 20).map((product, index) => {
+                const formattedProduct = homeService.formatFlashDealProductData(product);
+                return {
+                  "@type": "ListItem",
+                  "position": index + 1,
+                  "item": {
+                    "@type": "Product",
+                    "name": formattedProduct.title,
+                    "url": `${BASE_URL}/product/${formattedProduct.slug}`,
+                    "image": formattedProduct.main_image_url,
+                    "offers": {
+                      "@type": "Offer",
+                      "price": formattedProduct.pricing?.final_price_gross || formattedProduct.price || 0,
+                      "priceCurrency": "EUR",
+                      "availability": formattedProduct.stock_quantity > 0 
+                        ? "https://schema.org/InStock" 
+                        : "https://schema.org/OutOfStock"
+                    }
+                  }
+                };
+              })
+            }
+          })}
+        </script>
+
+        {/* Structured Data - BreadcrumbList */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Accueil",
+                "item": BASE_URL
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Offres Flash",
+                "item": `${BASE_URL}/flash-deals`
+              }
+            ]
+          })}
+        </script>
+
+        {/* Additional Meta Tags for Better Indexing */}
+        <meta property="product:availability" content="in stock" />
+        <meta property="product:condition" content="new" />
+        <meta property="product:price:currency" content="EUR" />
+        <meta name="price" content={deals[0] ? (homeService.formatFlashDealProductData(deals[0]).pricing?.final_price_gross || 0) : 0} />
+        
+        {/* Mobile Optimization */}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        
+        {/* Theme Color */}
+        <meta name="theme-color" content="#EF3054" />
+        <meta name="msapplication-navbutton-color" content="#EF3054" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="#EF3054" />
+      </Helmet>
+
       <Box minH="100vh" bg="gray.50">
         <Navbar />
 
