@@ -5,10 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5174,
-    hmr: {
-      overlay: false
-    },
-    // Proxy sitemap requests to production API
+    hmr: { overlay: false },
     proxy: {
       '/sitemap.xml': {
         target: 'https://api.assolutionsfournitures.fr',
@@ -41,47 +38,21 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Critical: Split react-icons into separate chunks by icon family
-          if (id.includes('react-icons/fa')) {
-            return 'icons-fa';
-          }
-          if (id.includes('react-icons/md')) {
-            return 'icons-md';  
-          }
-          if (id.includes('react-icons/')) {
-            return 'icons-other';
-          }
-          
-          // Vendor chunks
+          if (id.includes('react-icons/fa')) return 'icons-fa';
+          if (id.includes('react-icons/md')) return 'icons-md';  
+          if (id.includes('react-icons/')) return 'icons-other';
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-vendor';
-            }
-            if (id.includes('@chakra-ui')) {
-              return 'ui-vendor';
-            }
-            if (id.includes('react-router')) {
-              return 'router-vendor';
-            }
-            if (id.includes('chart.js')) {
-              return 'chart-vendor';
-            }
-            if (id.includes('lodash') || id.includes('axios') || id.includes('date-fns')) {
-              return 'utils-vendor';
-            }
+            if (id.includes('react') || id.includes('react-dom')) return 'react-vendor';
+            if (id.includes('@chakra-ui')) return 'ui-vendor';
+            if (id.includes('@emotion')) return 'emotion-vendor';
+            if (id.includes('react-router')) return 'router-vendor';
+            if (id.includes('chart.js')) return 'chart-vendor';
+            if (id.includes('lodash') || id.includes('axios') || id.includes('date-fns')) return 'utils-vendor';
             return 'vendor';
           }
-          
-          // Page chunks for better code splitting
-          if (id.includes('/features/home/')) {
-            return 'home-page';
-          }
-          if (id.includes('/features/customer-product/')) {
-            return 'customer-pages';
-          }
-          if (id.includes('/features/administration/') || id.includes('/features/company/')) {
-            return 'admin-pages';
-          }
+          if (id.includes('/features/home/')) return 'home-page';
+          if (id.includes('/features/customer-product/')) return 'customer-pages';
+          if (id.includes('/features/administration/') || id.includes('/features/company/')) return 'admin-pages';
         }
       }
     },
@@ -100,10 +71,24 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', '@chakra-ui/react'],
-    exclude: ['react-icons'] // Critical: Don't pre-bundle react-icons
+    include: [
+      'react',
+      'react-dom',
+      '@chakra-ui/react',
+      '@emotion/react',
+      '@emotion/styled',
+      'framer-motion'
+    ],
+    exclude: ['react-icons']
   },
-  // SEO Configuration
+  ssr: {
+    noExternal: [
+      '@chakra-ui/react',
+      '@emotion/react',
+      '@emotion/styled',
+      'framer-motion'
+    ]
+  },
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
