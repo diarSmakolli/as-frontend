@@ -12,7 +12,7 @@ import { useCustomerAuth } from '../customer-account/auth-context/customerAuthCo
 import { homeService } from "./services/homeService";
 import { customerAccountService } from "../customer-account/customerAccountService";
 import { customToastContainerStyle } from "../../commons/toastStyles";
-// import { useSEO, generateHomeSEO } from '../../hooks/useSEO';
+import { useSEO, generateHomeSEO } from '../../hooks/useSEO';
 
 // Asset imports
 import Logo from "../../assets/logo-as.png";
@@ -55,7 +55,6 @@ import Footer from "../../shared-customer/components/Footer";
 import MobileCategoryNavigation from "../../shared-customer/components/MobileCategoryNavigation";
 import ExploreAll from "../../shared-customer/components/ExploreAll";
 import Navbar from "../../shared-customer/components/Navbar";
-import { useSwipeable } from "react-swipeable";
 import { FaChevronRight } from 'react-icons/fa';
 
 function Home() {
@@ -63,7 +62,7 @@ function Home() {
   const { customer, isLoading } = useCustomerAuth();
   
   // SEO for home page
-  // const homeSEO = useMemo(() => generateHomeSEO(), []);
+  const homeSEO = useMemo(() => generateHomeSEO(), []);
   
   const [currentPromoSlide, setCurrentPromoSlide] = useState(0);
   const [currentMobilePromoSlide, setCurrentMobilePromoSlide] = useState(0);
