@@ -97,7 +97,7 @@ const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
   const getMainTag = () => {
     if (transformedProduct.badges?.is_new) return "NEW";
     if (transformedProduct.badges?.is_featured) return "FEATURED";
-    if (transformedProduct.badges?.is_on_sale) return "SALE";
+    if (transformedProduct.badges?.is_on_sale) return "EN PROMOTIONS";
     return null;
   };
 
