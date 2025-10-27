@@ -88,7 +88,7 @@ const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
     sku: product.sku || product.id,
   };
 
-  const isInStock = transformedProduct.stock_quantity > 0;
+  const isInStock = product.is_available_on_stock = true;
   const discountAmount = transformedProduct.originalPrice 
     ? (transformedProduct.originalPrice - transformedProduct.price).toFixed(2)
     : 0;
@@ -425,29 +425,7 @@ const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
                     >
                       Économisez {discountAmount}€
                     </Text>
-                  )}
-
-                  {/* Stock availability with low stock warning */}
-                  {isInStock && transformedProduct.stock_quantity < 10 && (
-                    <HStack spacing={1}>
-                      <Box
-                        w={2}
-                        h={2}
-                        borderRadius="full"
-                        bg="orange.500"
-                        aria-hidden="true"
-                      />
-                      <Text
-                        fontSize="xs"
-                        color="orange.600"
-                        fontWeight="500"
-                        fontFamily="Airbnb Cereal VF"
-                        aria-label={`Stock limité: seulement ${transformedProduct.stock_quantity} articles restants`}
-                      >
-                        Seulement {transformedProduct.stock_quantity} restant{transformedProduct.stock_quantity > 1 ? 's' : ''}
-                      </Text>
-                    </HStack>
-                  )}
+                  )}                  
                 </VStack>
               </VStack>
             </CardBody>

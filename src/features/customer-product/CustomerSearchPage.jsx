@@ -1,5 +1,5 @@
 // version 1.3
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   Box,
   Container,
@@ -581,29 +581,7 @@ const CustomerSearchPage = () => {
     () => generateSearchSEO(query, products),
     [query, products]
   );
-  const BASE_URL = "https://assolutionsfournitures.fr";
-  const productPrice = product.pricing?.final_price_gross || product.price || 0;
-  const originalPrice = product.pricing?.original_price || productPrice;
-  const productImage =
-    product.main_image_url ||
-    product.images?.[0] ||
-    `${BASE_URL}/assets/logo-as.png`;
-  const isInStock = product.stock_quantity > 0;
-  const discount = product.pricing?.discount_percentage || 0;
-  const savings = originalPrice - productPrice;
 
-  const formattedPrice = productPrice.toFixed(2);
-  const formattedOriginalPrice = originalPrice.toFixed(2);
-
-  // Get additional product images
-  const additionalImages = product.images?.slice(1, 5) || [];
-
-  // Product brand
-  const brand = product.brand || "AS Solutions";
-
-  // Category breadcrumb
-  const categoryName = product.category_name || "Produits";
-  const categorySlug = product.category_slug || "";
 
   const [sortBy, setSortBy] = useState(
     searchParams.get("sort_by") || "relevance"
@@ -1357,306 +1335,96 @@ const CustomerSearchPage = () => {
 
   return (
     <>
-      <Helmet>
-        {/* Primary Meta Tags */}
-        <title>
-          {product.title} - {formattedPrice}€ | AS Solutions Fournitures
-        </title>
-        <meta
-          name="title"
-          content={`${product.title} - ${formattedPrice}€ | AS Solutions Fournitures`}
-        />
-        <meta
-          name="description"
-          content={`${
-            product.description?.substring(0, 155) ||
-            product.short_description ||
-            `Achetez ${product.title}`
-          }... ✓ Prix: ${formattedPrice}€ ${
-            discount > 0
-              ? `✓ Économisez ${savings.toFixed(2)}€ (-${discount}%)`
-              : ""
-          } ✓ ${
-            isInStock ? "En stock" : "Disponible sur commande"
-          } ✓ Livraison rapide en France ✓ Garantie qualité AS Solutions`}
-        />
-        <meta
-          name="keywords"
-          content={`${product.title}, ${categoryName}, fournitures, ${brand}, achat en ligne, ${product.title} pas cher, ${categoryName} France, AS Solutions`}
-        />
-        <meta name="author" content="AS Solutions Fournitures" />
-        <link rel="canonical" href={`${BASE_URL}/product/${product.slug}`} />
+     <Helmet>
+  <title>
+    {query
+      ? `${totalCount} résultats pour "${query}" | AS Solutions Fournitures`
+      : `Recherche de produits | AS Solutions Fournitures`}
+  </title>
+  <meta
+    name="title"
+    content={
+      query
+        ? `${totalCount} résultats pour "${query}" | AS Solutions Fournitures`
+        : `Recherche de produits | AS Solutions Fournitures`
+    }
+  />
+  <meta
+    name="description"
+    content={
+      query
+        ? `Découvrez ${totalCount} produits correspondant à "${query}" sur AS Solutions Fournitures. ✓ Prix compétitifs ✓ Livraison rapide ✓ Qualité garantie`
+        : `Recherchez parmi des milliers de fournitures de qualité sur AS Solutions Fournitures. ✓ Prix compétitifs ✓ Livraison rapide ✓ Qualité garantie`
+    }
+  />
+  <meta
+    name="keywords"
+    content={
+      query
+        ? `${query}, fournitures, achat, AS Solutions, France`
+        : `fournitures, achat, AS Solutions, France`
+    }
+  />
+  <link
+    rel="canonical"
+    href={`https://assolutionsfournitures.fr/search?q=${encodeURIComponent(
+      query || ""
+    )}`}
+  />
 
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="product" />
-        <meta
-          property="og:url"
-          content={`${BASE_URL}/product/${product.slug}`}
-        />
-        <meta property="og:site_name" content="AS Solutions Fournitures" />
-        <meta
-          property="og:title"
-          content={`${product.title} - ${formattedPrice}€`}
-        />
-        <meta
-          property="og:description"
-          content={
-            product.description?.substring(0, 200) ||
-            product.short_description ||
-            `Achetez ${product.title} à ${formattedPrice}€`
-          }
-        />
-        <meta property="og:image" content={productImage} />
-        <meta property="og:image:secure_url" content={productImage} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta
-          property="og:image:alt"
-          content={`${product.title} - AS Solutions Fournitures`}
-        />
-        <meta property="og:locale" content="fr_FR" />
+  {/* Open Graph / Facebook */}
+  <meta property="og:type" content="website" />
+  <meta
+    property="og:url"
+    content={`https://assolutionsfournitures.fr/search?q=${encodeURIComponent(
+      query || ""
+    )}`}
+  />
+  <meta
+    property="og:title"
+    content={
+      query
+        ? `${totalCount} résultats pour "${query}"`
+        : `Recherche de produits`
+    }
+  />
+  <meta
+    property="og:description"
+    content={
+      query
+        ? `Découvrez ${totalCount} produits correspondant à "${query}" sur AS Solutions Fournitures.`
+        : `Recherchez parmi des milliers de fournitures de qualité sur AS Solutions Fournitures.`
+    }
+  />
+  <meta
+    property="og:image"
+    content="https://assolutionsfournitures.fr/assets/logo-as.png"
+  />
 
-        {/* Product-specific Open Graph tags */}
-        <meta
-          property="product:price:amount"
-          content={productPrice.toString()}
-        />
-        <meta property="product:price:currency" content="EUR" />
-        <meta
-          property="product:availability"
-          content={isInStock ? "in stock" : "out of stock"}
-        />
-        <meta property="product:condition" content="new" />
-        <meta
-          property="product:retailer_item_id"
-          content={product.sku || product.id}
-        />
-        <meta property="product:brand" content={brand} />
-        {categoryName && (
-          <meta property="product:category" content={categoryName} />
-        )}
-
-        {/* Twitter Card */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@assolutions" />
-        <meta
-          name="twitter:url"
-          content={`${BASE_URL}/product/${product.slug}`}
-        />
-        <meta
-          name="twitter:title"
-          content={`${product.title} - ${formattedPrice}€`}
-        />
-        <meta
-          name="twitter:description"
-          content={
-            product.description?.substring(0, 200) ||
-            `Achetez ${product.title} à ${formattedPrice}€. ${
-              isInStock ? "En stock" : "Disponible sur commande"
-            }. Livraison rapide.`
-          }
-        />
-        <meta name="twitter:image" content={productImage} />
-        <meta name="twitter:image:alt" content={product.title} />
-        <meta name="twitter:label1" content="Prix" />
-        <meta name="twitter:data1" content={`${formattedPrice}€`} />
-        <meta name="twitter:label2" content="Disponibilité" />
-        <meta
-          name="twitter:data2"
-          content={isInStock ? "En stock" : "Sur commande"}
-        />
-
-        {/* Additional SEO Tags */}
-        <meta
-          name="robots"
-          content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
-        />
-        <meta name="googlebot" content="index, follow" />
-        <meta name="language" content="French" />
-        <meta name="geo.region" content="FR" />
-        <meta name="geo.placename" content="France" />
-
-        {/* Mobile Optimization */}
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
-        />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta
-          name="apple-mobile-web-app-status-bar-style"
-          content="black-translucent"
-        />
-
-        {/* Theme Color */}
-        <meta name="theme-color" content="#0d00ca" />
-
-        {/* Product Structured Data (JSON-LD) */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Product",
-            name: product.title,
-            description:
-              product.description ||
-              product.short_description ||
-              `${product.title} - Fournitures de qualité`,
-            image: [productImage, ...additionalImages],
-            sku: product.sku || product.id,
-            mpn: product.sku || product.id,
-            brand: {
-              "@type": "Brand",
-              name: brand,
-            },
-            offers: {
-              "@type": "Offer",
-              url: `${BASE_URL}/product/${product.slug}`,
-              priceCurrency: "EUR",
-              price: productPrice,
-              priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-                .toISOString()
-                .split("T")[0],
-              availability: isInStock
-                ? "https://schema.org/InStock"
-                : "https://schema.org/OutOfStock",
-              itemCondition: "https://schema.org/NewCondition",
-              seller: {
-                "@type": "Organization",
-                name: "AS Solutions Fournitures",
-                url: BASE_URL,
-              },
-              ...(discount > 0 && {
-                priceSpecification: {
-                  "@type": "PriceSpecification",
-                  price: productPrice,
-                  priceCurrency: "EUR",
-                  valueAddedTaxIncluded: true,
-                },
-              }),
-            },
-            ...(product.rating &&
-              product.review_count && {
-                aggregateRating: {
-                  "@type": "AggregateRating",
-                  ratingValue: product.rating,
-                  reviewCount: product.review_count,
-                  bestRating: "5",
-                  worstRating: "1",
-                },
-              }),
-            ...(categoryName && {
-              category: categoryName,
-            }),
-          })}
-        </script>
-
-        {/* Breadcrumb Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              {
-                "@type": "ListItem",
-                position: 1,
-                name: "Accueil",
-                item: BASE_URL,
-              },
-              ...(categorySlug
-                ? [
-                    {
-                      "@type": "ListItem",
-                      position: 2,
-                      name: categoryName,
-                      item: `${BASE_URL}/category/${categorySlug}`,
-                    },
-                  ]
-                : []),
-              {
-                "@type": "ListItem",
-                position: categorySlug ? 3 : 2,
-                name: product.title,
-                item: `${BASE_URL}/product/${product.slug}`,
-              },
-            ],
-          })}
-        </script>
-
-        {/* Additional Structured Data - WebPage */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebPage",
-            name: product.title,
-            description: product.description || product.short_description,
-            url: `${BASE_URL}/product/${product.slug}`,
-            mainEntity: {
-              "@type": "Product",
-              name: product.title,
-            },
-            breadcrumb: {
-              "@type": "BreadcrumbList",
-              itemListElement: [
-                {
-                  "@type": "ListItem",
-                  position: 1,
-                  name: "Accueil",
-                  item: BASE_URL,
-                },
-                ...(categorySlug
-                  ? [
-                      {
-                        "@type": "ListItem",
-                        position: 2,
-                        name: categoryName,
-                        item: `${BASE_URL}/category/${categorySlug}`,
-                      },
-                    ]
-                  : []),
-                {
-                  "@type": "ListItem",
-                  position: categorySlug ? 3 : 2,
-                  name: product.title,
-                },
-              ],
-            },
-          })}
-        </script>
-
-        {/* Organization Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            name: "AS Solutions Fournitures",
-            url: BASE_URL,
-            logo: `${BASE_URL}/assets/logo-as.png`,
-            sameAs: [
-              "https://www.facebook.com/assolutions",
-              "https://www.instagram.com/assolutions",
-            ],
-          })}
-        </script>
-
-        {/* FAQ Schema if product has common questions */}
-        {product.faq && product.faq.length > 0 && (
-          <script type="application/ld+json">
-            {JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              mainEntity: product.faq.map((faq) => ({
-                "@type": "Question",
-                name: faq.question,
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: faq.answer,
-                },
-              })),
-            })}
-          </script>
-        )}
-      </Helmet>
+  {/* Breadcrumb Structured Data */}
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Accueil",
+          item: "https://assolutionsfournitures.fr",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Recherche",
+          item: `https://assolutionsfournitures.fr/search?q=${encodeURIComponent(
+            query || ""
+          )}`,
+        },
+      ],
+    })}
+  </script>
+</Helmet>
 
       <Box minH="100vh" bg="rgba(252, 252, 253, 1)">
         <Navbar />

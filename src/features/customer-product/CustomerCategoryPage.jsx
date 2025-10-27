@@ -1369,86 +1369,103 @@ const CustomerCategoryPage = () => {
     return <Error404 />;
   }
   
-  const categorySEO = useMemo(() => generateCategorySEO(categoryData.category, products), [categoryData, products]);
+  const category = categoryData.category || {};
+  const categoryName =
+    typeof category.name === "string" && category.name.length > 0
+      ? category.name
+      : "Catégorie";
+  const categorySlug =
+    typeof category.slug === "string" && category.slug.length > 0
+      ? category.slug
+      : "categorie";
+  const categoryDescription =
+    typeof category.description === "string" && category.description.length > 0
+      ? category.description
+      : `Découvrez notre sélection de ${totalCount} ${categoryName.toLowerCase()}. ✓ Prix compétitifs ✓ Livraison rapide ✓ Qualité garantie ✓ Large choix de produits`;
+  const categoryImageUrl =
+    category?.image_url ||
+    "https://assolutionsfournitures.fr/default-category-image.jpg";
+  const totalCountString = typeof totalCount === "number" ? totalCount : 0;
+
 
   return (
     <>
-      <Helmet>
-        {/* Primary Meta Tags */}
-        <title>{category.name} - {totalCount} Produits | AS Solutions Fournitures</title>
-        <meta name="title" content={`${category.name} - ${totalCount} Produits | AS Solutions Fournitures`} />
-        <meta 
-          name="description" 
-          content={category.description || `Découvrez notre sélection de ${totalCount} ${category.name.toLowerCase()}. ✓ Prix compétitifs ✓ Livraison rapide ✓ Qualité garantie ✓ Large choix de produits`} 
-        />
-        <meta name="keywords" content={`${category.name}, fournitures ${category.name.toLowerCase()}, achat ${category.name.toLowerCase()}, AS Solutions, France`} />
-        <link rel="canonical" href={`https://assolutionsfournitures.fr/category/${category.slug}`} />
+     <Helmet>
+  {/* Primary Meta Tags */}
+  <title>{`${categoryName} - ${totalCountString} Produits | AS Solutions Fournitures`}</title>
+  <meta name="title" content={`${categoryName} - ${totalCountString} Produits | AS Solutions Fournitures`} />
+  <meta 
+    name="description" 
+    content={categoryDescription} 
+  />
+  <meta name="keywords" content={`${categoryName}, fournitures ${categoryName.toLowerCase()}, achat ${categoryName.toLowerCase()}, AS Solutions, France`} />
+  <link rel="canonical" href={`https://assolutionsfournitures.fr/category/${categorySlug}`} />
 
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://assolutionsfournitures.fr/category/${category.slug}`} />
-        <meta property="og:title" content={`${category.name} - ${totalCount} Produits`} />
-        <meta property="og:description" content={category.description || `Découvrez notre sélection de ${category.name.toLowerCase()}`} />
-        <meta property="og:image" content={categoryImageUrl} />
+  {/* Open Graph / Facebook */}
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={`https://assolutionsfournitures.fr/category/${categorySlug}`} />
+  <meta property="og:title" content={`${categoryName} - ${totalCountString} Produits`} />
+  <meta property="og:description" content={categoryDescription} />
+  <meta property="og:image" content={categoryImageUrl} />
 
-        {/* Category Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "CollectionPage",
-            "name": category.name,
-            "description": category.description || `Découvrez notre sélection de ${category.name.toLowerCase()}`,
-            "url": `https://assolutionsfournitures.fr/category/${category.slug}`,
-            "mainEntity": {
-              "@type": "ItemList",
-              "numberOfItems": totalCount,
-              "itemListElement": products.slice(0, 10).map((product, index) => ({
-                "@type": "ListItem",
-                "position": index + 1,
-                "item": {
-                  "@type": "Product",
-                  "name": product.title,
-                  "url": `https://assolutionsfournitures.fr/product/${product.slug}`,
-                  "image": product.main_image_url,
-                  "offers": {
-                    "@type": "Offer",
-                    "price": product.pricing?.final_price_gross || product.price || 0,
-                    "priceCurrency": "EUR"
-                  }
-                }
-              }))
+  {/* Category Structured Data */}
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": categoryName,
+      "description": categoryDescription,
+      "url": `https://assolutionsfournitures.fr/category/${categorySlug}`,
+      "mainEntity": {
+        "@type": "ItemList",
+        "numberOfItems": totalCountString,
+        "itemListElement": products.slice(0, 10).map((product, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "Product",
+            "name": product.title || "",
+            "url": `https://assolutionsfournitures.fr/product/${product.slug || ""}`,
+            "image": product.main_image_url || "",
+            "offers": {
+              "@type": "Offer",
+              "price": product.pricing?.final_price_gross || product.price || 0,
+              "priceCurrency": "EUR"
             }
-          })}
-        </script>
+          }
+        }))
+      }
+    })}
+  </script>
 
-        {/* Breadcrumb Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-              {
-                "@type": "ListItem",
-                "position": 1,
-                "name": "Accueil",
-                "item": "https://assolutionsfournitures.fr"
-              },
-              ...((categoryData?.parents || []).map((parent, idx) => ({
-                "@type": "ListItem",
-                "position": idx + 2,
-                "name": parent.name,
-                "item": `https://assolutionsfournitures.fr/category/${parent.slug}`
-              }))),
-              {
-                "@type": "ListItem",
-                "position": (categoryData?.parents?.length || 0) + 2,
-                "name": category.name,
-                "item": `https://assolutionsfournitures.fr/category/${category.slug}`
-              }
-            ]
-          })}
-        </script>
-      </Helmet>
+  {/* Breadcrumb Structured Data */}
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Accueil",
+          "item": "https://assolutionsfournitures.fr"
+        },
+        ...((categoryData?.parents || []).map((parent, idx) => ({
+          "@type": "ListItem",
+          "position": idx + 2,
+          "name": parent.name || "",
+          "item": `https://assolutionsfournitures.fr/category/${parent.slug || ""}`
+        }))),
+        {
+          "@type": "ListItem",
+          "position": (categoryData?.parents?.length || 0) + 2,
+          "name": categoryName,
+          "item": `https://assolutionsfournitures.fr/category/${categorySlug}`
+        }
+      ]
+    })}
+  </script>
+</Helmet>
 
       <Box minH="100vh" bg="rgba(252, 252, 253, 1)">
         <Navbar />
