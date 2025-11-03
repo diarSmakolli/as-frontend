@@ -54,6 +54,7 @@ import {
   FaUser,
 } from "react-icons/fa";
 
+
 const MobileCategoryNavigation = ({ isOpen, onClose, categories, loading }) => {
   const navigate = useNavigate();
   const [navigationStack, setNavigationStack] = useState([]);

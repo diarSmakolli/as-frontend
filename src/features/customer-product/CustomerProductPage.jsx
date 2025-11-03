@@ -2973,7 +2973,7 @@ function CustomerProductPage() {
                                                                 "Bricolage Grotesque"
                                                               }
                                                             >
-                                                              Included
+                                                              Inclus
                                                             </Text>
                                                           );
                                                         }
@@ -4328,7 +4328,7 @@ function CustomerProductPage() {
                                                   color="gray.500"
                                                   fontFamily="Bogle"
                                                 >
-                                                  Included
+                                                  Inclus
                                                 </Text>
                                               );
                                             }

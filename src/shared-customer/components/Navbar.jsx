@@ -35,12 +35,8 @@ import {
   ModalBody,
   ModalCloseButton,
   Avatar,
-  Switch,
-  FormControl,
-  FormLabel,
 } from "@chakra-ui/react";
 import {
-  FaShippingFast,
   FaShieldAlt,
   FaChevronRight,
   FaSearch,
@@ -67,11 +63,9 @@ import {
   FaDumbbell,
   FaMusic,
   FaPalette,
-  FaComments,
   FaUser,
   FaHeadset,
   FaRegHeart,
-  FaTrash
 } from "react-icons/fa";
 import { RiHome5Line } from "react-icons/ri";
 import LogoTwo from "../../assets/ASLOGO.svg";
@@ -83,7 +77,6 @@ import { VscAccount } from "react-icons/vsc";
 import { useNavigate } from "react-router-dom";
 import MobileCategoryNavigation from "./MobileCategoryNavigation";
 import { homeService } from "../../features/home/services/homeService";
-import Logo from "../../assets/logo-v2.png";
 import { Link } from "react-router-dom";
 import { useCustomerAuth } from "../../features/customer-account/auth-context/customerAuthContext";
 
@@ -957,17 +950,6 @@ function Navbar() {
         <Container maxW="8xl">
           <HStack spacing={6} justify="center" align="center">
             <HStack spacing={2}>
-              <Icon as={FaShippingFast} color="white" fontSize="sm" />
-              <Text fontSize="xs" color="white" fontWeight="medium">
-                Livraison gratuite pour les commandes de plus de 100€
-              </Text>
-            </HStack>
-            <Divider
-              orientation="vertical"
-              h="4"
-              borderColor="whiteAlpha.400"
-            />
-            <HStack spacing={2}>
               <Icon as={FaShieldAlt} color="white" fontSize="sm" />
               <Text fontSize="xs" color="white" fontWeight="medium">
                 Garantie de remboursement de 30 jours
@@ -1015,18 +997,6 @@ function Navbar() {
                     width="auto"
                     objectFit="contain"
                   />
-                  {/* <Text
-                    ml={2}
-                    mt={0}
-                    fontWeight="bold"
-                    fontSize="26.5px"
-                    color="white"
-                    fontFamily="Bogle"
-                    lineHeight={"0.7"}
-                    letterSpacing={"1.1px"}
-                  >
-                    | AS SOLUTIONS
-                  </Text> */}
                 </Flex>
               </Box>
 
@@ -1103,48 +1073,25 @@ function Navbar() {
                   </Text>
                 </HStack>
 
-                {/* Sign In */}
-                {/* <HStack spacing={0} align="center">
-                  <IconButton
-                    icon={<VscAccount />}
-                    color="gray.100"
-                    _hover={{ bg: "transparent" }}
-                    _focus={{ bg: "transparent" }}
-                    _active={{ bg: "transparent" }}
-                    bg="transparent"
-                    aria-label="Sign In"
-                  />
-                  <Text
-                    color="gray.100"
-                    fontSize="sm"
-                    fontWeight="bold"
-                    fontFamily="Airbnb Cereal VF"
-                  >
-                    Account
-                  </Text>
-                </HStack> */}
-
                 <Popover placement="bottom-end">
                   <PopoverTrigger>
-                    <HStack spacing={0} align="center" cursor="pointer">
-                      <IconButton
-                        icon={<VscAccount />}
-                        color="gray.100"
-                        _hover={{ bg: "transparent" }}
-                        _focus={{ bg: "transparent" }}
-                        _active={{ bg: "transparent" }}
-                        bg="transparent"
-                        aria-label="Account"
-                      />
-                      <Text
-                        color="gray.100"
-                        fontSize="sm"
-                        fontWeight="bold"
-                        fontFamily="Airbnb Cereal VF"
-                      >
-                        Account
-                      </Text>
-                    </HStack>
+                    <Button
+                      variant="ghost"
+                      display="flex"
+                      alignItems="center"
+                      aria-label="Ouvrir le menu compte"
+                      px={2}
+                      py={1}
+                      bg="transparent"
+                      _hover={{ bg: "gray.100" }}
+                      _focus={{ boxShadow: "outline" }}
+                      fontWeight="bold"
+                      fontFamily="Airbnb Cereal VF"
+                      color="gray.100"
+                      leftIcon={<VscAccount />}
+                    >
+                      Account
+                    </Button>
                   </PopoverTrigger>
                   <PopoverContent
                     w="220px"
@@ -1248,40 +1195,6 @@ function Navbar() {
                   </PopoverContent>
                 </Popover>
 
-                {/* Cart */}
-                {/* <HStack spacing={0} align="flex-start" position="relative">
-                  <VStack spacing={0} align="stretch" p={0}>
-                    <Box position="relative">
-                      <IconButton
-                        icon={<IoCartOutline />}
-                        color="gray.100"
-                        _hover={{ bg: "transparent" }}
-                        _focus={{ bg: "transparent" }}
-                        _active={{ bg: "transparent" }}
-                        bg="transparent"
-                        aria-label="Cart"
-                      />
-                      <Badge
-                        p={0}
-                        position="absolute"
-                        top="0"
-                        right="-0.5"
-                        bg="rgb(255, 0, 0)"
-                        color="white"
-                        borderRadius="full"
-                        fontSize="xs"
-                        minW="16px"
-                        h="16px"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                      >
-                        0
-                      </Badge>
-                    </Box>
-                  </VStack>
-                </HStack> */}
-
                 <Popover
                   isOpen={cartPopoverOpen}
                   onOpen={() => setCartPopoverOpen(true)}
@@ -1290,17 +1203,18 @@ function Navbar() {
                   closeOnBlur={true}
                 >
                   <PopoverTrigger>
-                    <Box position="relative" cursor="pointer">
-                      <IconButton
-                        icon={<IoCartOutline />}
-                        color="gray.100"
-                        _hover={{ bg: "transparent" }}
-                        _focus={{ bg: "transparent" }}
-                        _active={{ bg: "transparent" }}
-                        bg="transparent"
-                        aria-label="Cart"
-                        onClick={() => setCartPopoverOpen((open) => !open)}
-                      />
+                    <Button
+                      variant="ghost"
+                      aria-label="Ouvrir le panier"
+                      position="relative"
+                      px={2}
+                      py={1}
+                      bg="transparent"
+                      _hover={{ bg: "gray.100" }}
+                      _focus={{ boxShadow: "outline" }}
+                      color="gray.100"
+                      leftIcon={<IoCartOutline />}
+                    >
                       <Badge
                         p={0}
                         position="absolute"
@@ -1318,7 +1232,7 @@ function Navbar() {
                       >
                         {cartCount}
                       </Badge>
-                    </Box>
+                    </Button>
                   </PopoverTrigger>
                   <PopoverContent
                     w="340px"
@@ -1390,9 +1304,6 @@ function Navbar() {
                                     )}
                                   </b>
                                 </Text>
-                                {/* <HStack spacing={2} mt={1}>
-                                  <Text fontSize="xs">x {item.quantity}</Text>
-                                </HStack> */}
                                 <HStack spacing={2} mt={1}>
                                   <IconButton
                                     icon={<span>-</span>}
@@ -1563,20 +1474,6 @@ function Navbar() {
         zIndex="1000"
         display={{ base: "block", md: "none" }}
       >
-        {/* Banner */}
-        <Box bg="black" py={2} px={4} display={{ base: "block", md: "none" }}>
-          <Container maxW="8xl">
-            <HStack spacing={6} justify="center" align="center">
-              <HStack spacing={2}>
-                <Icon as={FaShippingFast} color="white" fontSize="sm" />
-                <Text fontSize="xs" color="white" fontWeight="medium">
-                  Livraison gratuite pour les commandes de plus de 100€
-                </Text>
-              </HStack>
-            </HStack>
-          </Container>
-        </Box>
-
         <Container maxW="8xl">
           <Box display={{ base: "block", md: "none" }}>
             {/* Main header row */}
@@ -1707,37 +1604,37 @@ function Navbar() {
           />
 
           {/* Cart */}
-          <Link to={customer ? '/cart' : '/account/signin'}>
-          <VStack
-            spacing={1}
-            flex={1}
-            py={2}
-            cursor="pointer"
-            position="relative"
-          >
-            <Box position="relative">
-              <Icon as={FaShoppingCart} fontSize="lg" color="black" />
-              <Badge
-                position="absolute"
-                top="-1"
-                right="-1"
-                bg="rgb(255, 0, 0)"
-                color="white"
-                borderRadius="full"
-                fontSize="2xs"
-                minW="16px"
-                h="16px"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-              >
-                {cartCount || 0}
-              </Badge>
-            </Box>
-            <Text fontSize="xs" color="black" textAlign="center">
-              Panier
-            </Text>
-          </VStack>
+          <Link to={customer ? "/cart" : "/account/signin"}>
+            <VStack
+              spacing={1}
+              flex={1}
+              py={2}
+              cursor="pointer"
+              position="relative"
+            >
+              <Box position="relative">
+                <Icon as={FaShoppingCart} fontSize="lg" color="black" />
+                <Badge
+                  position="absolute"
+                  top="-1"
+                  right="-1"
+                  bg="rgb(255, 0, 0)"
+                  color="white"
+                  borderRadius="full"
+                  fontSize="2xs"
+                  minW="16px"
+                  h="16px"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  {cartCount || 0}
+                </Badge>
+              </Box>
+              <Text fontSize="xs" color="black" textAlign="center">
+                Panier
+              </Text>
+            </VStack>
           </Link>
 
           {/* Chat */}
@@ -1763,33 +1660,33 @@ function Navbar() {
           </VStack>
 
           {/* Account */}
-          <VStack 
-            spacing={1} 
-            flex={1} 
-            py={2} 
+          <VStack
+            spacing={1}
+            flex={1}
+            py={2}
             cursor="pointer"
             onClick={onMobileAccountOpen}
           >
             <Icon as={MdManageAccounts} fontSize="lg" color="black" />
             <Text fontSize="xs" color="black" textAlign="center">
-              { customer ? customer.first_name : "Compte" }
+              {customer ? customer.first_name : "Compte"}
             </Text>
           </VStack>
         </HStack>
       </Box>
 
       {/* Mobile Account Modal */}
-      <Modal 
-        isOpen={isMobileAccountOpen} 
+      <Modal
+        isOpen={isMobileAccountOpen}
         onClose={onMobileAccountClose}
         size="full"
         motionPreset="slideInBottom"
       >
         <ModalOverlay bg="blackAlpha.300" />
         <ModalContent bg="gray.50" m={0} borderRadius={0}>
-          <ModalHeader 
-            bg="white" 
-            borderBottom="1px" 
+          <ModalHeader
+            bg="white"
+            borderBottom="1px"
             borderColor="gray.200"
             px={6}
             py={4}
@@ -1801,7 +1698,7 @@ function Navbar() {
               <ModalCloseButton position="relative" top="0" right="0" />
             </HStack>
           </ModalHeader>
-          
+
           <ModalBody p={0}>
             {customer ? (
               // Logged in user view
@@ -1809,8 +1706,8 @@ function Navbar() {
                 {/* User Profile Section */}
                 <Box bg="white" p={6} borderBottom="1px" borderColor="gray.200">
                   <HStack spacing={4}>
-                    <Avatar 
-                      size="lg" 
+                    <Avatar
+                      size="lg"
                       name={`${customer.first_name} ${customer.last_name}`}
                       src={customer.profile_picture_url}
                       bg="blue.500"
@@ -1851,8 +1748,14 @@ function Navbar() {
                     _hover={{ bg: "gray.50" }}
                   >
                     <HStack justify="space-between" w="full">
-                      <Text fontSize="md" color="gray.700">Profil personnel</Text>
-                      <Icon as={FaChevronRight} color="gray.400" fontSize="sm" />
+                      <Text fontSize="md" color="gray.700">
+                        Profil personnel
+                      </Text>
+                      <Icon
+                        as={FaChevronRight}
+                        color="gray.400"
+                        fontSize="sm"
+                      />
                     </HStack>
                   </Button>
 
@@ -1874,8 +1777,14 @@ function Navbar() {
                     _hover={{ bg: "gray.50" }}
                   >
                     <HStack justify="space-between" w="full">
-                      <Text fontSize="md" color="gray.700">Mes commandes</Text>
-                      <Icon as={FaChevronRight} color="gray.400" fontSize="sm" />
+                      <Text fontSize="md" color="gray.700">
+                        Mes commandes
+                      </Text>
+                      <Icon
+                        as={FaChevronRight}
+                        color="gray.400"
+                        fontSize="sm"
+                      />
                     </HStack>
                   </Button>
 
@@ -1897,8 +1806,14 @@ function Navbar() {
                     _hover={{ bg: "gray.50" }}
                   >
                     <HStack justify="space-between" w="full">
-                      <Text fontSize="md" color="gray.700">Ma liste de souhaits</Text>
-                      <Icon as={FaChevronRight} color="gray.400" fontSize="sm" />
+                      <Text fontSize="md" color="gray.700">
+                        Ma liste de souhaits
+                      </Text>
+                      <Icon
+                        as={FaChevronRight}
+                        color="gray.400"
+                        fontSize="sm"
+                      />
                     </HStack>
                   </Button>
 
@@ -1920,8 +1835,14 @@ function Navbar() {
                     _hover={{ bg: "gray.50" }}
                   >
                     <HStack justify="space-between" w="full">
-                      <Text fontSize="md" color="gray.700">Mes adresses</Text>
-                      <Icon as={FaChevronRight} color="gray.400" fontSize="sm" />
+                      <Text fontSize="md" color="gray.700">
+                        Mes adresses
+                      </Text>
+                      <Icon
+                        as={FaChevronRight}
+                        color="gray.400"
+                        fontSize="sm"
+                      />
                     </HStack>
                   </Button>
 
@@ -1945,13 +1866,19 @@ function Navbar() {
                     _hover={{ bg: "gray.50" }}
                   >
                     <HStack justify="space-between" w="full">
-                      <Text fontSize="md" color="gray.700">Centre d'aide</Text>
-                      <Icon as={FaChevronRight} color="gray.400" fontSize="sm" />
+                      <Text fontSize="md" color="gray.700">
+                        Centre d'aide
+                      </Text>
+                      <Icon
+                        as={FaChevronRight}
+                        color="gray.400"
+                        fontSize="sm"
+                      />
                     </HStack>
                   </Button>
 
                   <Button
-                     variant="ghost"
+                    variant="ghost"
                     justifyContent="flex-start"
                     h="60px"
                     px={6}
@@ -1980,7 +1907,8 @@ function Navbar() {
                       Connectez-vous à votre compte
                     </Text>
                     <Text fontSize="sm" color="gray.500" textAlign="center">
-                      Accédez à vos commandes, liste de souhaits et bien plus encore
+                      Accédez à vos commandes, liste de souhaits et bien plus
+                      encore
                     </Text>
                   </VStack>
                 </VStack>
@@ -1988,7 +1916,7 @@ function Navbar() {
                 <VStack spacing={3} align="stretch">
                   <Button
                     variant="outline"
-                    size='sm'
+                    size="sm"
                     borderRadius="xl"
                     onClick={() => {
                       onMobileAccountClose();
@@ -1997,7 +1925,7 @@ function Navbar() {
                   >
                     Se connecter
                   </Button>
-                  
+
                   <Button
                     size="sm"
                     variant="outline"
@@ -2055,7 +1983,7 @@ function Navbar() {
       {/* Category Navigation - Responsive for both desktop and mobile */}
       <Box
         bg="#131921"
-        rounded='0'
+        rounded="0"
         borderTop="0px"
         borderColor="gray.200"
         py={1}

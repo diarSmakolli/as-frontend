@@ -78,7 +78,10 @@
   <link rel="icon" type="image/svg+xml"
     href="https://as-solutions-storage.fra1.cdn.digitaloceanspaces.com/logo/logo-web.png" />
 </head>
-<link rel="stylesheet" href="/src/index.css" />
+<link rel="preload" as="style" href="/src/index.css" onload="this.rel='stylesheet'">
+<noscript>
+  <link rel="stylesheet" href="/src/index.css">
+</noscript>
 
 <body>
   <div id="root"></div>

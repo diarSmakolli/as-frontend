@@ -15,22 +15,10 @@ import {
   Link,
   Select,
   Center,
+  VisuallyHidden
 } from "@chakra-ui/react";
-import {
-  FaFacebook,
-  FaTwitter,
-  FaInstagram,
-  FaLinkedin,
-  FaYoutube,
-  FaPinterest,
-  FaLeaf,
-  FaGlobe,
-  FaApple,
-  FaMobileAlt,
-  FaArrowUp,
-} from "react-icons/fa";
+import { FaFacebook, FaTwitter, FaInstagram, FaGlobe, FaArrowUp } from "react-icons/fa";
 import Logo from "../../assets/ASLOGO.svg";
-
 
 const Footer = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -47,7 +35,7 @@ const Footer = () => {
   }, []);
 
   return (
-    <Box bg='#0053e2s'>
+    <Box bg="#0053e2s">
       <Box as="footer" color="white" mt={12} bg="black">
         {/* Renewable Energy Banner */}
 
@@ -100,7 +88,7 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
-                        href='/cart'
+                        href="/cart"
                       >
                         Ajouter
                       </Link>
@@ -115,9 +103,9 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
-                        href='/account/profile'
+                        href="/account/profile"
                       >
-                        My Orders
+                        Mes commandes 
                       </Link>
                       <Link
                         fontSize="sm"
@@ -130,9 +118,9 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
-                        href='/account/wishlist'
+                        href="/account/wishlist"
                       >
-                        My Wishlist
+                        Ma liste de souhaits
                       </Link>
                       <Link
                         fontSize="sm"
@@ -145,9 +133,9 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
-                        href='/account/profile'
+                        href="/account/profile"
                       >
-                        My Account
+                        Mon compte
                       </Link>
                     </VStack>
                   </VStack>
@@ -175,8 +163,10 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
+                        href="mailto:contact@assolutionsfournitures.fr"
+                        aria-label="Envoyer un email à contact@assolutionsfournitures.fr"
                       >
-                        contact@assolutions.fr
+                        contact@assolutionsfournitures.fr
                       </Link>
                       <Link
                         fontSize="sm"
@@ -189,6 +179,8 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
+                        href="mailto:b2b@assolutionsfournitures.fr?subject=Demande d'offres"
+                        aria-label="Demande d'offres par email"
                       >
                         Pour demande d'offres
                       </Link>
@@ -203,8 +195,10 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
+                        href="mailto:b2b@assolutionsfournitures.fr"
+                        aria-label="Envoyer un email à b2b@assolutionsfournitures.fr"
                       >
-                        b2b@assolutions.fr
+                        b2b@assolutionsfournitures.fr
                       </Link>
                     </VStack>
                   </VStack>
@@ -232,9 +226,9 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
-                        href='/privacy-policy'
+                        href="/privacy-policy"
                       >
-                        Privacy
+                        Politique de confidentialité
                       </Link>
                       <Link
                         fontSize="sm"
@@ -247,9 +241,9 @@ const Footer = () => {
                         transition="all 0.2s"
                         cursor="pointer"
                         fontFamily={"Airbnb Cereal VF"}
-                        href='/terms-and-conditions'
+                        href="/terms-and-conditions"
                       >
-                        Terms Of Policy
+                        Conditions générales d’utilisation
                       </Link>
                     </VStack>
 
@@ -310,23 +304,33 @@ const Footer = () => {
               {/* Language and Region Selector */}
               <HStack spacing={4} align="center">
                 <Icon as={FaGlobe} color="gray.400" fontSize="lg" />
-                <Select
-                  variant="unstyled"
-                  size="sm"
-                  color="gray.300"
-                  fontWeight="medium"
-                  cursor="pointer"
-                  w="auto"
-                  minW="250px"
-                  _focus={{ color: "white" }}
-                >
-                  <option
-                    value="fr"
-                    style={{ backgroundColor: "#2D3748", color: "white" }}
+                {/* Add a visually hidden label for accessibility */}
+                <Box>
+                  <VisuallyHidden>
+                    <label htmlFor="footer-language-select">
+                      Choisir la langue et la région
+                    </label>
+                  </VisuallyHidden>
+                  <Select
+                    id="footer-language-select"
+                    variant="unstyled"
+                    size="sm"
+                    color="gray.300"
+                    fontWeight="medium"
+                    cursor="pointer"
+                    w="auto"
+                    minW="250px"
+                    _focus={{ color: "white" }}
+                    aria-label="Choisir la langue et la région"
                   >
-                    🇫🇷 France | Français | € (EUR)
-                  </option>
-                </Select>
+                    <option
+                      value="fr"
+                      style={{ backgroundColor: "#2D3748", color: "white" }}
+                    >
+                      🇫🇷 France | Français | € (EUR)
+                    </option>
+                  </Select>
+                </Box>
               </HStack>
 
               {/* Copyright and Links */}
@@ -339,7 +343,6 @@ const Footer = () => {
                 <Text fontSize="sm" color="gray.400" textAlign="center">
                   © 2025 AS Solutions, Inc.
                 </Text>
-               
               </Flex>
             </Flex>
           </Container>
@@ -371,8 +374,10 @@ const Footer = () => {
 
         <Center py={4}>
           <Text fontSize="sm" color="gray.400" textAlign="center">
-            Made with ❤️ by <Text as='a' href='https://linkedin.com/in/dijarsmakolli'>
-            Dijar</Text>
+            Made with ❤️ by{" "}
+            <Text as="a" href="https://linkedin.com/in/dijarsmakolli">
+              Dijar
+            </Text>
           </Text>
         </Center>
       </Box>

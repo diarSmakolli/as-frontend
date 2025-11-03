@@ -188,29 +188,58 @@ const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
         itemScope
         itemType="https://schema.org/Product"
         role="article"
-        aria-label={`${transformedProduct.title} - ${formatPrice(transformedProduct.price)}€`}
+        aria-label={`${transformedProduct.title} - ${formatPrice(
+          transformedProduct.price
+        )}€`}
       >
         {/* Hidden semantic data for SEO */}
         <meta itemProp="name" content={transformedProduct.title} />
-        <meta itemProp="description" content={`${transformedProduct.title} disponible à ${formatPrice(transformedProduct.price)}€ sur AS Solutions Fournitures`} />
+        <meta
+          itemProp="description"
+          content={`${transformedProduct.title} disponible à ${formatPrice(
+            transformedProduct.price
+          )}€ sur AS Solutions Fournitures`}
+        />
         <meta itemProp="image" content={transformedProduct.image} />
         <meta itemProp="sku" content={transformedProduct.sku} />
         <meta itemProp="brand" content={transformedProduct.brand} />
         <link itemProp="url" href={fullProductUrl} />
 
         {/* Offer metadata */}
-        <div itemProp="offers" itemScope itemType="https://schema.org/Offer" style={{ display: 'none' }}>
+        <div
+          itemProp="offers"
+          itemScope
+          itemType="https://schema.org/Offer"
+          style={{ display: "none" }}
+        >
           <meta itemProp="priceCurrency" content="EUR" />
           <meta itemProp="price" content={transformedProduct.price} />
-          <meta itemProp="availability" content={isInStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"} />
+          <meta
+            itemProp="availability"
+            content={
+              isInStock
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock"
+            }
+          />
           <link itemProp="url" href={fullProductUrl} />
         </div>
 
         <Link
           to={productUrl}
           style={{ textDecoration: "none" }}
-          aria-label={`Voir les détails de ${transformedProduct.title} - ${formatPrice(transformedProduct.price)}€ ${transformedProduct.isDiscounted ? `(Économisez ${discountAmount}€)` : ''}`}
-          title={`${transformedProduct.title} - ${formatPrice(transformedProduct.price)}€ ${isInStock ? '✓ En stock' : '✗ Rupture de stock'} | AS Solutions`}
+          aria-label={`Voir les détails de ${
+            transformedProduct.title
+          } - ${formatPrice(transformedProduct.price)}€ ${
+            transformedProduct.isDiscounted
+              ? `(Économisez ${discountAmount}€)`
+              : ""
+          }`}
+          title={`${transformedProduct.title} - ${formatPrice(
+            transformedProduct.price
+          )}€ ${
+            isInStock ? "✓ En stock" : "✗ Rupture de stock"
+          } | AS Solutions`}
         >
           <Card
             bg="transparent"
@@ -226,7 +255,7 @@ const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
             transition="transform 0.2s, box-shadow 0.2s"
             _hover={{
               transform: "translateY(-4px)",
-              shadow: "lg"
+              shadow: "lg",
             }}
             role="group"
           >
@@ -255,9 +284,11 @@ const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
                   {mainTag && (
                     <Badge
                       colorScheme={
-                        mainTag === "NEW" ? "green" :
-                        mainTag === "FEATURED" ? "purple" :
-                        "red"
+                        mainTag === "NEW"
+                          ? "green"
+                          : mainTag === "FEATURED"
+                          ? "purple"
+                          : "red"
                       }
                       fontSize="xs"
                       px={2}
@@ -364,7 +395,13 @@ const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
                   )}
 
                   {/* Price Section with semantic markup */}
-                  <HStack spacing={2} w="full" align="center" role="group" aria-label="Prix du produit">
+                  <HStack
+                    spacing={2}
+                    w="full"
+                    align="center"
+                    role="group"
+                    aria-label="Prix du produit"
+                  >
                     <Text
                       fontSize={{ base: "lg", sm: "xl" }}
                       fontWeight="600"
@@ -372,7 +409,9 @@ const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
                       fontFamily="Airbnb Cereal VF"
                       itemProp="price"
                       content={transformedProduct.price}
-                      aria-label={`Prix: ${formatPrice(transformedProduct.price)} euros`}
+                      aria-label={`Prix: ${formatPrice(
+                        transformedProduct.price
+                      )} euros`}
                     >
                       {formatPrice(transformedProduct.price)} €
                     </Text>
@@ -382,9 +421,9 @@ const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
                         <>
                           {/* Discount Badge */}
                           <Badge
-                            bg="rgba(255, 0, 0, 1)"
+                            bg="red.600"
+                            color="white"
                             fontFamily="Airbnb Cereal VF"
-                            color="gray.200"
                             border="1px solid rgba(33, 1, 1, 0.43)"
                             fontSize={{ base: "xs", sm: "sm" }}
                             fontWeight="500"
@@ -393,10 +432,13 @@ const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
                             borderRadius="lg"
                             textTransform="uppercase"
                             flexShrink={0}
-                            aria-label={`Réduction de ${Math.round(transformedProduct.discountPercentage)} pourcent`}
+                            aria-label={`Réduction de ${Math.round(
+                              transformedProduct.discountPercentage
+                            )} pourcent`}
                             title={`Économisez ${discountAmount}€`}
                           >
-                            - {Math.round(transformedProduct.discountPercentage)}%
+                            -{" "}
+                            {Math.round(transformedProduct.discountPercentage)}%
                           </Badge>
 
                           {/* Original Price */}
@@ -406,7 +448,9 @@ const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
                             textDecoration="line-through"
                             fontFamily="Airbnb Cereal VF"
                             fontWeight="500"
-                            aria-label={`Prix original: ${formatPrice(transformedProduct.originalPrice)} euros`}
+                            aria-label={`Prix original: ${formatPrice(
+                              transformedProduct.originalPrice
+                            )} euros`}
                           >
                             {formatPrice(transformedProduct.originalPrice)} €
                           </Text>
@@ -425,7 +469,7 @@ const ProductCard = ({ product, index = 0, listName = "product-listing" }) => {
                     >
                       Économisez {discountAmount}€
                     </Text>
-                  )}                  
+                  )}
                 </VStack>
               </VStack>
             </CardBody>

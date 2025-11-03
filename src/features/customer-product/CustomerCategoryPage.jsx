@@ -105,7 +105,7 @@ const FilterSidebar = React.memo(
             fontSize="md"
             fontWeight="500"
             fontFamily={"Airbnb Cereal VF"}
-            color='gray.700'
+            color="gray.700"
           >
             Filtres{" "}
             {getSelectedFiltersCount() > 0 && `(${getSelectedFiltersCount()})`}
@@ -115,8 +115,8 @@ const FilterSidebar = React.memo(
             variant="ghost"
             onClick={clearFilters}
             fontFamily={"Airbnb Cereal VF"}
-            fontSize={'sm'}
-            color='gray.700'
+            fontSize={"sm"}
+            color="gray.700"
           >
             Tout effacer
           </Button>
@@ -155,8 +155,7 @@ const FilterSidebar = React.memo(
                 {Object.entries(selectedFilters.specifications || {}).map(
                   ([specKey, specValues]) =>
                     // specValues.slice(0, 8)
-                    specValues
-                    .map((value) => (
+                    specValues.map((value) => (
                       <WrapItem key={`${specKey}-${value}`}>
                         <Tag size="sm" colorScheme="purple" variant="solid">
                           <TagLabel noOfLines={1} maxW="120px">
@@ -202,40 +201,47 @@ const FilterSidebar = React.memo(
             </Text>
           </HStack>
 
-          {availableFilters?.price_range && (
-            <Text fontSize="xs" color="gray.600" mb={2} fontFamily={"Airbnb Cereal VF"}>
-              {availableFilters.price_range.formatted_range}
-            </Text>
-          )}
-
           <VStack spacing={3}>
             <HStack spacing={2} w="full">
               <VStack spacing={1} flex={1}>
-                <Text fontSize="xs" color="gray.500" fontFamily={"Airbnb Cereal VF"}>
+                <Text
+                  fontSize="xs"
+                  color="gray.500"
+                  fontFamily={"Airbnb Cereal VF"}
+                >
                   Prix minimum
                 </Text>
                 <Input
                   value={tempMinPrice}
                   onChange={handleMinPriceChange}
                   placeholder={
-                    availableFilters?.price_range?.min?.toString() || "0"
+                    0
                   }
                   size="sm"
                   autoComplete="off"
                 />
               </VStack>
-              <Text alignSelf="end" pb={2} color="gray.400" fontFamily={"Airbnb Cereal VF"}>
+              <Text
+                alignSelf="end"
+                pb={2}
+                color="gray.400"
+                fontFamily={"Airbnb Cereal VF"}
+              >
                 à
               </Text>
               <VStack spacing={1} flex={1}>
-                <Text fontSize="xs" color="gray.500" fontFamily={"Airbnb Cereal VF"}>
+                <Text
+                  fontSize="xs"
+                  color="gray.500"
+                  fontFamily={"Airbnb Cereal VF"}
+                >
                   Prix maximum
                 </Text>
                 <Input
                   value={tempMaxPrice}
                   onChange={handleMaxPriceChange}
                   placeholder={
-                    availableFilters?.price_range?.max?.toString() || "∞"
+                    "∞"
                   }
                   size="sm"
                   autoComplete="off"
@@ -245,11 +251,11 @@ const FilterSidebar = React.memo(
             <HStack spacing={2} w="full">
               <Button
                 size="sm"
-                bg='#0d00caff'
-                color='white'
-                _hover={{ bg: '#0d00caff' }}
-                _active={{ bg: '#0d00caff' }}
-                _focus={{ bg: '#0d00caff' }}
+                bg="#0d00caff"
+                color="white"
+                _hover={{ bg: "#0d00caff" }}
+                _active={{ bg: "#0d00caff" }}
+                _focus={{ bg: "#0d00caff" }}
                 onClick={applyPriceRange}
                 flex={1}
                 fontFamily={"Airbnb Cereal VF"}
@@ -258,11 +264,11 @@ const FilterSidebar = React.memo(
               </Button>
               <Button
                 size="sm"
-                bg='#0d00caff'
-                color='white'
-                _hover={{ bg: '#0d00caff' }}
-                _active={{ bg: '#0d00caff' }}
-                _focus={{ bg: '#0d00caff' }}
+                bg="#0d00caff"
+                color="white"
+                _hover={{ bg: "#0d00caff" }}
+                _active={{ bg: "#0d00caff" }}
+                _focus={{ bg: "#0d00caff" }}
                 onClick={clearPriceRange}
                 flex={1}
               >
@@ -303,17 +309,27 @@ const FilterSidebar = React.memo(
                       }
                     }}
                   >
-                    <Text fontSize="sm">{option.label}</Text>
+                    <Text fontSize="sm">
+                      {option.value === "in_stock"
+                        ? "Disponible"
+                        : option.value === "out_of_stock"
+                        ? "Rupture de stock"
+                        : option.label}
+                    </Text>
                   </Checkbox>
                   {/* <Text fontSize="xs" color="gray.500">
-                    ({option.count})
-                  </Text> */}
+      ({option.count})
+    </Text> */}
                 </HStack>
               ))}
             </VStack>
           ) : (
             <HStack justify="space-between" align="center">
-              <Text fontSize="sm" color="gray.600" fontFamily="Airbnb Cereal VF">
+              <Text
+                fontSize="sm"
+                color="gray.600"
+                fontFamily="Airbnb Cereal VF"
+              >
                 Inclure les produits en rupture de stock
               </Text>
               <Box
@@ -368,10 +384,7 @@ const FilterSidebar = React.memo(
                   <HStack>
                     <FaCog color="gray.500" />
                     <VStack align="start" spacing={0}>
-                      <Text
-                        fontWeight="500"
-                        fontFamily="Airbnb Cereal VF"
-                      >
+                      <Text fontWeight="500" fontFamily="Airbnb Cereal VF">
                         Filtrer par spécifications
                       </Text>
                       {/* <Text fontSize="xs" color="gray.500" fontFamily="Airbnb Cereal VF">
@@ -527,7 +540,15 @@ const FilterSidebar = React.memo(
           )}
 
         {isMobile && (
-          <Button bg="#0d00caff" _hover={{ bg: '#0d00caff'}} _active={{bg: '#0d00caff'}} _focus={{bg: '#0d00caff'}} onClick={applyFilters} size="lg" fontFamily={"Airbnb Cereal VF"}>
+          <Button
+            bg="#0d00caff"
+            _hover={{ bg: "#0d00caff" }}
+            _active={{ bg: "#0d00caff" }}
+            _focus={{ bg: "#0d00caff" }}
+            onClick={applyFilters}
+            size="lg"
+            fontFamily={"Airbnb Cereal VF"}
+          >
             Appliquer des filtres
           </Button>
         )}

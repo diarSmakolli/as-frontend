@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from "react";
+import { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import {
@@ -355,7 +355,7 @@ function App() {
 
 
 const PrivateRoute = ({ children }) => {
-  const { account, isLoading, logout } = useAuth();
+  const { account, isLoading } = useAuth();
 
   if (isLoading) {
     return <Loader />;
@@ -365,7 +365,7 @@ const PrivateRoute = ({ children }) => {
 };
 
 const IsAuthenticated = ({ children }) => {
-  const { account, isLoading, logout } = useAuth();
+  const { account, isLoading } = useAuth();
 
   if (isLoading) {
     return <Loader />;
